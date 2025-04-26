@@ -21,7 +21,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: qbittorrent
-          image: lscr.io/linuxserver/qbittorrent:4.4.3
+          image: lscr.io/linuxserver/qbittorrent:4.6.7
           ports:
             - name: webui
               containerPort: 8080

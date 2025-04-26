@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  labels:
+    app: qbittorrent
+    part-of: qbittorrent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrent
+      part-of: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+        part-of: qbittorrent
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: qbittorrent
+          image: lscr.io/linuxserver/qbittorrent:4.4.3
+          ports:
+            - name: webui
+              containerPort: 8080
+            - name: bittorrent
+              containerPort: 6881
+              protocol: TCP
+            - name: bittorrent-udp
+              containerPort: 6881
+              protocol: UDP
+
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+
+          volumeMounts:
+            - name: qbittorrent
+              mountPath: /config
+            - name: downloads-movies
+              mountPath: /downloads/movies
+            - name: downloads-series
+              mountPath: /downloads/series
+            - name: extracted-movies
+              mountPath: /movies
+            - name: extracted-series
+              mountPath: /series
+
+          resources:
+            limits:
+              cpu: 400m
+              memory: 600Mi
+
+      volumes:
+        - name: qbittorrent
+          persistentVolumeClaim:
+            claimName: qbittorrent
+        - name: downloads-series
+          persistentVolumeClaim:
+            claimName: downloads-series
+        - name: downloads-movies
+          persistentVolumeClaim:
+            claimName: downloads-movies
+        - name: extracted-movies
+          persistentVolumeClaim:
+            claimName: extracted-movies
+        - name: extracted-series
+          persistentVolumeClaim:
+            claimName: extracted-series

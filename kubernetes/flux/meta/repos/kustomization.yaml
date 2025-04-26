@@ -9,5 +9,4 @@ resources:
   - ./authentik.yaml
   - ./bjw-s.yaml
   - ./grafana.yaml
-  - ./prometheus-community.yaml
   - ./qbittorrent.yaml

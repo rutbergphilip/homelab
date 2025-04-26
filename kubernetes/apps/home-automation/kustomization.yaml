@@ -5,9 +5,9 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   # - ./authentik/ks.yaml
-  - ./qbittorrent
-  - ./jellyfin
+  # - ./qbittorrent
+  # - ./jellyfin
+  # - ./unpackerr
+  # - ./filebrowser
   # - ./homepage
-  - ./unpackerr
-  - ./filebrowser
   # - ./blocket-bot

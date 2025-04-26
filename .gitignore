@@ -7,12 +7,16 @@
 /github-deploy.key
 /github-deploy.key.pub
 /github-push-token.txt
+/temp.sops.yaml
+
 # Template config files
 /cluster.yaml
 /nodes.yaml
+
 # Kubernetes
 kubeconfig
 talosconfig
+
 # Misc.
 .private/
 .task/

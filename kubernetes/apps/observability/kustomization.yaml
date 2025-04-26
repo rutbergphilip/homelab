@@ -6,4 +6,4 @@ namespace: observability
 
 resources:
   - ./namespace.yaml
-  - ./grafana/ks.yaml
+  # - ./grafana/ks.yaml

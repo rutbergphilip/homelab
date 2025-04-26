@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+  namespace: home-automation
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filebrowser
+  template:
+    metadata:
+      labels:
+        app: filebrowser
+
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 1000
+
+      containers:
+        - name: filebrowser
+          image: filebrowser/filebrowser:s6
+          ports:
+            - containerPort: 80
+          securityContext:
+            allowPrivilegeEscalation: true
+
+          resources:
+            limits:
+              memory: 800Mi
+              cpu: 400m
+
+          volumeMounts:
+            - name: downloads-movies
+              mountPath: /srv/downloads/movies
+            - name: downloads-series
+              mountPath: /srv/downloads/series
+            - name: extracted-movies
+              mountPath: /srv/movies
+            - name: extracted-series
+              mountPath: /srv/series
+            - name: filebrowser-db
+              mountPath: /database
+            - name: filebrowser-config
+              mountPath: /config/settings.json
+              subPath: settings.json
+
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+
+      volumes:
+        - name: downloads-movies
+          persistentVolumeClaim:
+            claimName: downloads-movies
+        - name: downloads-series
+          persistentVolumeClaim:
+            claimName: downloads-series
+        - name: extracted-movies
+          persistentVolumeClaim:
+            claimName: extracted-movies
+        - name: extracted-series
+          persistentVolumeClaim:
+            claimName: extracted-series
+        - name: filebrowser-db
+          persistentVolumeClaim:
+            claimName: filebrowser-db
+        - name: filebrowser-config
+          configMap:
+            name: filebrowser-config

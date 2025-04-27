@@ -10,29 +10,3 @@ spec:
   storageClassName: local-path-provisioner
   accessModes:
     - ReadWriteOnce
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: downloads-movies
-spec:
-  resources:
-    requests:
-      storage: 10Gi
-  volumeMode: Filesystem
-  storageClassName: local-path-provisioner
-  accessModes:
-    - ReadWriteMany
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: downloads-series
-spec:
-  resources:
-    requests:
-      storage: 10Gi
-  volumeMode: Filesystem
-  storageClassName: local-path-provisioner
-  accessModes:
-    - ReadWriteMany

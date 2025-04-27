@@ -6,3 +6,7 @@ namespace: home-automation
 
 resources:
   - ./namespace.yaml
+  - ./filebrowser
+  - ./jellyfin
+  - ./qbittorrent
+  - ./unpackerr

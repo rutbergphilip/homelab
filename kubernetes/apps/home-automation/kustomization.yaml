@@ -8,5 +8,5 @@ resources:
   - ./namespace.yaml
   - ./filebrowser
   - ./jellyfin
-  - ./qbittorrent
+  # - ./qbittorrent
   - ./unpackerr

@@ -9,5 +9,5 @@ resources:
   - ./shared-pvcs
   - ./filebrowser
   - ./jellyfin
-  - ./qbittorrent
+  # - ./qbittorrent
   - ./unpackerr

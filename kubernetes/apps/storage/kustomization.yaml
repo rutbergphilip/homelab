@@ -4,4 +4,4 @@ kind: Kustomization
 
 resources:
   - ./namespace.yaml
-  # - ./local-path-provisioner/ks.yaml
+  - ./local-path-provisioner/ks.yaml

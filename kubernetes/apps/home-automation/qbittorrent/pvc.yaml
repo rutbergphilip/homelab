@@ -7,7 +7,7 @@ spec:
     requests:
       storage: 10Gi
   volumeMode: Filesystem
-  storageClassName: local-hostpath
+  storageClassName: local-path-provisioner
   accessModes:
     - ReadWriteOnce
 ---
@@ -20,7 +20,7 @@ spec:
     requests:
       storage: 10Gi
   volumeMode: Filesystem
-  storageClassName: local-hostpath
+  storageClassName: local-path-provisioner
   accessModes:
     - ReadWriteMany
 ---
@@ -33,6 +33,6 @@ spec:
     requests:
       storage: 10Gi
   volumeMode: Filesystem
-  storageClassName: local-hostpath
+  storageClassName: local-path-provisioner
   accessModes:
     - ReadWriteMany

@@ -1,0 +1,75 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: local-path-provisioner
+  namespace: storage
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: democratic-csi
+      version: 0.15.0
+      sourceRef:
+        name: democratic-csi
+        kind: HelmRepository
+        namespace: flux-system
+  values:
+    fullnameOverride: local-path-provisioner
+    csiDriver:
+      name: "org.democratic-csi.local-hostpath"
+      attachRequired: false
+      storageCapacity: true
+      fsGroupPolicy: File
+
+    storageClasses:
+      - name: local-path-provisioner
+        defaultClass: false
+        reclaimPolicy: Delete
+        volumeBindingMode: WaitForFirstConsumer
+        allowVolumeExpansion: false
+
+    controller:
+      enabled: true
+      strategy: node
+      externalAttacher:
+        enabled: false
+      externalProvisioner:
+        enabled: true
+        extraArgs:
+          - --leader-election=false
+          - --node-deployment=true
+          - --node-deployment-immediate-binding=false
+          - --feature-gates=Topology=true
+          - --strict-topology=true
+          - --enable-capacity=true
+          - --capacity-ownerref-level=1
+      externalResizer:
+        enabled: false
+      externalSnapshotter:
+        enabled: true
+        extraArgs:
+          - --leader-election=false
+          - --node-deployment=true
+
+    node:
+      driver:
+        extraVolumeMounts:
+          - name: local-hostpath
+            mountPath: /var/mnt/csi-local-path
+            mountPropagation: Bidirectional
+      extraVolumes:
+        - name: local-hostpath
+          hostPath:
+            path: /var/mnt/csi-local-path
+            type: DirectoryOrCreate
+
+    driver:
+      config:
+        driver: local-hostpath
+        instance_id:
+        local-hostpath:
+          shareBasePath: "/var/mnt/csi-local-path"
+          controllerBasePath: "/var/mnt/csi-local-path"
+          dirPermissionsMode: "0770"
+          dirPermissionsUser: 0
+          dirPermissionsGroup: 0

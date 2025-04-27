@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unpackerr
+  namespace: home-automation
+  labels:
+    app: unpackerr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unpackerr
+  template:
+    metadata:
+      labels:
+        app: unpackerr
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: unpackerr
+          image: ghcr.io/unpackerr/unpackerr:latest
+          resources:
+            limits:
+              cpu: 400m
+              memory: 500Mi
+
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: downloads-series
+              mountPath: /downloads/series
+            - name: downloads-movies
+              mountPath: /downloads/movies
+            - name: extracted-series
+              mountPath: /series
+            - name: extracted-movies
+              mountPath: /movies
+
+          env:
+            - name: UN_FOLDER_0_PATH
+              value: "/downloads/series"
+            - name: UN_FOLDER_1_PATH
+              value: "/downloads/movies"
+            - name: UN_FOLDER_0_EXTRACT_PATH
+              value: "/series"
+            - name: UN_FOLDER_1_EXTRACT_PATH
+              value: "/movies"
+            - name: UN_LOG_FILE
+              value: "/config/unpackerr.log"
+
+      volumes:
+        - name: config
+          emptyDir: {}
+        - name: downloads-series
+          persistentVolumeClaim:
+            claimName: downloads-series
+        - name: downloads-movies
+          persistentVolumeClaim:
+            claimName: downloads-movies
+        - name: extracted-series
+          persistentVolumeClaim:
+            claimName: extracted-series
+        - name: extracted-movies
+          persistentVolumeClaim:
+            claimName: extracted-movies

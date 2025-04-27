@@ -9,6 +9,7 @@ spec:
   resources:
     requests:
       storage: 10Gi
+  storageClassName: local-path-provisioner
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -21,3 +22,4 @@ spec:
   resources:
     requests:
       storage: 10Gi
+  storageClassName: local-path-provisioner

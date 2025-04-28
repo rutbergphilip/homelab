@@ -11,3 +11,4 @@ resources:
   - ./grafana.yaml
   - ./qbittorrent.yaml
   - ./democratic-csi.yaml
+  - ./prometheus-community.yaml

@@ -27,31 +27,43 @@ spec:
     - name: local-path-provisioner
       namespace: storage
   values:
-    grafana:
-      ingress:
+    ingress:
+      app:
         enabled: true
         ingressClassName: external
         annotations:
           external-dns.alpha.kubernetes.io/target: external.${SECRET_DOMAIN}
         hosts:
-          - "grafana.${SECRET_DOMAIN}"
+          - &host "grafana.${SECRET_DOMAIN}"
         tls:
           - hosts:
-              - "grafana.${SECRET_DOMAIN}"
-      persistence:
-        enabled: true
-        existingClaim: grafana-data
-        subPath: grafana
-      serviceMonitor:
-        enabled: true
-      testFramework:
-        enabled: false
-      # extraSecretMounts:
-      #   - name: auth-generic-oauth-secret-mount
-      #     secretName: auth-generic-oauth-secret
-      #     defaultMode: 0440
-      #     mountPath: /etc/secrets/auth_generic_oauth
-      #     readOnly: true
+              - *host
+
+    # grafana:
+    #   ingress:
+    #     enabled: true
+    #     ingressClassName: external
+    #     annotations:
+    #       external-dns.alpha.kubernetes.io/target: external.${SECRET_DOMAIN}
+    #     hosts:
+    #       - "grafana.${SECRET_DOMAIN}"
+    #     tls:
+    #       - hosts:
+    #           - "grafana.${SECRET_DOMAIN}"
+    #   persistence:
+    #     enabled: true
+    #     existingClaim: grafana-data
+    #     subPath: grafana
+    #   serviceMonitor:
+    #     enabled: true
+    #   testFramework:
+    #     enabled: false
+    #   # extraSecretMounts:
+    #   #   - name: auth-generic-oauth-secret-mount
+    #   #     secretName: auth-generic-oauth-secret
+    #   #     defaultMode: 0440
+    #   #     mountPath: /etc/secrets/auth_generic_oauth
+    #   #     readOnly: true
     securityContext:
       runAsUser: 99
       runAsGroup: 100

@@ -1,14 +1,20 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: kube-prometheus-stack
+  name: &app kube-prometheus-stack
   namespace: flux-system
 spec:
   targetNamespace: observability
-  path: ./kubernetes/apps/observability/prometheus
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  path: ./kubernetes/apps/observability/kube-prometheus-stack/app
+  prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  prune: true
+  wait: false
   interval: 30m
+  retryInterval: 1m
+  timeout: 5m

@@ -43,6 +43,10 @@ spec:
       enabled: true
       existingClaim: grafana-data
       subPath: grafana
+    serviceMonitor:
+      enabled: true
+    testFramework:
+      enabled: false
     securityContext:
       runAsUser: 99
       runAsGroup: 100

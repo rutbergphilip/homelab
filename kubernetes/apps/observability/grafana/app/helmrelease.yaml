@@ -27,27 +27,26 @@ spec:
     - name: local-path-provisioner
       namespace: storage
   values:
-    grafana:
-      ingress:
-        enabled: true
-        ingressClassName: external
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-          cert-manager.io/cluster-issuer: "letsencrypt-production"
-        hosts:
-          - "grafana.${SECRET_DOMAIN}"
-        tls:
-          - hosts:
-              - "grafana.${SECRET_DOMAIN}"
-      persistence:
-        enabled: true
-        existingClaim: grafana-data
-        subPath: grafana
-      serviceMonitor:
-        enabled: true
-      testFramework:
-        enabled: false
+    ingress:
+      enabled: true
+      ingressClassName: external
+      annotations:
+        external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+        cert-manager.io/cluster-issuer: "letsencrypt-production"
+      hosts:
+        - "grafana.${SECRET_DOMAIN}"
+      tls:
+        - hosts:
+            - "grafana.${SECRET_DOMAIN}"
+    persistence:
+      enabled: true
+      existingClaim: grafana-data
+      subPath: grafana
+    serviceMonitor:
+      enabled: true
+    testFramework:
+      enabled: false
     securityContext:
       runAsUser: 99
       runAsGroup: 100

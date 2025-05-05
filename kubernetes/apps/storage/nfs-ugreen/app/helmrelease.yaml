@@ -46,4 +46,4 @@ spec:
         - nolock
       parameters:
         server: "192.168.50.254"
-        share: /homelab
+        share: /volume1/homelab

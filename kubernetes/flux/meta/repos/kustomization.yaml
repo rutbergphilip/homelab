@@ -12,3 +12,4 @@ resources:
   - ./qbittorrent.yaml
   - ./democratic-csi.yaml
   - ./prometheus-community.yaml
+  - ./csi-driver-nfs.yaml

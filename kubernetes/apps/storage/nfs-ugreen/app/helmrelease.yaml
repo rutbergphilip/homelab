@@ -43,6 +43,7 @@ spec:
       volumeBindingMode: Immediate
       mountOptions:
         - vers=3
+        - nolock
       parameters:
         server: "192.168.50.254"
         share: /homelab

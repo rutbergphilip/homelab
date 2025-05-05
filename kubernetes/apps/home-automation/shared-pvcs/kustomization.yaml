@@ -5,5 +5,5 @@ kind: Kustomization
 namespace: home-automation
 
 resources:
-  - ./pvc-downloads.yaml
-  - ./pvc-extracted.yaml
+  - ./pvc-movies.yaml
+  - ./pvc-series.yaml

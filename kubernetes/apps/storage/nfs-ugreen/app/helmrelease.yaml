@@ -44,5 +44,14 @@ spec:
       mountOptions:
         - vers=3
       parameters:
-        server: ${NFS_SERVER}
-        share: ${NFS_PATH}
+        server: ""
+        share: ""
+  valuesFrom:
+    - kind: Secret
+      name: nfs-ugreen-secret
+      valuesKey: server
+      targetPath: storageClass.parameters.server
+    - kind: Secret
+      name: nfs-ugreen-secret
+      valuesKey: share
+      targetPath: storageClass.parameters.share

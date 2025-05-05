@@ -39,9 +39,9 @@ spec:
             - name: jellyfin-cache
               mountPath: /jellyfin/cache
             - name: movies
-              mountPath: /jellyfin/movies
+              mountPath: /movies
             - name: series
-              mountPath: /jellyfin/series
+              mountPath: /series
 
           resources:
             limits:

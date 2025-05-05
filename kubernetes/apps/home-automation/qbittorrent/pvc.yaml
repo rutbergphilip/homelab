@@ -7,6 +7,6 @@ spec:
     requests:
       storage: 10Gi
   volumeMode: Filesystem
-  storageClassName: local-path-provisioner
+  storageClassName: nfs-ugreen
   accessModes:
     - ReadWriteOnce

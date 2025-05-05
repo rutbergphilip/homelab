@@ -42,14 +42,10 @@ spec:
 
           volumeMounts:
             - name: qbittorrent
-              mountPath: /config
-            - name: downloads-movies
-              mountPath: /downloads/movies
-            - name: downloads-series
-              mountPath: /downloads/series
-            - name: extracted-movies
+              mountPath: /qbittorrent/config
+            - name: movies
               mountPath: /movies
-            - name: extracted-series
+            - name: series
               mountPath: /series
 
           resources:
@@ -64,15 +60,9 @@ spec:
         - name: qbittorrent
           persistentVolumeClaim:
             claimName: qbittorrent
-        - name: downloads-series
+        - name: movies
           persistentVolumeClaim:
-            claimName: downloads-series
-        - name: downloads-movies
+            claimName: movies
+        - name: series
           persistentVolumeClaim:
-            claimName: downloads-movies
-        - name: extracted-movies
-          persistentVolumeClaim:
-            claimName: extracted-movies
-        - name: extracted-series
-          persistentVolumeClaim:
-            claimName: extracted-series
+            claimName: series

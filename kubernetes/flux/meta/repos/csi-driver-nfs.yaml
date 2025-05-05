@@ -5,6 +5,5 @@ metadata:
   name: csi-driver-nfs
   namespace: flux-system
 spec:
-  type: oci
   interval: 5m
   url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts

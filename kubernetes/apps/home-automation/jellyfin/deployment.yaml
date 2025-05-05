@@ -35,13 +35,13 @@ spec:
 
           volumeMounts:
             - name: jellyfin-config
-              mountPath: /config
+              mountPath: /jellyfin/config
             - name: jellyfin-cache
-              mountPath: /cache
-            - name: extracted-movies
-              mountPath: /movies
-            - name: extracted-series
-              mountPath: /series
+              mountPath: /jellyfin/cache
+            - name: movies
+              mountPath: /jellyfin/movies
+            - name: series
+              mountPath: /jellyfin/series
 
           resources:
             limits:
@@ -58,9 +58,9 @@ spec:
         - name: jellyfin-cache
           persistentVolumeClaim:
             claimName: jellyfin-cache
-        - name: extracted-series
+        - name: series
           persistentVolumeClaim:
-            claimName: extracted-series
-        - name: extracted-movies
+            claimName: series
+        - name: movies
           persistentVolumeClaim:
-            claimName: extracted-movies
+            claimName: movies

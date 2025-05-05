@@ -4,4 +4,4 @@ kind: Kustomization
 
 resources:
   - ./helmrelease.yaml
-  - ./nfs-secret.sops.yaml
+  # - ./nfs-secret.sops.yaml

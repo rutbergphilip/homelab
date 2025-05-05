@@ -44,14 +44,5 @@ spec:
       mountOptions:
         - vers=3
       parameters:
-        server: ""
-        share: ""
-  valuesFrom:
-    - kind: Secret
-      name: nfs-ugreen-secret
-      valuesKey: server
-      targetPath: storageClass.parameters.server
-    - kind: Secret
-      name: nfs-ugreen-secret
-      valuesKey: share
-      targetPath: storageClass.parameters.share
+        server: "192.168.50.254"
+        share: /homelab

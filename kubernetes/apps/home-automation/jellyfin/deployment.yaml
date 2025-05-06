@@ -34,14 +34,18 @@ spec:
               value: "Europe/Stockholm"
 
           volumeMounts:
-            - name: jellyfin-config
-              mountPath: /jellyfin/config
-            - name: jellyfin-cache
-              mountPath: /jellyfin/cache
-            - name: movies
+            - name: homelab-storage
+              mountPath: /config
+              subPath: jellyfin/config
+            - name: homelab-storage
+              mountPath: /cache
+              subPath: jellyfin/cache
+            - name: homelab-storage
               mountPath: /movies
-            - name: series
+              subPath: movies
+            - name: homelab-storage
               mountPath: /series
+              subPath: series
 
           resources:
             limits:
@@ -52,15 +56,6 @@ spec:
               memory: 400Mi
 
       volumes:
-        - name: jellyfin-config
+        - name: homelab-storage
           persistentVolumeClaim:
-            claimName: jellyfin-config
-        - name: jellyfin-cache
-          persistentVolumeClaim:
-            claimName: jellyfin-cache
-        - name: series
-          persistentVolumeClaim:
-            claimName: series
-        - name: movies
-          persistentVolumeClaim:
-            claimName: movies
+            claimName: homelab-nfs-pvc

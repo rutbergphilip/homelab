@@ -41,12 +41,14 @@ spec:
               value: "002"
 
           volumeMounts:
-            - name: qbittorrent
-              mountPath: /qbittorrent/config
-            - name: movies
+            - name: homelab-storage
+              mountPath: qbittorrent/config
+            - name: homelab-storage
               mountPath: /movies
-            - name: series
+              subPath: streaming/movies
+            - name: homelab-storage
               mountPath: /series
+              subPath: streaming/series
 
           resources:
             limits:
@@ -57,12 +59,6 @@ spec:
               memory: 512Mi
 
       volumes:
-        - name: qbittorrent
+        - name: homelab-storage
           persistentVolumeClaim:
-            claimName: qbittorrent
-        - name: movies
-          persistentVolumeClaim:
-            claimName: movies
-        - name: series
-          persistentVolumeClaim:
-            claimName: series
+            claimName: homelab-nfs-pvc

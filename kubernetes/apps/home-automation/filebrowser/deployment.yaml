@@ -35,13 +35,13 @@ spec:
 
           volumeMounts:
             - name: movies
-              mountPath: /srv/movies
+              mountPath: srv/movies
             - name: series
-              mountPath: /srv/series
+              mountPath: srv/series
             - name: filebrowser-db
-              mountPath: /database
+              mountPath: filebrowser/database
             - name: filebrowser-config
-              mountPath: /config/settings.json
+              mountPath: filebrowser/config/settings.json
               subPath: settings.json
 
           env:
@@ -51,15 +51,6 @@ spec:
               value: "0"
 
       volumes:
-        - name: movies
+        - name: homelab-storage
           persistentVolumeClaim:
-            claimName: movies
-        - name: series
-          persistentVolumeClaim:
-            claimName: series
-        - name: filebrowser-db
-          persistentVolumeClaim:
-            claimName: filebrowser-db
-        - name: filebrowser-config
-          configMap:
-            name: filebrowser-config
+            claimName: homelab-nfs-pvc

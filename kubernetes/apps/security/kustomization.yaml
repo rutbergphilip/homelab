@@ -6,5 +6,5 @@ namespace: security
 
 resources:
   - ./namespace.yaml
-  - ./pvc-homelab.yaml
-  - ./gluetun
+  # - ./pvc-homelab.yaml
+  # - ./gluetun

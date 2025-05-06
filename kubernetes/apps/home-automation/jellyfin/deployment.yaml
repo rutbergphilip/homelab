@@ -58,4 +58,4 @@ spec:
       volumes:
         - name: homelab-storage
           persistentVolumeClaim:
-            claimName: homelab-nfs-pvc-home-automation
+            claimName: homelab-nfs-pvc

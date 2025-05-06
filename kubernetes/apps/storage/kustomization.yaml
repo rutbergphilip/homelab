@@ -5,4 +5,4 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./local-path-provisioner/ks.yaml
-  - ./homelab-nfs-pv
+  # - ./homelab-nfs-pv

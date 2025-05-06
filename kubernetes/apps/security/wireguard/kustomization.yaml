@@ -5,6 +5,4 @@ kind: Kustomization
 namespace: security
 
 resources:
-  - ./namespace.yaml
-  - ./storage.yaml
-  - ./wireguard
+  - ./deployment.yaml

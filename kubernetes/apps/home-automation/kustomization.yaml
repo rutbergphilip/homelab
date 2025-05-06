@@ -6,7 +6,7 @@ namespace: home-automation
 
 resources:
   - ./namespace.yaml
-  # - ./shared-pvcs
+  - ./pvc-homelab.yaml
   # - ./jellyfin
   # - ./filebrowser
   # - ./qbittorrent

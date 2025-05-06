@@ -5,5 +5,4 @@ kind: Kustomization
 namespace: security
 
 resources:
-  - ./namespace.yaml
-  - ./pvc-homelab.yaml
+  - ./deployment.yaml

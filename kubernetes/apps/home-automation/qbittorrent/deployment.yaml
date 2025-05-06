@@ -42,7 +42,8 @@ spec:
 
           volumeMounts:
             - name: homelab-storage
-              mountPath: qbittorrent/config
+              mountPath: /config
+              subPath: qbittorrent/config
             - name: homelab-storage
               mountPath: /movies
               subPath: streaming/movies

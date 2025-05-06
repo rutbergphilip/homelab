@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: homelab-nfs-pv
+spec:
+  capacity:
+    storage: 7.2Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: "192.168.50.254"
+    path: /volume1/homelab

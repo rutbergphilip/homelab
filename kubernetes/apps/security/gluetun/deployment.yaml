@@ -30,3 +30,12 @@ spec:
               protocol: TCP
             - containerPort: 8388
               protocol: UDP
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /gluetun
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

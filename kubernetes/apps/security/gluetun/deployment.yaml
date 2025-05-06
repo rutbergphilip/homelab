@@ -33,7 +33,8 @@ spec:
 
           volumeMounts:
             - name: homelab-storage
-              mountPath: /gluetun
+              mountPath: /config
+              subPath: gluetun/config
 
       volumes:
         - name: homelab-storage

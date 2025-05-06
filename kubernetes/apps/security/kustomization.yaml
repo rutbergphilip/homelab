@@ -6,5 +6,5 @@ namespace: security
 
 resources:
   - ./namespace.yaml
-  - ./storage.yaml
+  # - ./storage.yaml
   # - ./gluetun

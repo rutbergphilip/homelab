@@ -24,6 +24,7 @@ spec:
             capabilities:
               add:
                 - NET_ADMIN
+                - SYS_ADMIN
           resources:
             limits:
               memory: 1Gi
@@ -56,6 +57,9 @@ spec:
             - name: homelab-storage
               mountPath: /config
               subPath: arr-stack/gluetun/config
+            - name: homelab-storage
+              mountPath: /etc/resolv.conf
+              subPath: arr-stack/gluetun/resolv.conf
 
         - name: radarr
           image: lscr.io/linuxserver/radarr:latest

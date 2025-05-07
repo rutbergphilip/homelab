@@ -16,6 +16,7 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
+
       containers:
         - name: gluetun
           image: ghcr.io/qdm12/gluetun:latest
@@ -28,6 +29,8 @@ spec:
               memory: 128Mi
               cpu: 500m
           env:
+            - name: SERVER_COUNTRIES
+              value: "Sweden"
             - name: VPN_SERVICE_PROVIDER
               value: "protonvpn"
             - name: VPN_TYPE

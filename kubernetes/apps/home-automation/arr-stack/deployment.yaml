@@ -27,7 +27,7 @@ spec:
                 - SYS_ADMIN
           resources:
             limits:
-              memory: 128Mi
+              memory: 1Gi
               cpu: 500m
           env:
             - name: SERVER_COUNTRIES

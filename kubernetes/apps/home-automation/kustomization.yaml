@@ -8,5 +8,4 @@ resources:
   - ./namespace.yaml
   - ./storage.yaml
   - ./jellyfin
-  - ./qbittorrent
-  # - ./filebrowser
+  - ./arr-stack

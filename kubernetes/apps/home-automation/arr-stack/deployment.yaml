@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arr-stack
+  labels:
+    app: arr-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arr-stack
+  template:
+    metadata:
+      labels:
+        app: arr-stack
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: gluetun
+          image: ghcr.io/qdm12/gluetun:latest
+          resources:
+            limits:
+              memory: 128Mi
+              cpu: 500m
+          ports:
+            - containerPort: 8888
+              protocol: TCP
+            - containerPort: 8388
+              protocol: TCP
+            - containerPort: 8388
+              protocol: UDP
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: arr-stack/gluetun/config
+
+        - name: radarr
+          image: lscr.io/linuxserver/radarr:latest
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 400m
+              memory: 2Gi
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+          ports:
+            - containerPort: 7878
+              protocol: TCP
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: arr-stack/radarr/config
+            - name: homelab-storage
+              mountPath: /movies
+              subPath: streaming/movies
+
+        - name: sonarr
+          image: lscr.io/linuxserver/sonarr:latest
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 400m
+              memory: 2Gi
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+          ports:
+            - containerPort: 8989
+              protocol: TCP
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: arr-stack/sonarr/config
+            - name: homelab-storage
+              mountPath: /series
+              subPath: streaming/series
+
+        - name: qbittorrent
+          image: lscr.io/linuxserver/qbittorrent:5.1.0-libtorrentv1
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 400m
+              memory: 6Gi
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+          ports:
+            - name: webui
+              containerPort: 8080
+            - name: bittorrent
+              containerPort: 6881
+              protocol: TCP
+            - name: bittorrent-udp
+              containerPort: 6881
+              protocol: UDP
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: qbittorrent/config
+            - name: homelab-storage
+              mountPath: /movies
+              subPath: streaming/movies
+            - name: homelab-storage
+              mountPath: /series
+              subPath: streaming/series
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

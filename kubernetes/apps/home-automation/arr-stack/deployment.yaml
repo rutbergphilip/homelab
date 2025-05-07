@@ -19,6 +19,10 @@ spec:
       containers:
         - name: gluetun
           image: ghcr.io/qdm12/gluetun:latest
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
           resources:
             limits:
               memory: 128Mi

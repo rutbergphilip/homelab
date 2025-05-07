@@ -51,7 +51,7 @@ spec:
             - name: DNS_KEEP_NAMESERVER
               value: "on"
             - name: FIREWALL_OUTBOUND_SUBNETS
-              value: "10.42.0.0/15"
+              value: "10.42.2.0/24,10.42.1.0/24,10.42.0.0/24"
           ports:
             - containerPort: 8888
               protocol: TCP

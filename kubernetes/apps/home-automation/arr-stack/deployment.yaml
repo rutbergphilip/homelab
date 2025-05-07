@@ -27,6 +27,17 @@ spec:
             limits:
               memory: 128Mi
               cpu: 500m
+          env:
+            - name: OPENVPN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-secrets
+                  key: OPENVPN_USERNAME
+            - name: OPENVPN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-secrets
+                  key: OPENVPN_PASSWORD
           ports:
             - containerPort: 8888
               protocol: TCP

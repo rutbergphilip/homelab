@@ -28,6 +28,10 @@ spec:
               memory: 128Mi
               cpu: 500m
           env:
+            - name: VPN_SERVICE_PROVIDER
+              value: "protonvpn"
+            - name: VPN_TYPE
+              value: "openvpn"
             - name: OPENVPN_USER
               valueFrom:
                 secretKeyRef:

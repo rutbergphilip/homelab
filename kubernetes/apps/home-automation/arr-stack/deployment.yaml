@@ -48,6 +48,10 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
+            - name: DNS_KEEP_NAMESERVER
+              value: "on"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: "10.42.0.0/15"
           ports:
             - containerPort: 8888
               protocol: TCP
@@ -59,9 +63,6 @@ spec:
             - name: homelab-storage
               mountPath: /config
               subPath: arr-stack/gluetun/config
-            - name: homelab-storage
-              mountPath: /etc/resolv.conf
-              subPath: arr-stack/gluetun/resolv.conf
 
         - name: radarr
           image: lscr.io/linuxserver/radarr:latest

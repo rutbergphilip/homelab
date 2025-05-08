@@ -32,6 +32,8 @@ spec:
           env:
             - name: FIREWALL_BLOCK_MOST
               value: "false"
+            - name: FIREWALL
+              value: "false"
             - name: SERVER_COUNTRIES
               value: "Sweden"
             - name: VPN_SERVICE_PROVIDER

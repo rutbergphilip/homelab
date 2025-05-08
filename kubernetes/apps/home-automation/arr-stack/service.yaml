@@ -62,3 +62,7 @@ spec:
       targetPort: 8388
       protocol: UDP
       name: ss-udp
+    - port: 7878
+      targetPort: 7878
+      protocol: TCP
+      name: radarr

@@ -8,4 +8,5 @@ resources:
   - ./namespace.yaml
   - ./storage.yaml
   - ./jellyfin
-  - ./arr-stack
+  # - ./arr-stack
+  - ./delugevpn

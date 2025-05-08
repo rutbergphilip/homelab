@@ -51,6 +51,8 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
+            - name: DNS_KEEP_NAMESERVER
+              value: "on"
           ports:
             - containerPort: 8888
               protocol: TCP

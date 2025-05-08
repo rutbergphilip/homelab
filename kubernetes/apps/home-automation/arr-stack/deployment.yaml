@@ -48,10 +48,6 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
-            # - name: DNS_KEEP_NAMESERVER
-            #   value: "on"
-            # - name: FIREWALL_OUTBOUND_SUBNETS
-            #   value: "10.42.2.0/24,10.42.1.0/24,10.42.0.0/24"
           ports:
             - containerPort: 8888
               protocol: TCP
@@ -80,6 +76,11 @@ spec:
               value: "1000"
             - name: UMASK
               value: "002"
+            - name: SKIP_CHOWN
+              value: "true"
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
           ports:
             - containerPort: 7878
               protocol: TCP
@@ -107,6 +108,11 @@ spec:
               value: "1000"
             - name: UMASK
               value: "002"
+            - name: SKIP_CHOWN
+              value: "true"
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
           ports:
             - containerPort: 8989
               protocol: TCP
@@ -134,6 +140,11 @@ spec:
               value: "1000"
             - name: UMASK
               value: "002"
+            - name: SKIP_CHOWN
+              value: "true"
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
           ports:
             - name: webui
               containerPort: 8080

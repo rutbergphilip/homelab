@@ -31,10 +31,10 @@ spec:
               memory: 1Gi
               cpu: 500m
           env:
-            - name: FIREWALL_BLOCK_MOST
-              value: "false"
-            - name: FIREWALL
-              value: "false"
+            # - name: FIREWALL_BLOCK_MOST
+            #   value: "false"
+            # - name: FIREWALL
+            #   value: "false"
             - name: SERVER_COUNTRIES
               value: "Sweden"
             - name: VPN_SERVICE_PROVIDER
@@ -51,8 +51,6 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
-            - name: DNS_KEEP_NAMESERVER
-              value: "on"
           ports:
             - containerPort: 8888
               protocol: TCP

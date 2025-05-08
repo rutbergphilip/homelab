@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delugevpn
+  labels:
+    app: delugevpn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delugevpn
+  template:
+    metadata:
+      labels:
+        app: delugevpn
+    spec:
+      securityContext:
+        fsGroup: 1000
+
+      containers:
+        - name: delugevpn
+          image: binhex/arch-delugevpn:latest
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_ADMIN
+            privileged: true
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 500m
+              ephemeral-storage: 1Gi
+            requests:
+              memory: 512Mi
+              cpu: 200m
+              ephemeral-storage: 512Mi
+            ephemeral-storage: 1Gi
+          env:
+            - name: OPENVPN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-secrets
+                  key: OPENVPN_USERNAME
+            - name: OPENVPN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-secrets
+                  key: OPENVPN_PASSWORD
+          ports:
+            - containerPort: 8112
+              protocol: TCP
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: deluge/config
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice

@@ -35,8 +35,15 @@ spec:
               memory: 512Mi
               cpu: 200m
               ephemeral-storage: 512Mi
-            ephemeral-storage: 1Gi
           env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+            - name: VPN_PROV
+              value: "protonvpn"
             - name: OPENVPN_USER
               valueFrom:
                 secretKeyRef:

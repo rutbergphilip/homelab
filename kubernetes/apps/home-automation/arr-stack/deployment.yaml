@@ -25,6 +25,7 @@ spec:
               add:
                 - NET_ADMIN
                 - SYS_ADMIN
+            privileged: true
           resources:
             limits:
               memory: 1Gi
@@ -61,6 +62,8 @@ spec:
             - name: homelab-storage
               mountPath: /config
               subPath: arr-stack/gluetun/config
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
 
         - name: radarr
           image: lscr.io/linuxserver/radarr:latest
@@ -200,3 +203,7 @@ spec:
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice

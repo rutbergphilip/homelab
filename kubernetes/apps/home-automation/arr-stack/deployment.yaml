@@ -48,12 +48,6 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
-            - name: HTTPPROXY
-              value: "on"
-            - name: FIREWALL_INPUT_PORTS
-              value: "8888"
-            - name: HTTPPROXY_LOG
-              value: "on"
           ports:
             - containerPort: 8888
               protocol: TCP
@@ -189,12 +183,6 @@ spec:
               value: "002"
             - name: SKIP_CHOWN
               value: "true"
-            - name: HTTP_PROXY
-              value: "http://localhost:8888"
-            - name: HTTPS_PROXY
-              value: "http://localhost:8888"
-            - name: NO_PROXY
-              value: "localhost,127.0.0.1"
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000

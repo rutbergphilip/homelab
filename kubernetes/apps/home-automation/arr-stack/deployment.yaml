@@ -35,6 +35,8 @@ spec:
             #   value: "false"
             # - name: FIREWALL
             #   value: "false"
+            - name: DNS_KEEP_NAMESERVER
+              value: "on"
             - name: SERVER_COUNTRIES
               value: "Sweden"
             - name: VPN_SERVICE_PROVIDER

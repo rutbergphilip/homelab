@@ -32,11 +32,9 @@ spec:
             limits:
               memory: 1Gi
               cpu: 500m
-              ephemeral-storage: 1Gi
             requests:
               memory: 512Mi
               cpu: 200m
-              ephemeral-storage: 512Mi
 
           env:
             - name: PUID

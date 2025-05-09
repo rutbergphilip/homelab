@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrentvpn
+  labels:
+    app: qbittorrentvpn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrentvpn
+  template:
+    metadata:
+      labels:
+        app: qbittorrentvpn
+    spec:
+      containers:
+        - name: qbittorrentvpn
+          image: binhex/arch-qbittorrentvpn:latest
+
+          securityContext:
+            privileged: true
+
+          ports:
+            - containerPort: 8080
+            - containerPort: 8118
+            - containerPort: 9118
+            - containerPort: 58946
+            - containerPort: 58946
+              protocol: UDP
+
+          env:
+            - name: VPN_ENABLED
+              value: "yes"
+            - name: VPN_PROV
+              value: "custom"
+            - name: VPN_CLIENT
+              value: "openvpn"
+            - name: ENABLE_PRIVOXY
+              value: "yes"
+            - name: LAN_NETWORK
+              value: "192.168.50.0/24"
+            - name: NAME_SERVERS
+              value: "1.1.1.1,1.0.0.1"
+            - name: DEBUG
+              value: "true"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 500m
+            requests:
+              memory: 512Mi
+              cpu: 300m
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: qbittorrent/config
+            - name: homelab-storage
+              mountPath: /data
+              subPath: qbittorrent/data
+            - name: homelab-storage
+              mountPath: /torrents
+              subPath: qbittorrent/torrents
+            - name: ovpn
+              mountPath: /config/openvpn
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc
+        - name: ovpn
+          secret:
+            secretName: protonvpn-ovpn

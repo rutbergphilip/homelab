@@ -34,11 +34,11 @@ spec:
 
           resources:
             limits:
-              memory: 2Gi
-              cpu: 800m
-            requests:
               memory: 1Gi
               cpu: 500m
+            requests:
+              memory: 512Mi
+              cpu: 300m
 
           env:
             - name: PUID
@@ -51,16 +51,16 @@ spec:
               value: "airvpn"
             - name: VPN_CLIENT
               value: "openvpn"
-            # - name: VPN_USER
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: openvpn-secrets
-            #       key: OPENVPN_USERNAME
-            # - name: VPN_PASS
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: openvpn-secrets
-            #       key: OPENVPN_PASSWORD
+            - name: VPN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-secrets
+                  key: OPENVPN_USERNAME
+            - name: VPN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: openvpn-secrets
+                  key: OPENVPN_PASSWORD
             # - name: DELUGE_ENABLE_WEBUI_PASSWORD
             #   value: "yes"
             # - name: DEBUG

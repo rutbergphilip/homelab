@@ -38,11 +38,11 @@ spec:
 
           env:
             - name: PUID
-              value: "1000"
+              value: "0"
             - name: PGID
-              value: "1000"
-            - name: UMASK
-              value: "002"
+              value: "0"
+            # - name: UMASK
+            #   value: "002"
             - name: VPN_ENABLED
               value: "yes"
             - name: VPN_PROV

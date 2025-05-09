@@ -22,7 +22,3 @@ spec:
                 name: delugevpn
                 port:
                   number: 8112
-  tls:
-    - hosts:
-        - deluge.rutberg.dev
-      secretName: delugevpn-tls

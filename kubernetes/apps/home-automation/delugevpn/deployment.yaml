@@ -63,6 +63,8 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
+            - name: DELUGE_ENABLE_WEBUI_PASSWORD
+              value: "yes"
 
           ports:
             - containerPort: 8112

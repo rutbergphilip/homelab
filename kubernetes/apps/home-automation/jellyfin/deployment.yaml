@@ -42,10 +42,10 @@ spec:
               subPath: jellyfin/cache
             - name: homelab-storage
               mountPath: /movies
-              subPath: streaming/movies
+              subPath: streaming/media/movies
             - name: homelab-storage
-              mountPath: /series
-              subPath: streaming/series
+              mountPath: /tv
+              subPath: streaming/media/tv
 
           resources:
             limits:

@@ -62,6 +62,9 @@ spec:
             - name: homelab-storage
               mountPath: /data
               subPath: deluge/data
+            - name: homelab-storage
+              mountPath: /torrents
+              subPath: streaming/torrents
             - name: ovpn
               mountPath: /config/openvpn
 

@@ -42,14 +42,18 @@ spec:
               value: "1000"
             - name: UMASK
               value: "002"
+            - name: VPN_ENABLED
+              value: "yes"
             - name: VPN_PROV
               value: "protonvpn"
-            - name: OPENVPN_USER
+            - name: VPN_CLIENT
+              value: "openvpn"
+            - name: VPN_USER
               valueFrom:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_USERNAME
-            - name: OPENVPN_PASSWORD
+            - name: VPN_PASS
               valueFrom:
                 secretKeyRef:
                   name: openvpn-secrets

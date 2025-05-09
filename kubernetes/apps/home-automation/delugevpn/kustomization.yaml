@@ -7,4 +7,4 @@ resources:
   - openvpn.sops.yaml
   - deployment.yaml
   - service.yaml
-  # - ingress.yaml
+  - ingress.yaml

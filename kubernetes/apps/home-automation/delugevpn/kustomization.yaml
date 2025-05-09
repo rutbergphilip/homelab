@@ -6,5 +6,5 @@ namespace: home-automation
 resources:
   - openvpn-secrets.sops.yaml
   - deployment.yaml
-  - service.yaml
-  - ingress.yaml
+  # - service.yaml
+  # - ingress.yaml

@@ -69,6 +69,8 @@ spec:
               value: "yes"
             - name: DEBUG
               value: "true"
+            - name: DELUGE_WEB_LOG_LEVEL
+              value: "error"
 
           ports:
             - containerPort: 8112

@@ -34,11 +34,11 @@ spec:
 
           resources:
             limits:
+              memory: 2Gi
+              cpu: 800m
+            requests:
               memory: 1Gi
               cpu: 500m
-            requests:
-              memory: 512Mi
-              cpu: 200m
 
           env:
             - name: PUID

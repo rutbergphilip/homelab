@@ -22,6 +22,16 @@ spec:
                 name: delugevpn
                 port:
                   number: 8112
+    - host: prowlarr.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prowlarr
+                port:
+                  number: 9696
   tls:
     - hosts:
         - deluge.rutberg.dev

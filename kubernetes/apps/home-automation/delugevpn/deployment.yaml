@@ -48,7 +48,7 @@ spec:
             - name: VPN_ENABLED
               value: "yes"
             - name: VPN_PROV
-              value: "protonvpn"
+              value: "airvpn"
             - name: VPN_CLIENT
               value: "openvpn"
             - name: VPN_USER

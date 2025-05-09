@@ -5,10 +5,12 @@ metadata:
   namespace: home-automation
   labels:
     app: delugevpn
+
 spec:
   type: ClusterIP
   selector:
     app: delugevpn
+
   ports:
     - name: web-ui
       protocol: TCP

@@ -37,10 +37,10 @@ spec:
               cpu: 200m
 
           env:
-            - name: PUID
-              value: "0"
-            - name: PGID
-              value: "0"
+            # - name: PUID
+            #   value: "0"
+            # - name: PGID
+            #   value: "0"
             # - name: UMASK
             #   value: "002"
             - name: VPN_ENABLED

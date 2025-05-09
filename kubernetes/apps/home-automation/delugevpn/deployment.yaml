@@ -68,34 +68,6 @@ spec:
             - name: ovpn
               mountPath: /config/openvpn
 
-        - name: prowlarr
-          image: linuxserver/prowlarr:latest
-
-          ports:
-            - name: prowlarr
-              containerPort: 9696
-
-          env:
-            - name: PUID
-              value: "1000"
-            - name: PGID
-              value: "1000"
-            - name: TZ
-              value: "Europe/Stockholm"
-
-          volumeMounts:
-            - name: homelab-storage
-              mountPath: /config
-              subPath: prowlarr/config
-
-          resources:
-            limits:
-              cpu: 500m
-              memory: 1Gi
-            requests:
-              cpu: 300m
-              memory: 512Mi
-
       volumes:
         - name: homelab-storage
           persistentVolumeClaim:

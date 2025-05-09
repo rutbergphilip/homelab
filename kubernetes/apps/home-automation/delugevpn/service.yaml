@@ -20,20 +20,3 @@ spec:
     - name: incoming
       port: 58946
       targetPort: 58946
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: prowlarr
-  labels:
-    app: prowlarr
-
-spec:
-  selector:
-    app: prowlarr
-
-  ports:
-    - port: 9696
-      targetPort: 9696
-      protocol: TCP
-      name: http

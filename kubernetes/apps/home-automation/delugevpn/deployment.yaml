@@ -48,9 +48,11 @@ spec:
             - name: VPN_ENABLED
               value: "yes"
             - name: VPN_PROV
-              value: "airvpn"
+              value: "protonvpn"
             - name: VPN_CLIENT
               value: "openvpn"
+            - name: LAN_NETWORK
+              value: "192.168.50.0/24"
             - name: VPN_USER
               valueFrom:
                 secretKeyRef:
@@ -61,12 +63,6 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
-            # - name: DELUGE_ENABLE_WEBUI_PASSWORD
-            #   value: "yes"
-            # - name: DEBUG
-            #   value: "true"
-            # - name: DELUGE_WEB_LOG_LEVEL
-            #   value: "error"
 
           ports:
             - containerPort: 8112

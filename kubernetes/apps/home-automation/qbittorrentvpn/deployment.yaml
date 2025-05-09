@@ -29,13 +29,13 @@ spec:
 
           env:
             - name: VPN_ENABLED
-              value: "no"
+              value: "yes"
             - name: VPN_PROV
               value: "custom"
             - name: VPN_CLIENT
               value: "openvpn"
             - name: ENABLE_PRIVOXY
-              value: "no"
+              value: "yes"
             - name: LAN_NETWORK
               value: "192.168.50.0/24"
             - name: NAME_SERVERS

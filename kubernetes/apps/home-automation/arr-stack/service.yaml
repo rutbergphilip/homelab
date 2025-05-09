@@ -1,68 +1,44 @@
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: qbittorrent
-#   namespace: home-automation
-# spec:
-#   selector:
-#     app: arr-stack
-#   ports:
-#     - name: webui
-#       port: 80
-#       targetPort: 8080
-
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: radarr
-#   namespace: home-automation
-# spec:
-#   selector:
-#     app: arr-stack
-#   ports:
-#     - port: 80
-#       targetPort: 7878
-
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: sonarr
-#   namespace: home-automation
-# spec:
-#   selector:
-#     app: arr-stack
-#   ports:
-#     - port: 80
-#       targetPort: 8989
-
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+  labels:
+    app: prowlarr
+spec:
+  ports:
+    - port: 9696
+      targetPort: 9696
+      protocol: TCP
+      name: http
+  selector:
+    app: prowlarr
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: gluetun
-  namespace: home-automation
+  name: radarr
   labels:
-    app: arr-stack
+    app: radarr
 spec:
-  type: ClusterIP
-  selector:
-    app: arr-stack
   ports:
-    - port: 8888
-      targetPort: 8888
-      protocol: TCP
-      name: http-proxy
-    - port: 8388
-      targetPort: 8388
-      protocol: TCP
-      name: ss-tcp
-    - port: 8388
-      targetPort: 8388
-      protocol: UDP
-      name: ss-udp
     - port: 7878
       targetPort: 7878
       protocol: TCP
-      name: radarr
+      name: http
+  selector:
+    app: radarr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+  labels:
+    app: sonarr
+spec:
+  ports:
+    - port: 8989
+      targetPort: 8989
+      protocol: TCP
+      name: http
+  selector:
+    app: sonarr

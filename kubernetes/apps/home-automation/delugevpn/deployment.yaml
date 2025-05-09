@@ -20,6 +20,10 @@ spec:
       containers:
         - name: delugevpn
           image: binhex/arch-delugevpn:latest
+          command:
+            - /bin/bash
+            - -c
+            - while true; do sleep 3600; done
           securityContext:
             capabilities:
               add:
@@ -37,10 +41,10 @@ spec:
               cpu: 200m
 
           env:
-            # - name: PUID
-            #   value: "0"
-            # - name: PGID
-            #   value: "0"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
             # - name: UMASK
             #   value: "002"
             - name: VPN_ENABLED

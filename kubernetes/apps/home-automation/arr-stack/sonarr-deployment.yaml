@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  labels:
+    app: sonarr
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: sonarr
+          image: linuxserver/sonarr:latest
+
+          ports:
+            - name: sonarr
+              containerPort: 8989
+
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Stockholm"
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: sonarr/config
+            - name: homelab-storage
+              mountPath: /tv
+              subPath: streaming/media/tv
+            - name: homelab-storage
+              mountPath: /downloads
+              subPath: streaming/torrents
+
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 300m
+              memory: 512Mi
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

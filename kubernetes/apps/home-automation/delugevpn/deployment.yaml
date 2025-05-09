@@ -72,7 +72,7 @@ spec:
 
           ports:
             - containerPort: 8112
-              protocol: TCP
+              protocol: UDP
 
           volumeMounts:
             - name: homelab-storage

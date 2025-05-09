@@ -9,4 +9,4 @@ resources:
   - ./storage.yaml
   - ./jellyfin
   - ./delugevpn
-  # - ./arr-stack
+  - ./arr-stack

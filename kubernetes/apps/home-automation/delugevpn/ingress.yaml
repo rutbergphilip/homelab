@@ -5,11 +5,14 @@ metadata:
   namespace: home-automation
   annotations:
     external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
 
 spec:
   ingressClassName: external
   rules:
-    - host: delugevpn.rutberg.dev
+    - host: deluge.rutberg.dev
       http:
         paths:
           - path: /
@@ -19,3 +22,7 @@ spec:
                 name: delugevpn
                 port:
                   number: 8112
+  tls:
+    - hosts:
+        - deluge.rutberg.dev
+      secretName: delugevpn-tls

@@ -65,6 +65,10 @@ spec:
                   key: OPENVPN_PASSWORD
             - name: DELUGE_ENABLE_WEBUI_PASSWORD
               value: "yes"
+            - name: ENABLE_STARTUP_SCRIPTS
+              value: "yes"
+            - name: DEBUG
+              value: "true"
 
           ports:
             - containerPort: 8112

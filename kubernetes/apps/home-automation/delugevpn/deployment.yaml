@@ -24,8 +24,10 @@ spec:
             capabilities:
               add:
                 - NET_ADMIN
-                - SYS_ADMIN
             privileged: true
+            runAsGroup: 1000
+            runAsUser: 1000
+
           resources:
             limits:
               memory: 1Gi
@@ -35,6 +37,7 @@ spec:
               memory: 512Mi
               cpu: 200m
               ephemeral-storage: 512Mi
+
           env:
             - name: PUID
               value: "1000"
@@ -58,21 +61,22 @@ spec:
                 secretKeyRef:
                   name: openvpn-secrets
                   key: OPENVPN_PASSWORD
+            - name: DELUGE_ENABLE_WEBUI_PASSWORD
+              value: "yes"
+
           ports:
             - containerPort: 8112
               protocol: TCP
+
           volumeMounts:
             - name: homelab-storage
               mountPath: /config
               subPath: deluge/config
-            - name: dev-net-tun
-              mountPath: /dev/net/tun
+            - name: homelab-storage
+              mountPath: /data
+              subPath: deluge/data
 
       volumes:
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc
-        - name: dev-net-tun
-          hostPath:
-            path: /dev/net/tun
-            type: CharDevice

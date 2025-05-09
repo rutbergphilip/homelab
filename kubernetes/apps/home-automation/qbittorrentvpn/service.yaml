@@ -17,10 +17,9 @@ spec:
     - name: privoxy-tcp
       port: 9118
       targetPort: 9118
+    - name: daemon
+      port: 6881
+      targetPort: 6881
     - name: incoming
-      port: 58946
-      targetPort: 58946
-    - name: outgoing
-      port: 58946
-      targetPort: 58946
-      protocol: UDP
+      port: 6881
+      targetPort: 6881

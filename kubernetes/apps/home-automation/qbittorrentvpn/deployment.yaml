@@ -26,8 +26,6 @@ spec:
             - containerPort: 8118
             - containerPort: 9118
             - containerPort: 58946
-            - containerPort: 58946
-              protocol: UDP
 
           env:
             - name: VPN_ENABLED

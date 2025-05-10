@@ -45,7 +45,7 @@ spec:
               subPath: streaming/media/movies
             - name: homelab-storage
               mountPath: /tv
-              subPath: streaming/media/tv
+              subPath: streaming/media/series
 
           resources:
             limits:

@@ -23,7 +23,9 @@ spec:
 
           ports:
             - containerPort: 8080
+              name: web-ui
             - containerPort: 8118
+              name: privoxy
             - containerPort: 9118
             - containerPort: 58946
 
@@ -40,6 +42,10 @@ spec:
               value: "192.168.50.0/24"
             - name: NAME_SERVERS
               value: "1.1.1.1,1.0.0.1"
+            - name: STRICT_PORT_FORWARD
+              value: "yes"
+            - name: WEBUI_PORT
+              value: "8080"
             - name: DEBUG
               value: "true"
             - name: PUID

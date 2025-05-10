@@ -8,6 +8,5 @@ resources:
   - ./namespace.yaml
   - ./storage.yaml
   - ./jellyfin
-  # - ./delugevpn
   - ./qbittorrentvpn
   - ./arr-stack

@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: arr-stack
+  name: home-assistant
   annotations:
     external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  labels:
+    app: lidarr
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lidarr
+  template:
+    metadata:
+      labels:
+        app: lidarr
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: lidarr
+          image: linuxserver/lidarr:latest
+
+          ports:
+            - name: lidarr
+              containerPort: 8686
+
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Stockholm"
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: lidarr/config
+            - name: homelab-storage
+              mountPath: /music
+              subPath: streaming/media/music
+            - name: homelab-storage
+              mountPath: /torrents
+              subPath: streaming/torrents
+
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 300m
+              memory: 512Mi
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

@@ -28,7 +28,7 @@ spec:
 
           ports:
             - containerPort: 8123
-              name: web
+              name: home-assistant
 
           volumeMounts:
             - name: homelab-storage

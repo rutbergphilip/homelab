@@ -7,5 +7,6 @@ resources:
   - prowlarr-deployment.yaml
   - radarr-deployment.yaml
   - sonarr-deployment.yaml
+  - lidarr-deployment.yaml
   - service.yaml
   - ingress.yaml

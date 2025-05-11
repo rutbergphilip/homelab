@@ -10,3 +10,4 @@ resources:
   - ./jellyfin
   - ./qbittorrentvpn
   - ./arr-stack
+  - ./home-assistant

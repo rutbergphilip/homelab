@@ -40,3 +40,13 @@ spec:
                 name: sonarr
                 port:
                   number: 8989
+    - host: lidarr.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lidarr
+                port:
+                  number: 8686

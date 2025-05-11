@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-assistant
+
+spec:
+  selector:
+    matchLabels:
+      app: home-assistant
+  template:
+    metadata:
+      labels:
+        app: home-assistant
+
+    spec:
+      containers:
+        - name: home-assistant
+          image: homeassistant/home-assistant:latest
+          imagePullPolicy: Always
+
+          resources:
+            limits:
+              memory: 800Mi
+              cpu: 500m
+            requests:
+              memory: 400Mi
+              cpu: 200m
+
+          ports:
+            - containerPort: 8123
+              name: web
+
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              subPath: home-assistant/config
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

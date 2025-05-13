@@ -66,8 +66,8 @@ spec:
               mountPath: /config
               subPath: qbittorrent/config
             - name: homelab-storage
-              mountPath: /torrents
-              subPath: streaming/torrents
+              mountPath: /data
+              subPath: streaming
             - name: ovpn
               mountPath: /config/openvpn
 

@@ -38,11 +38,8 @@ spec:
               mountPath: /config
               subPath: sonarr/config
             - name: homelab-storage
-              mountPath: /series
-              subPath: streaming/media/series
-            - name: homelab-storage
-              mountPath: /torrents
-              subPath: streaming/torrents
+              mountPath: /data
+              subPath: streaming
 
           resources:
             limits:

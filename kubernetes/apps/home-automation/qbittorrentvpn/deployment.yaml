@@ -68,6 +68,9 @@ spec:
             - name: homelab-storage
               mountPath: /torrents
               subPath: streaming/torrents
+            - name: homelab-storage
+              mountPath: /media
+              subPath: streaming/media
             - name: ovpn
               mountPath: /config/openvpn
 

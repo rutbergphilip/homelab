@@ -38,8 +38,11 @@ spec:
               mountPath: /config
               subPath: radarr/config
             - name: homelab-storage
-              mountPath: /data
-              subPath: streaming
+              mountPath: /movies
+              subPath: streaming/media/movies
+            - name: homelab-storage
+              mountPath: /torrents
+              subPath: streaming/torrents
 
           resources:
             limits:

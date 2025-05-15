@@ -5,6 +5,7 @@ namespace: home-automation
 
 resources:
   - prowlarr-deployment.yaml
+  - jackett-deployment.yaml
   - radarr-deployment.yaml
   - sonarr-deployment.yaml
   - lidarr-deployment.yaml

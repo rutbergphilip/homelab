@@ -57,3 +57,18 @@ spec:
       name: http
   selector:
     app: lidarr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jackett
+  labels:
+    app: jackett
+spec:
+  ports:
+    - port: 9117
+      targetPort: 9117
+      protocol: TCP
+      name: http
+  selector:
+    app: jackett

@@ -67,4 +67,4 @@ spec:
         - name: render-dev
           hostPath:
             path: /dev/dri
-            type: Directory
+            type: DirectoryOrCreate

@@ -46,7 +46,12 @@ spec:
             - name: homelab-storage
               mountPath: /series
               subPath: streaming/media/series
+            - name: render-dev
+              mountPath: /dev/dri
+              readOnly: true
 
+          securityContext:
+            privileged: true
           resources:
             limits:
               cpu: 1200m
@@ -59,3 +64,7 @@ spec:
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc
+        - name: render-dev
+          hostPath:
+            path: /dev/dri
+            type: Directory

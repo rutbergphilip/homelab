@@ -8,5 +8,6 @@ resources:
   - radarr-deployment.yaml
   - sonarr-deployment.yaml
   - lidarr-deployment.yaml
+  - jellyseerr-deployment.yaml
   - service.yaml
   - ingress.yaml

@@ -36,7 +36,7 @@ spec:
           volumeMounts:
             - name: homelab-storage
               mountPath: /config
-              subPath: jellyseerr/config
+              subPath: jellyseerr/app/config
 
           resources:
             limits:

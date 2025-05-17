@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trilium
+  labels:
+    app: trilium
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trilium
+  template:
+    metadata:
+      labels:
+        app: trilium
+
+    spec:
+      containers:
+        - name: trilium
+          image: zadam/trilium:latest
+          imagePullPolicy: Always
+
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 300m
+            requests:
+              memory: 256Mi
+              cpu: 100m
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          env:
+            - name: TRILIUM_DATA_DIR
+              value: /data
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /data
+              subPath: trilium/data
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

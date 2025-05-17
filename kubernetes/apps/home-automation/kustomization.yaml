@@ -11,3 +11,4 @@ resources:
   - ./qbittorrentvpn
   - ./arr-stack
   - ./home-assistant
+  - ./trilium

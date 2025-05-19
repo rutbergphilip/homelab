@@ -12,3 +12,4 @@ resources:
   - ./arr-stack
   - ./home-assistant
   - ./trilium
+  - ./homarr

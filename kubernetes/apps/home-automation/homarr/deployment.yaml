@@ -1,0 +1,61 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: homarr
+  labels:
+    app: homarr
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homarr
+  template:
+    metadata:
+      labels:
+        app: homarr
+
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: homarr
+          image: ghcr.io/homarr-labs/homarr:latest
+
+          ports:
+            - name: homarr
+              containerPort: 7575
+
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Stockholm"
+            - name: SECRET_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: secret-encryption-key
+                  key: SECRET_ENCRYPTION_KEY
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /appdata
+              subPath: homarr/appdata
+
+          securityContext:
+            privileged: true
+
+          resources:
+            limits:
+              cpu: 800m
+              memory: 800Mi
+            requests:
+              cpu: 400m
+              memory: 600Mi
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

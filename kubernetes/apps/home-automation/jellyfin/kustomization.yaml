@@ -5,7 +5,4 @@ kind: Kustomization
 namespace: home-automation
 
 resources:
-  # - ./deployment.yaml
-  # - ./ingress.yaml
-  # - ./service.yaml
-  - ./nas-deployment.yaml
+  - ./ingress.yaml

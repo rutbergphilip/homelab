@@ -34,6 +34,10 @@ metadata:
 
 spec:
   ingressClassName: external
+  tls:
+    - hosts:
+        - jellyfin.rutberg.dev
+      secretName: jellyfin-tls
   rules:
     - host: jellyfin.rutberg.dev
       http:

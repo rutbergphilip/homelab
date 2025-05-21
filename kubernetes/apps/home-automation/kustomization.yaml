@@ -7,7 +7,7 @@ namespace: home-automation
 resources:
   - ./namespace.yaml
   - ./storage.yaml
-  # - ./jellyfin
+  - ./jellyfin
   - ./qbittorrentvpn
   - ./arr-stack
   - ./home-assistant

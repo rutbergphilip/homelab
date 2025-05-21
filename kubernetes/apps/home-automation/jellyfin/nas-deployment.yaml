@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: home-automation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin-nas
+  namespace: home-automation
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 33869 # NAS port
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: jellyfin-nas
+  namespace: home-automation
+subsets:
+  - addresses:
+      - ip: 192.168.50.254 # NAS IP
+    ports:
+      - port: 33869
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin
+  namespace: homelab
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+
+spec:
+  ingressClassName: external # or traefik/istio/haproxy if that’s your controller
+  tls:
+    - hosts:
+        - jellyfin.rutberg.dev
+      secretName: jellyfin-tls
+
+  rules:
+    - host: jellyfin.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jellyfin-nas
+                port:
+                  number: 80

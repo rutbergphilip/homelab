@@ -56,8 +56,8 @@ spec:
 
           volumeMounts:
             - name: homelab-storage
-              mountPath: /config
-              subPath: pihole/config
+              mountPath: /etc/pihole
+              subPath: pihole/etc/pihole
 
       volumes:
         - name: homelab-storage

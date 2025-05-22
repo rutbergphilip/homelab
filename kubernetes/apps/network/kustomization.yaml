@@ -7,6 +7,7 @@ components:
   - ../../components/common
   - ../../components/repos/app-template
 resources:
+  - ./storage.yaml
   - ./external/ks.yaml
   - ./internal/ks.yaml
   - ./pihole

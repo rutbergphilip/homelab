@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: pihole
-  namespace: home-automation
+  namespace: network
   annotations:
     external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"

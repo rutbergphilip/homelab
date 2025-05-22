@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pihole
+  labels:
+    app: pihole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pihole
+  template:
+    metadata:
+      labels:
+        app: pihole
+    spec:
+      containers:
+        - name: pihole
+          image: pihole/pihole:latest
+
+          securityContext:
+            privileged: true
+
+          ports:
+            - name: dns
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+            - name: web
+              containerPort: 80
+
+          env:
+            - name: FTLCONF_webserver_api_password
+              valueFrom:
+                secretKeyRef:
+                  name: pihole-password
+                  key: FTLCONF_webserver_api_password
+            - name: FTLCONF_dns_listeningMode
+              value: "all"
+            - name: TZ
+              value: "Europe/Stockholm"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+
+          resources:
+            limits:
+              memory: 800Mi
+              cpu: 600m
+            requests:
+              memory: 400Mi
+              cpu: 200m
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /config
+              subPath: pihole/config
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

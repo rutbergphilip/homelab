@@ -11,6 +11,12 @@ metadata:
 
 spec:
   ingressClassName: external
+
+  tls:
+    - hosts:
+        - qbittorrent.rutberg.dev
+      secretName: qbittorrentvpn-tls
+
   rules:
     - host: qbittorrent.rutberg.dev
       http:
@@ -21,8 +27,4 @@ spec:
               service:
                 name: qbittorrentvpn
                 port:
-                  number: 8080
-  tls:
-    - hosts:
-        - qbittorrent.rutberg.dev
-      secretName: qbittorrentvpn-tls
+                  number: 38080

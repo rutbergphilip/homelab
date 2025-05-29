@@ -4,23 +4,13 @@ metadata:
   name: qbittorrentvpn
 
 spec:
-  selector:
-    app: qbittorrentvpn
-
+  type: ClusterIP
   ports:
     - name: web
-      port: 8080
-      targetPort: 8080
+      port: 38080
+      targetPort: 38080
       protocol: TCP
     - name: privoxy
-      port: 8118
-      targetPort: 8118
-      protocol: TCP
-    - name: jackett
-      port: 9118
-      targetPort: 9118
-      protocol: TCP
-    - name: torrent
-      port: 58946
-      targetPort: 58946
+      port: 38118
+      targetPort: 38118
       protocol: TCP

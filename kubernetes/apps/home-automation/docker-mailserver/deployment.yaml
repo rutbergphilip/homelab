@@ -24,6 +24,27 @@ spec:
         runAsUser: 0
         runAsGroup: 0
         fsGroup: 0
+      initContainers:
+        - name: init-permissions
+          image: busybox:1.35
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Creating directory structure for docker-mailserver"
+              mkdir -p /var/mail-state/spool-postfix
+              mkdir -p /var/mail/rutberg.dev/{admin,philip}
+              mkdir -p /var/log/mail
+              echo "Directory structure created successfully"
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /var/mail
+              subPath: docker-mailserver/mail
+            - name: homelab-storage
+              mountPath: /var/mail-state
+              subPath: docker-mailserver/state
+            - name: homelab-storage
+              mountPath: /var/log/mail
+              subPath: docker-mailserver/logs
       containers:
         - name: docker-mailserver
           image: ghcr.io/docker-mailserver/docker-mailserver:14.0.0
@@ -52,6 +73,8 @@ spec:
               value: "1"
             - name: OVERRIDE_HOSTNAME
               value: "mail.rutberg.dev"
+            - name: SKIP_SETPERMS
+              value: "1"
             - name: PERMIT_DOCKER
               value: "none"
             - name: SSL_TYPE

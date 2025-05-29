@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-mailserver-config
+  namespace: home-automation
+data:
+  postfix-accounts.cf: |
+    admin@rutberg.dev|{PLAIN}ChangeMePlease123!
+    philip@rutberg.dev|{PLAIN}ChangeMePlease123!
+
+  postfix-virtual.cf: |
+    # Virtual aliases
+    info@rutberg.dev admin@rutberg.dev
+    contact@rutberg.dev admin@rutberg.dev
+    postmaster@rutberg.dev admin@rutberg.dev
+
+  postfix-main.cf: |
+    # Additional Postfix main.cf configuration
+    smtpd_banner = mail.rutberg.dev ESMTP
+
+  dovecot.cf: |
+    # Additional Dovecot configuration
+    mail_plugins = $mail_plugins quota
+
+  user-patches.sh: |
+    #!/bin/bash
+    # User patches script - runs after container setup
+    echo "Docker-mailserver configured for rutberg.dev"

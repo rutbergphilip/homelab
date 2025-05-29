@@ -1,0 +1,71 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: roundcube-config
+  namespace: home-automation
+data:
+  config.inc.php: |
+    <?php
+    // Roundcube configuration
+
+    // Database configuration - SQLite for simplicity
+    $config['db_dsnw'] = 'sqlite:////var/roundcube/db/sqlite.db?mode=0646';
+
+    // IMAP configuration
+    $config['default_host'] = 'ssl://docker-mailserver';
+    $config['default_port'] = 993;
+    $config['imap_conn_options'] = array(
+        'ssl' => array(
+            'verify_peer'  => false,
+            'verify_peer_name' => false,
+        ),
+    );
+
+    // SMTP configuration
+    $config['smtp_server'] = 'tls://docker-mailserver';
+    $config['smtp_port'] = 587;
+    $config['smtp_user'] = '%u';
+    $config['smtp_pass'] = '%p';
+    $config['smtp_conn_options'] = array(
+        'ssl' => array(
+            'verify_peer'      => false,
+            'verify_peer_name' => false,
+        ),
+    );
+
+    // General configuration
+    $config['support_url'] = '';
+    $config['product_name'] = 'Rutberg Mail';
+    $config['des_key'] = 'some_random_key_for_encryption_change_this';
+    $config['plugins'] = array('archive', 'zipdownload', 'managesieve', 'password');
+
+    // Skin and interface
+    $config['skin'] = 'elastic';
+    $config['language'] = 'en_US';
+    $config['date_format'] = 'Y-m-d';
+    $config['time_format'] = 'H:i';
+
+    // Security
+    $config['force_https'] = true;
+    $config['use_https'] = true;
+    $config['login_autocomplete'] = 2;
+
+    // File uploads
+    $config['max_message_size'] = '25M';
+
+    // Folders
+    $config['create_default_folders'] = true;
+    $config['protect_default_folders'] = true;
+
+    // Password plugin configuration
+    $config['password_driver'] = 'sql';
+    $config['password_confirm_current'] = true;
+    $config['password_minimum_length'] = 8;
+    $config['password_require_nonalpha'] = true;
+
+    // ManageSieve plugin configuration
+    $config['managesieve_host'] = 'docker-mailserver';
+    $config['managesieve_port'] = 4190;
+
+    ?>

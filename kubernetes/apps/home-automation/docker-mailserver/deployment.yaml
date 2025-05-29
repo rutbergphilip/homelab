@@ -1,0 +1,121 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-mailserver
+  namespace: home-automation
+  labels:
+    app: docker-mailserver
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-mailserver
+  template:
+    metadata:
+      labels:
+        app: docker-mailserver
+
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
+      containers:
+        - name: docker-mailserver
+          image: ghcr.io/docker-mailserver/docker-mailserver:14.0.0
+          ports:
+            - containerPort: 25
+              name: smtp
+            - containerPort: 143
+              name: imap
+            - containerPort: 587
+              name: smtp-submission
+            - containerPort: 993
+              name: imaps
+
+          env:
+            - name: ENABLE_SPAMASSASSIN
+              value: "1"
+            - name: ENABLE_CLAMAV
+              value: "1"
+            - name: ENABLE_FAIL2BAN
+              value: "1"
+            - name: ENABLE_POSTGREY
+              value: "1"
+            - name: ONE_DIR
+              value: "1"
+            - name: DMS_DEBUG
+              value: "0"
+            - name: HOSTNAME
+              value: "mail.rutberg.dev"
+            - name: DOMAINNAME
+              value: "rutberg.dev"
+            - name: PERMIT_DOCKER
+              value: "none"
+            - name: SSL_TYPE
+              value: "manual"
+            - name: SSL_CERT_PATH
+              value: "/etc/ssl/mailserver/tls.crt"
+            - name: SSL_KEY_PATH
+              value: "/etc/ssl/mailserver/tls.key"
+            - name: POSTFIX_INET_PROTOCOLS
+              value: "ipv4"
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /var/mail
+              subPath: docker-mailserver/mail
+            - name: homelab-storage
+              mountPath: /var/mail-state
+              subPath: docker-mailserver/state
+            - name: homelab-storage
+              mountPath: /var/log/mail
+              subPath: docker-mailserver/logs
+            - name: config
+              mountPath: /tmp/docker-mailserver
+            - name: ssl-certs
+              mountPath: /etc/ssl/mailserver
+              readOnly: true
+
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: "500m"
+              ephemeral-storage: 1Gi
+            limits:
+              memory: 2Gi
+              cpu: 1000m
+              ephemeral-storage: 5Gi
+
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -c
+                - "ss -lntp | grep -E ':25|:587|:993|:143'"
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -c
+                - "ss -lntp | grep -E ':25|:587|:993|:143'"
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 15
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc
+        - name: config
+          configMap:
+            name: docker-mailserver-config
+        - name: ssl-certs
+          secret:
+            secretName: docker-mailserver-tls

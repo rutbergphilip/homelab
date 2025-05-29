@@ -13,3 +13,4 @@ resources:
   - ./home-assistant
   - ./trilium
   - ./homarr
+  - ./docker-mailserver

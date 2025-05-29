@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roundcube
+  namespace: home-automation
+  labels:
+    app: roundcube
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: roundcube
+  template:
+    metadata:
+      labels:
+        app: roundcube
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: roundcube
+          image: roundcube/roundcubemail:1.6.6-apache
+          ports:
+            - containerPort: 80
+              name: http
+          env:
+            - name: ROUNDCUBEMAIL_DB_TYPE
+              value: "sqlite"
+            - name: ROUNDCUBEMAIL_DB_HOST
+              value: ""
+            - name: ROUNDCUBEMAIL_DEFAULT_HOST
+              value: "ssl://docker-mailserver"
+            - name: ROUNDCUBEMAIL_DEFAULT_PORT
+              value: "993"
+            - name: ROUNDCUBEMAIL_SMTP_SERVER
+              value: "tls://docker-mailserver"
+            - name: ROUNDCUBEMAIL_SMTP_PORT
+              value: "587"
+            - name: ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE
+              value: "25M"
+            - name: ROUNDCUBEMAIL_SKIN
+              value: "elastic"
+            - name: ROUNDCUBEMAIL_PLUGINS
+              value: "archive,zipdownload,managesieve,password"
+          volumeMounts:
+            - name: roundcube-data
+              mountPath: /var/roundcube/db
+              subPath: roundcube/db
+            - name: roundcube-data
+              mountPath: /var/www/html/temp
+              subPath: roundcube/temp
+            - name: roundcube-data
+              mountPath: /var/www/html/logs
+              subPath: roundcube/logs
+            - name: roundcube-config
+              mountPath: /var/www/html/config/config.inc.php
+              subPath: config.inc.php
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+              ephemeral-storage: "512Mi"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+              ephemeral-storage: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: roundcube-data
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc
+        - name: roundcube-config
+          configMap:
+            name: roundcube-config

@@ -4,10 +4,10 @@ kind: Kustomization
 namespace: home-automation
 
 resources:
-  - prowlarr-deployment.yaml
-  - radarr-deployment.yaml
-  - sonarr-deployment.yaml
-  - lidarr-deployment.yaml
-  - jellyseerr-deployment.yaml
+  # - prowlarr-deployment.yaml
+  # - radarr-deployment.yaml
+  # - sonarr-deployment.yaml
+  # - lidarr-deployment.yaml
+  # - jellyseerr-deployment.yaml
   - service.yaml
   - ingress.yaml

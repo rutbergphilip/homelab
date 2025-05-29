@@ -1,28 +1,68 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ugreen-nas-arr-stack
+  name: ugreen-nas-jellyseerr
   namespace: home-automation
 spec:
   type: ClusterIP
   ports:
-    - port: 35055 # Jellyseerr
+    - port: 35055
       targetPort: 35055
       protocol: TCP
       name: http
-    - port: 38686 # Lidarr
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ugreen-nas-lidarr
+  namespace: home-automation
+spec:
+  type: ClusterIP
+  ports:
+    - port: 38686
       targetPort: 38686
       protocol: TCP
       name: http
-    - port: 38989 # Sonarr
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ugreen-nas-sonarr
+  namespace: home-automation
+spec:
+  type: ClusterIP
+  ports:
+    - port: 38989
       targetPort: 38989
       protocol: TCP
       name: http
-    - port: 37878 # Radarr
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ugreen-nas-radarr
+  namespace: home-automation
+spec:
+  type: ClusterIP
+  ports:
+    - port: 37878
       targetPort: 37878
       protocol: TCP
       name: http
-    - port: 39696 # Prowlarr
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ugreen-nas-prowlarr
+  namespace: home-automation
+spec:
+  type: ClusterIP
+  ports:
+    - port: 39696
       targetPort: 39696
       protocol: TCP
       name: http

@@ -36,7 +36,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: ugreen-nas-arr-stack
+                name: ugreen-nas-jellyseerr
                 port:
                   number: 35055
     - host: lidarr.rutberg.dev
@@ -46,7 +46,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: ugreen-nas-arr-stack
+                name: ugreen-nas-lidarr
                 port:
                   number: 38686
     - host: sonarr.rutberg.dev
@@ -56,7 +56,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: ugreen-nas-arr-stack
+                name: ugreen-nas-sonarr
                 port:
                   number: 38989
     - host: radarr.rutberg.dev
@@ -66,7 +66,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: ugreen-nas-arr-stack
+                name: ugreen-nas-radarr
                 port:
                   number: 37878
     - host: prowlarr.rutberg.dev
@@ -76,6 +76,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: ugreen-nas-arr-stack
+                name: ugreen-nas-prowlarr
                 port:
                   number: 39696

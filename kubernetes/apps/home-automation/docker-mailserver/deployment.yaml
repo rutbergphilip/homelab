@@ -18,6 +18,7 @@ spec:
         app: docker-mailserver
 
     spec:
+      hostname: mail
       automountServiceAccountToken: false
       securityContext:
         runAsUser: 0
@@ -48,11 +49,9 @@ spec:
             - name: ONE_DIR
               value: "1"
             - name: DMS_DEBUG
-              value: "0"
-            - name: HOSTNAME
+              value: "1"
+            - name: OVERRIDE_HOSTNAME
               value: "mail.rutberg.dev"
-            - name: DOMAINNAME
-              value: "rutberg.dev"
             - name: PERMIT_DOCKER
               value: "none"
             - name: SSL_TYPE

@@ -17,6 +17,11 @@ spec:
         app: roundcube
     spec:
       automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
       containers:
         - name: roundcube
           image: roundcube/roundcubemail:1.6.6-apache

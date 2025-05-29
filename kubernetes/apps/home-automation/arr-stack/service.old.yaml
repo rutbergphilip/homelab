@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+  labels:
+    app: prowlarr
+spec:
+  ports:
+    - port: 9696
+      targetPort: 9696
+      protocol: TCP
+      name: http
+  selector:
+    app: prowlarr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radarr
+  labels:
+    app: radarr
+spec:
+  ports:
+    - port: 7878
+      targetPort: 7878
+      protocol: TCP
+      name: http
+  selector:
+    app: radarr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+  labels:
+    app: sonarr
+spec:
+  ports:
+    - port: 8989
+      targetPort: 8989
+      protocol: TCP
+      name: http
+  selector:
+    app: sonarr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr
+  labels:
+    app: lidarr
+spec:
+  ports:
+    - port: 8686
+      targetPort: 8686
+      protocol: TCP
+      name: http
+  selector:
+    app: lidarr
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyseerr
+  labels:
+    app: jellyseerr
+spec:
+  ports:
+    - port: 5055
+      targetPort: 5055
+      protocol: TCP
+      name: http
+  selector:
+    app: jellyseerr

@@ -11,3 +11,4 @@ resources:
   # - jellyseerr-deployment.yaml
   - service.yaml
   - ingress.yaml
+  - endpoints.yaml

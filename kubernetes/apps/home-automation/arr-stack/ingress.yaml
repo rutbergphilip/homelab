@@ -1,7 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: arr-stack
+  name: arr-stack-ingress
+  namespace: home-automation
   annotations:
     external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -9,47 +10,25 @@ metadata:
 
 spec:
   ingressClassName: external
+
+  tls:
+    - hosts:
+        - jellyseerr.rutberg.dev
+      secretName: jellyseerr-tls
+    - hosts:
+        - lidarr.rutberg.dev
+      secretName: lidarr-tls
+    - hosts:
+        - sonarr.rutberg.dev
+      secretName: sonarr-tls
+    - hosts:
+        - radarr.rutberg.dev
+      secretName: radarr-tls
+    - hosts:
+        - prowlarr.rutberg.dev
+      secretName: prowlarr-tls
+
   rules:
-    - host: prowlarr.rutberg.dev
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: prowlarr
-                port:
-                  number: 9696
-    - host: radarr.rutberg.dev
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: radarr
-                port:
-                  number: 7878
-    - host: sonarr.rutberg.dev
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: sonarr
-                port:
-                  number: 8989
-    - host: lidarr.rutberg.dev
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: lidarr
-                port:
-                  number: 8686
     - host: jellyseerr.rutberg.dev
       http:
         paths:
@@ -57,6 +36,46 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: jellyseerr
+                name: ugreen-nas-arr-stack
                 port:
-                  number: 5055
+                  number: 35055
+    - host: lidarr.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ugreen-nas-arr-stack
+                port:
+                  number: 38686
+    - host: sonarr.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ugreen-nas-arr-stack
+                port:
+                  number: 38989
+    - host: radarr.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ugreen-nas-arr-stack
+                port:
+                  number: 37878
+    - host: prowlarr.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ugreen-nas-arr-stack
+                port:
+                  number: 39696

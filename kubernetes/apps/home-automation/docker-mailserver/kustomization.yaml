@@ -11,3 +11,4 @@ resources:
   - roundcube-service.yaml
   - roundcube-configmap.yaml
   - ingress.yaml
+  - certificate.yaml

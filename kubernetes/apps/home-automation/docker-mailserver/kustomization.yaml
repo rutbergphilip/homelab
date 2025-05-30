@@ -4,11 +4,8 @@ kind: Kustomization
 namespace: home-automation
 
 resources:
-  - deployment.yaml
-  - service.yaml
-  - configmap.yaml
-  # - roundcube-deployment.yaml
-  # - roundcube-service.yaml
-  # - roundcube-configmap.yaml
-  # - ingress.yaml
-  # - certificate.yaml
+  - ./secret.sops.yaml
+  - ./postfix-accounts.secret.sops.yaml
+  - ./service.yaml
+  - ./deployment.yaml
+  - ./config.yaml

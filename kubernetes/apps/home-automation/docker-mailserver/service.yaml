@@ -1,29 +1,29 @@
----
 apiVersion: v1
 kind: Service
 metadata:
-  name: docker-mailserver
+  name: mailserver
   namespace: home-automation
   labels:
-    app: docker-mailserver
+    app: mailserver
 spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
   selector:
-    app: docker-mailserver
+    app: mailserver
   ports:
     - name: smtp
       port: 25
-      targetPort: 25
+      targetPort: smtp
       protocol: TCP
-    - name: smtp-submission
+    - name: submissions
+      port: 465
+      targetPort: submissions
+      protocol: TCP
+    - name: submission
       port: 587
-      targetPort: 587
+      targetPort: submission
       protocol: TCP
     - name: imaps
       port: 993
-      targetPort: 993
+      targetPort: imaps
       protocol: TCP
-    - name: imap
-      port: 143
-      targetPort: 143
-      protocol: TCP
-  type: ClusterIP

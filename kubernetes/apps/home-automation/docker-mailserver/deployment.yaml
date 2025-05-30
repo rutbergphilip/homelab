@@ -1,148 +1,117 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: docker-mailserver
+  name: mailserver
   namespace: home-automation
   labels:
-    app: docker-mailserver
+    app: mailserver
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: docker-mailserver
+      app: mailserver
   template:
     metadata:
       labels:
-        app: docker-mailserver
+        app: mailserver
 
     spec:
-      hostname: mail
-      automountServiceAccountToken: false
+      hostname: mail.rutberg.dev
       securityContext:
-        runAsUser: 5000
-        runAsGroup: 5000
-        fsGroup: 5000
-
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
-        - name: docker-mailserver
-          image: ghcr.io/docker-mailserver/docker-mailserver:15.0.2
-          ports:
-            - containerPort: 25
-              name: smtp
-            - containerPort: 143
-              name: imap
-            - containerPort: 587
-              name: smtp-submission
-            - containerPort: 993
-              name: imaps
-
-          # env:
-          #   - name: ENABLE_SPAMASSASSIN
-          #     value: "1"
-          #   - name: ENABLE_CLAMAV
-          #     value: "1"
-          #   - name: ENABLE_FAIL2BAN
-          #     value: "1"
-          #   - name: ENABLE_POSTGREY
-          #     value: "1"
-          #   - name: ONE_DIR
-          #     value: "1"
-          #   - name: DMS_DEBUG
-          #     value: "0"
-          #   - name: OVERRIDE_HOSTNAME
-          #     value: "mail.rutberg.dev"
-          #   - name: PERMIT_DOCKER
-          #     value: "none"
-          #   - name: SSL_TYPE
-          #     value: "manual"
-          #   - name: SSL_CERT_PATH
-          #     value: "/etc/ssl/mailserver/tls.crt"
-          #   - name: SSL_KEY_PATH
-          #     value: "/etc/ssl/mailserver/tls.key"
-          #   - name: POSTFIX_INET_PROTOCOLS
-          #     value: "ipv4"
-          #   - name: DMS_SKIP_SETUP_USERS
-          #     value: "1"
-          #   # Enable Amavis for content filtering (SpamAssassin & ClamAV)
-          #   - name: ENABLE_AMAVIS
-          #     value: "1"
-          #   - name: LOGROTATE_INTERVAL
-          #     value: "daily"
-          #   - name: LOG_LEVEL
-          #     value: "info"
-          #   # Disable features that might cause permission issues on NFS
-          #   - name: ENABLE_UPDATE_CHECK
-          #     value: "0"
+        - name: mailserver
+          image: ghcr.io/docker-mailserver/docker-mailserver:latest
+          imagePullPolicy: IfNotPresent
 
           securityContext:
-            runAsUser: 5000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsUser: 0
+            runAsGroup: 0
             capabilities:
               add:
+                - CHOWN
+                - FOWNER
+                - MKNOD
+                - SETGID
+                - SETUID
+                - DAC_OVERRIDE
                 - NET_ADMIN
+                - NET_RAW
+                - NET_BIND_SERVICE
+                - SYS_CHROOT
+                - KILL
+              drop: [ALL]
+
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 500m
+            requests:
+              memory: 512Mi
+              cpu: 200m
+
+          envFrom:
+            - configMapRef:
+                name: mailserver-environment
+
+          ports:
+            - name: smtp
+              containerPort: 25
+              protocol: TCP
+            - name: submissions
+              containerPort: 465
+              protocol: TCP
+            - name: submission
+              containerPort: 587
+              protocol: TCP
+            - name: imaps
+              containerPort: 993
+              protocol: TCP
+
+          readinessProbe:
+            tcpSocket:
+              port: 25
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 5
 
           volumeMounts:
-            # Use NFS for mail storage and state (but with persistence)
+            - name: mail-files
+              mountPath: /tmp/docker-mailserver
+              readOnly: true
             - name: homelab-storage
               mountPath: /var/mail
               subPath: docker-mailserver/mail
             - name: homelab-storage
               mountPath: /var/mail-state
-              subPath: docker-mailserver/state
-            # Use NFS for logs but make it optional
+              subPath: docker-mailserver/mail-state
             - name: homelab-storage
               mountPath: /var/log/mail
-              subPath: docker-mailserver/logs
-            - name: config
-              mountPath: /tmp/docker-mailserver
-            - name: user-patches
-              mountPath: /usr/local/bin/user-patches.sh
-              subPath: user-patches.sh
-            - name: ssl-certs
-              mountPath: /etc/ssl/mailserver
+              subPath: docker-mailserver/log
+            - name: tls
+              mountPath: /secrets/ssl
+              readOnly: true
+            - name: localtime
+              mountPath: /etc/localtime
               readOnly: true
 
-          resources:
-            requests:
-              memory: 1Gi
-              cpu: "500m"
-              ephemeral-storage: 1Gi
-            limits:
-              memory: 2Gi
-              cpu: 1000m
-              ephemeral-storage: 5Gi
-
-          livenessProbe:
-            exec:
-              command:
-                - /bin/bash
-                - -c
-                - "ss -lntp | grep -E ':25|:587|:993|:143'"
-            initialDelaySeconds: 60
-            timeoutSeconds: 5
-            periodSeconds: 30
-          readinessProbe:
-            exec:
-              command:
-                - /bin/bash
-                - -c
-                - "ss -lntp | grep -E ':25|:587|:993|:143'"
-            initialDelaySeconds: 30
-            timeoutSeconds: 5
-            periodSeconds: 15
-
       volumes:
+        - name: mail-files
+          configMap:
+            name: mailserver-files
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc
-        - name: config
-          configMap:
-            name: docker-mailserver-config
-        - name: user-patches
-          configMap:
-            name: docker-mailserver-user-patches
-            defaultMode: 0755
-        - name: ssl-certs
+        - name: tls
           secret:
-            secretName: docker-mailserver-tls
+            secretName: mailserver-tls
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+            type: File

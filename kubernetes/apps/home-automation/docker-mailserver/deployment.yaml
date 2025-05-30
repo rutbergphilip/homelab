@@ -87,12 +87,15 @@ spec:
             - name: homelab-storage
               mountPath: /var/mail
               subPath: docker-mailserver/mail
+              readOnly: false
             - name: homelab-storage
               mountPath: /var/mail-state
               subPath: docker-mailserver/mail-state
+              readOnly: false
             - name: homelab-storage
               mountPath: /var/log/mail
               subPath: docker-mailserver/log
+              readOnly: false
             - name: tls
               mountPath: /secrets/ssl
               readOnly: true

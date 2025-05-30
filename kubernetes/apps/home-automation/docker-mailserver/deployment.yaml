@@ -22,18 +22,6 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
-      initContainers:
-        - name: mail-config-init
-          image: busybox:latest
-          command: ["/bin/sh", "-c"]
-          args:
-            - cp -R /secret/* /config/ || true
-          volumeMounts:
-            - name: mailfiles-secret
-              mountPath: /secret
-            - name: mail-files
-              mountPath: /config
-
       containers:
         - name: mailserver
           image: ghcr.io/docker-mailserver/docker-mailserver:latest
@@ -98,35 +86,29 @@ spec:
           volumeMounts:
             - name: mail-files
               mountPath: /tmp/docker-mailserver
-            - name: homelab-storage
+            - name: mail-local-storage
               mountPath: /var/mail
               subPath: docker-mailserver/mail
               readOnly: false
-            - name: homelab-storage
+            - name: mail-local-storage
               mountPath: /var/mail-state
               subPath: docker-mailserver/mail-state
               readOnly: false
-            - name: homelab-storage
+            - name: mail-local-storage
               mountPath: /var/log/mail
               subPath: docker-mailserver/log
               readOnly: false
-            # - name: homelab-storage
-            #   mountPath: /var/lib/amavis
-            #   subPath: docker-mailserver/amavis
-            #   readOnly: false
             - name: tls
               mountPath: /secrets/ssl
               readOnly: true
 
       volumes:
         - name: mail-files
-          emptyDir: {}
-        - name: mailfiles-secret
           secret:
             secretName: mailserver-files
-        - name: homelab-storage
+        - name: mail-local-storage
           persistentVolumeClaim:
-            claimName: homelab-nfs-pvc
+            claimName: mailserver-local-pvc
         - name: tls
           secret:
             secretName: mailserver-tls

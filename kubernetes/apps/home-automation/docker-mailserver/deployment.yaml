@@ -44,7 +44,8 @@ spec:
                 - NET_BIND_SERVICE
                 - SYS_CHROOT
                 - KILL
-              drop: [ALL]
+              drop:
+                - ALL
 
           resources:
             limits:
@@ -83,7 +84,6 @@ spec:
           volumeMounts:
             - name: mail-files
               mountPath: /tmp/docker-mailserver
-              readOnly: true
             - name: homelab-storage
               mountPath: /var/mail
               subPath: docker-mailserver/mail

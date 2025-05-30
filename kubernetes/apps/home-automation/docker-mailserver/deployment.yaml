@@ -98,12 +98,13 @@ spec:
               readOnly: true
             - name: localtime
               mountPath: /etc/localtime
+              subPath: docker-mailserver/localtime
               readOnly: true
 
       volumes:
         - name: mail-files
-          configMap:
-            name: mailserver-files
+          secret:
+            secretName: mailserver-files
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc

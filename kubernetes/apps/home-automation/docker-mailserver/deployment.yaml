@@ -96,10 +96,6 @@ spec:
             - name: tls
               mountPath: /secrets/ssl
               readOnly: true
-            - name: localtime
-              mountPath: /etc/localtime
-              subPath: docker-mailserver/localtime
-              readOnly: true
 
       volumes:
         - name: mail-files
@@ -111,7 +107,3 @@ spec:
         - name: tls
           secret:
             secretName: mailserver-tls
-        - name: localtime
-          hostPath:
-            path: /etc/localtime
-            type: File

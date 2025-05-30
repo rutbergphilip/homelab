@@ -23,7 +23,7 @@ spec:
       securityContext:
         runAsUser: 0
         runAsGroup: 0
-        fsGroup: 0
+        fsGroup: 5000
 
       initContainers:
         - name: fix-permissions
@@ -32,8 +32,9 @@ spec:
           args:
             - |
               mkdir -p /var/mail /var/mail-state /var/log/mail
-              chown -R 5000:5000 /var/mail /var/mail-state /var/log/mail || true
+              # Only set permissions, not ownership on NFS
               chmod -R 755 /var/mail /var/mail-state /var/log/mail
+              echo "Directories created and permissions set"
           volumeMounts:
             - name: homelab-storage
               mountPath: /var/mail
@@ -72,13 +73,9 @@ spec:
             - name: ONE_DIR
               value: "1"
             - name: DMS_DEBUG
-              value: "1"
+              value: "0"
             - name: OVERRIDE_HOSTNAME
               value: "mail.rutberg.dev"
-            - name: DMS_VMAIL_UID
-              value: "5000"
-            - name: DMS_VMAIL_GID
-              value: "5000"
             - name: PERMIT_DOCKER
               value: "none"
             - name: SSL_TYPE
@@ -91,6 +88,16 @@ spec:
               value: "ipv4"
             - name: DMS_SKIP_SETUP_USERS
               value: "1"
+            # Enable Amavis for content filtering (SpamAssassin & ClamAV)
+            - name: ENABLE_AMAVIS
+              value: "1"
+            - name: LOGROTATE_INTERVAL
+              value: "daily"
+            - name: LOG_LEVEL
+              value: "info"
+            # Disable features that might cause permission issues on NFS
+            - name: ENABLE_UPDATE_CHECK
+              value: "0"
 
           securityContext:
             runAsUser: 0
@@ -100,12 +107,14 @@ spec:
                 - SYS_PTRACE
 
           volumeMounts:
+            # Use NFS for mail storage and state (but with persistence)
             - name: homelab-storage
               mountPath: /var/mail
               subPath: docker-mailserver/mail
             - name: homelab-storage
               mountPath: /var/mail-state
               subPath: docker-mailserver/state
+            # Use NFS for logs but make it optional
             - name: homelab-storage
               mountPath: /var/log/mail
               subPath: docker-mailserver/logs

@@ -7,6 +7,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - configmap.yaml
+  - user-patches-configmap.yaml
   - roundcube-deployment.yaml
   - roundcube-service.yaml
   - roundcube-configmap.yaml

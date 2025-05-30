@@ -25,5 +25,27 @@ data:
 
   user-patches.sh: |
     #!/bin/bash
+
     # User patches script - runs after container setup
     echo "Docker-mailserver configured for rutberg.dev"
+
+    # Fix permission issues on NFS-mounted storage
+    # Since chown fails on NFS with root_squash, we'll work around it
+    echo "Applying NFS-friendly permission fixes..."
+
+    # Create directories if they don't exist and set permissions (without chown)
+    mkdir -p /var/mail-state/{lib-amavis,lib-clamav,lib-dovecot,lib-fail2ban,lib-logrotate,lib-postgrey,lib-postfix,lib-spamassassin,spool-postfix}
+    mkdir -p /var/mail/rutberg.dev/{admin,philip}
+    mkdir -p /var/log/mail
+
+    # Set proper permissions without changing ownership
+    chmod -R 755 /var/mail-state || true
+    chmod -R 755 /var/mail || true
+    chmod -R 755 /var/log/mail || true
+
+    # Ensure specific directories have correct permissions for mail services
+    chmod 750 /var/mail-state/spool-postfix || true
+    chmod 755 /var/mail-state/lib-dovecot || true
+    chmod 755 /var/mail-state/lib-amavis || true
+
+    echo "NFS permission fixes applied successfully"

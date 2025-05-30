@@ -1,0 +1,78 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-mailserver-user-patches
+  namespace: home-automation
+data:
+  user-patches.sh: |
+    #!/bin/bash
+
+    echo "Docker-mailserver NFS-friendly patches starting..."
+
+    # Create a modified chown command that doesn't fail on NFS
+    if [ ! -f /usr/local/bin/chown_nfs_safe ]; then
+        cat > /usr/local/bin/chown_nfs_safe << 'CHOWNEOF'
+    #!/bin/bash
+    # NFS-safe chown wrapper
+    /bin/chown "$@" 2>/dev/null || {
+        echo "Warning: chown operation failed (likely NFS with root_squash), but continuing..."
+        exit 0
+    }
+    CHOWNEOF
+        chmod +x /usr/local/bin/chown_nfs_safe
+
+        # Replace chown calls in docker-mailserver scripts
+        # This is a temporary workaround for NFS permission issues
+        if [ -f /usr/local/bin/helpers/utils.sh ]; then
+            sed -i 's|chown |/usr/local/bin/chown_nfs_safe |g' /usr/local/bin/helpers/utils.sh 2>/dev/null || true
+        fi
+
+        if [ -f /usr/local/bin/start-mailserver.sh ]; then
+            sed -i 's|chown |/usr/local/bin/chown_nfs_safe |g' /usr/local/bin/start-mailserver.sh 2>/dev/null || true
+        fi
+    fi
+
+    # Pre-create necessary directories
+    echo "Pre-creating mail directories..."
+
+    # Create mail state directories
+    mkdir -p /var/mail-state/lib-amavis/tmp
+    mkdir -p /var/mail-state/lib-amavis/db
+    mkdir -p /var/mail-state/lib-amavis/virusmails
+    mkdir -p /var/mail-state/lib-clamav
+    mkdir -p /var/mail-state/lib-dovecot
+    mkdir -p /var/mail-state/lib-fail2ban
+    mkdir -p /var/mail-state/lib-logrotate
+    mkdir -p /var/mail-state/lib-postgrey
+    mkdir -p /var/mail-state/lib-postfix
+    mkdir -p /var/mail-state/lib-spamassassin
+    mkdir -p /var/mail-state/spool-postfix/active
+    mkdir -p /var/mail-state/spool-postfix/bounce
+    mkdir -p /var/mail-state/spool-postfix/corrupt
+    mkdir -p /var/mail-state/spool-postfix/defer
+    mkdir -p /var/mail-state/spool-postfix/deferred
+    mkdir -p /var/mail-state/spool-postfix/flush
+    mkdir -p /var/mail-state/spool-postfix/incoming
+    mkdir -p /var/mail-state/spool-postfix/maildrop
+    mkdir -p /var/mail-state/spool-postfix/pid
+    mkdir -p /var/mail-state/spool-postfix/private
+    mkdir -p /var/mail-state/spool-postfix/public
+    mkdir -p /var/mail-state/spool-postfix/saved
+
+    # Create mail directories
+    mkdir -p /var/mail/rutberg.dev/admin/home
+    mkdir -p /var/mail/rutberg.dev/philip/home
+
+    # Create log directory
+    mkdir -p /var/log/mail
+
+    # Set permissions (this should work on NFS)
+    chmod -R 755 /var/mail-state 2>/dev/null || true
+    chmod -R 755 /var/mail 2>/dev/null || true
+    chmod -R 755 /var/log/mail 2>/dev/null || true
+
+    # Set specific permissions for Postfix
+    chmod 750 /var/mail-state/spool-postfix 2>/dev/null || true
+
+    echo "Docker-mailserver NFS-friendly patches completed successfully"

@@ -26,6 +26,14 @@ data:
   user-patches.sh: |
     #!/bin/bash
 
+    # Execute the NFS-friendly patches script
+    echo "Executing NFS-friendly patches..."
+    if [ -f /usr/local/bin/user-patches.sh ]; then
+        bash /usr/local/bin/user-patches.sh
+    else
+        echo "Warning: NFS-friendly patches script not found at /usr/local/bin/user-patches.sh"
+    fi
+
     # User patches script - runs after container setup
     echo "Docker-mailserver configured for rutberg.dev"
 

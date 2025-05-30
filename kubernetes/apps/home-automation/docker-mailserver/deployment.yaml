@@ -121,7 +121,7 @@ spec:
             - name: config
               mountPath: /tmp/docker-mailserver
             - name: user-patches
-              mountPath: /tmp/docker-mailserver/user-patches.sh
+              mountPath: /usr/local/bin/user-patches.sh
               subPath: user-patches.sh
             - name: ssl-certs
               mountPath: /etc/ssl/mailserver

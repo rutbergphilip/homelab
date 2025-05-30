@@ -97,10 +97,10 @@ spec:
               mountPath: /var/log/mail
               subPath: docker-mailserver/log
               readOnly: false
-            - name: homelab-storage
-              mountPath: /var/lib/amavis
-              subPath: docker-mailserver/amavis
-              readOnly: false
+            # - name: homelab-storage
+            #   mountPath: /var/lib/amavis
+            #   subPath: docker-mailserver/amavis
+            #   readOnly: false
             - name: tls
               mountPath: /secrets/ssl
               readOnly: true

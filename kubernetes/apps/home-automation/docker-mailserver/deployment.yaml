@@ -18,7 +18,8 @@ spec:
 
     spec:
       securityContext:
-        fsGroup: 1000
+        fsGroup: 999
+        fsGroupChangePolicy: "OnRootMismatch"
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -95,6 +96,10 @@ spec:
             - name: homelab-storage
               mountPath: /var/log/mail
               subPath: docker-mailserver/log
+              readOnly: false
+            - name: homelab-storage
+              mountPath: /var/lib/amavis
+              subPath: docker-mailserver/amavis
               readOnly: false
             - name: tls
               mountPath: /secrets/ssl

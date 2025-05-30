@@ -6,6 +6,7 @@ namespace: home-automation
 resources:
   - ./secret.sops.yaml
   - ./postfix-accounts.secret.sops.yaml
+  - ./mailserver-local-pvc.yaml
   - ./service.yaml
   - ./deployment.yaml
   - ./config.yaml

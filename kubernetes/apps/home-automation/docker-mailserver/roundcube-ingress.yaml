@@ -4,6 +4,7 @@ metadata:
   name: roundcube
   namespace: home-automation
   annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
     nginx.ingress.kubernetes.io/proxy-body-size: "25m"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 

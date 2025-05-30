@@ -22,6 +22,18 @@ spec:
         seccompProfile:
           type: RuntimeDefault
 
+      initContainers:
+        - name: mail-config-init
+          image: busybox:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - cp -R /secret/* /config/ || true
+          volumeMounts:
+            - name: mailfiles-secret
+              mountPath: /secret
+            - name: mail-files
+              mountPath: /config
+
       containers:
         - name: mailserver
           image: ghcr.io/docker-mailserver/docker-mailserver:latest
@@ -35,8 +47,6 @@ spec:
             capabilities:
               add:
                 - NET_BIND_SERVICE
-                - CHOWN
-                - FOWNER
                 - DAC_OVERRIDE
                 - SETGID
                 - SETUID
@@ -110,6 +120,8 @@ spec:
 
       volumes:
         - name: mail-files
+          emptyDir: {}
+        - name: mailfiles-secret
           secret:
             secretName: mailserver-files
         - name: homelab-storage

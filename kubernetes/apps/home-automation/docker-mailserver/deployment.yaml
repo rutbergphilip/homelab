@@ -17,7 +17,6 @@ spec:
         app: mailserver
 
     spec:
-      hostname: mail.rutberg.dev
       securityContext:
         fsGroup: 1000
         seccompProfile:

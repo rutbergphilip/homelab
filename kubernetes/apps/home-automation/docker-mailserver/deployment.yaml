@@ -19,7 +19,7 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
-        fsGroupChangePolicy: "OnRootMismatch"
+        fsGroupChangePolicy: "Never" # Prevents changing the group of existing files
         seccompProfile:
           type: RuntimeDefault
 
@@ -56,6 +56,10 @@ spec:
               cpu: 200m
 
           envFrom:
+            - name: DMS_VMAIL_UID
+              value: "1000"
+            - name: DMS_VMAIL_GID
+              value: "1000"
             - configMapRef:
                 name: mailserver-environment
 

@@ -10,3 +10,6 @@ resources:
   - ./service.yaml
   - ./deployment.yaml
   - ./config.yaml
+  - ./roundcube-deployment.yaml
+  - ./roundcube-service.yaml
+  - ./roundcube-ingress.yaml

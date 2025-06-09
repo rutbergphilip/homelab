@@ -11,10 +11,7 @@
   ],
   dependencyDashboard: true,
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
-  suppressNotifications: [
-    "prEditedNotification",
-    "prIgnoreNotification",
-  ],
+  suppressNotifications: ["prEditedNotification", "prIgnoreNotification"],
   schedule: ["every weekend"],
   ignorePaths: ["**/*.sops.*"],
   flux: {
@@ -138,6 +135,12 @@
     {
       matchDatasources: ["github-releases"],
       addLabels: ["renovate/github-release"],
+    },
+    {
+      matchUpdateTypes: ["minor", "patch", "digest"],
+      automerge: true,
+      automergeType: "branch",
+      minimumReleaseAge: "3 days",
     },
   ],
   customManagers: [

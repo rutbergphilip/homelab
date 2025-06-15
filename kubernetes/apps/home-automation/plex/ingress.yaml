@@ -1,0 +1,28 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex
+  namespace: home-automation
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+
+spec:
+  ingressClassName: external
+  tls:
+    - hosts:
+        - plex.rutberg.dev
+      secretName: plex-tls
+  rules:
+    - host: plex.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ugreen-nas-plex
+                port:
+                  number: 80

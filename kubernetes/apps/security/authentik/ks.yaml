@@ -10,7 +10,7 @@ spec:
   timeout: 5m
   sourceRef:
     kind: GitRepository
-    name: homelab
+    name: flux-system
   path: ./kubernetes/apps/security/authentik/app
   prune: true
   wait: true

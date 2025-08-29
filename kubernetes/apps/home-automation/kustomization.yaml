@@ -9,9 +9,9 @@ resources:
   - ./storage.yaml
   - ./jellyfin
   - ./plex
-  - ./qbittorrentvpn
+  # - ./qbittorrentvpn
+  - ./qbittorrent-nas
   - ./arr-stack
   - ./home-assistant
   - ./trilium
   - ./homarr
-  - ./docker-mailserver

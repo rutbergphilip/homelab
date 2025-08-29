@@ -9,8 +9,7 @@ resources:
   - ./storage.yaml
   - ./jellyfin
   - ./plex
-  # - ./qbittorrentvpn
-  - ./qbittorrent-nas
+  - ./qbittorrent
   - ./arr-stack
   - ./home-assistant
   - ./trilium

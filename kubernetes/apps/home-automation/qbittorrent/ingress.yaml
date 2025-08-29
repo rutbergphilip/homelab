@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: qbittorrent-nas
+  name: qbittorrent
   namespace: home-automation
   annotations:
     external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
@@ -27,17 +27,17 @@ spec:
 
   tls:
     - hosts:
-        - qbittorrent-nas.rutberg.dev
-      secretName: qbittorrent-nas-tls
+        - qbittorrent.rutberg.dev
+      secretName: qbittorrent-tls
 
   rules:
-    - host: qbittorrent-nas.rutberg.dev
+    - host: qbittorrent.rutberg.dev
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: ugreen-nas-qbittorrent
+                name: qbittorrent
                 port:
                   number: 38080

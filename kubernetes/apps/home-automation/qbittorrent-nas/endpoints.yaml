@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: ugreen-nas-qbittorrent
+  namespace: home-automation
+subsets:
+  - addresses:
+      - ip: 192.168.50.254 # Your UGREEN NAS IP
+    ports:
+      - port: 38080 # qBittorrent WebUI port on NAS
+        name: http

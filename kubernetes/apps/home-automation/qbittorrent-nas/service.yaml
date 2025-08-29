@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ugreen-nas-qbittorrent
+  namespace: home-automation
+spec:
+  type: ClusterIP
+  ports:
+    - port: 38080 # qBittorrent default WebUI port
+      targetPort: 38080
+      protocol: TCP
+      name: http

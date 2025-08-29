@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: qbittorrent-nas
+  namespace: home-automation
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    # qBittorrent-specific fixes for slow loading and rendering issues
+    nginx.ingress.kubernetes.io/proxy-body-size: "0" # Unlimited upload size for torrents
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600" # 10min timeout for large operations
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off" # Disable buffering for real-time updates
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr" # Sticky sessions for WebUI state
+    # Headers to fix CSRF and origin issues
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Accept-Encoding "";
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Prefix /;
+
+spec:
+  ingressClassName: external
+
+  tls:
+    - hosts:
+        - qbittorrent-nas.rutberg.dev
+      secretName: qbittorrent-nas-tls
+
+  rules:
+    - host: qbittorrent-nas.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ugreen-nas-qbittorrent
+                port:
+                  number: 38080

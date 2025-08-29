@@ -1,0 +1,64 @@
+---
+# This file contains configuration examples for setting up OAuth2/OIDC applications in Authentik
+# These configurations should be applied through the Authentik UI or API after initial deployment
+
+# OAuth2/OIDC Provider Configuration (to be configured in Authentik UI):
+#
+# 1. Create OAuth2/OIDC Provider:
+#    - Name: Homelab Forward Auth
+#    - Client Type: Confidential
+#    - Client ID: homelab-forward-auth
+#    - Client Secret: [Use value from oauth2-client-secret in secrets]
+#    - Redirect URIs: 
+#      - https://auth.rutberg.dev/outpost.goauthentik.io/callback
+#      - https://trilium.rutberg.dev/outpost.goauthentik.io/callback
+#      - https://*/outpost.goauthentik.io/callback  (for future services)
+#    - Scopes: openid, profile, email
+#    - Subject Mode: Based on User's hashed ID
+#    - Include claims in id_token: true
+
+# Application Configuration (to be configured in Authentik UI):
+#
+# 1. Create Application for Trilium:
+#    - Name: Trilium Notes
+#    - Slug: trilium
+#    - Provider: Select the OAuth2/OIDC Provider created above
+#    - Policy Engine Mode: any
+#    - Launch URL: https://trilium.rutberg.dev
+#
+# 2. Create Outpost for Forward Auth:
+#    - Name: Forward Auth Outpost  
+#    - Type: Proxy
+#    - Provider: Select the OAuth2/OIDC Provider created above
+#    - Configuration:
+#      - External Host: https://auth.rutberg.dev
+#      - Internal Host: http://ak-outpost-forward-auth.security.svc.cluster.local:9000
+#      - Skip Path Regex: ^/outpost\.goauthentik\.io/
+#
+# 3. User and Group Configuration:
+#    - Create groups as needed (e.g., "homelab-users", "admin")
+#    - Assign users to appropriate groups
+#    - Configure policies based on groups for application access
+
+# ConfigMap for Outpost configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authentik-outpost-config
+  namespace: security
+data:
+  # Outpost configuration - automatically managed by Authentik
+  authentik_host: "https://auth.rutberg.dev"
+  authentik_insecure: "false"
+  log_level: "info"
+  object_naming_template: "ak-outpost-%(name)s"
+  docker_network: ""
+  docker_map_ports: "true"
+  kubernetes_replicas: "1"
+  kubernetes_namespace: "security"
+  kubernetes_ingress_annotations: |
+    nginx.ingress.kubernetes.io/auth-url: "https://auth.rutberg.dev/outpost.goauthentik.io/auth/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.rutberg.dev/outpost.goauthentik.io/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "Set-Cookie,X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid"
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_set_header X-Forwarded-Host $http_host;

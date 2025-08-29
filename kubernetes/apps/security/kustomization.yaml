@@ -7,3 +7,4 @@ namespace: security
 resources:
   - ./namespace.yaml
   - ./storage.yaml
+  - ./authentik/ks.yaml

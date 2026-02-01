@@ -1,0 +1,94 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: market-monitor
+  labels:
+    app: market-monitor
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: market-monitor
+  template:
+    metadata:
+      labels:
+        app: market-monitor
+
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: market-monitor
+          image: rutbergphilip/market-monitor:latest
+
+          ports:
+            - name: ui
+              containerPort: 3847
+            - name: api
+              containerPort: 5847
+
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: TZ
+              value: "Europe/Stockholm"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: UI_PORT
+              value: "3847"
+            - name: SERVER_PORT
+              value: "5847"
+            - name: DB_PATH
+              value: "/app/data"
+            - name: UI_ORIGIN
+              value: "https://market-monitor.rutberg.dev"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: market-monitor-secrets
+                  key: JWT_SECRET
+            - name: REFRESH_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: market-monitor-secrets
+                  key: REFRESH_TOKEN_SECRET
+            - name: NUXT_SESSION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: market-monitor-secrets
+                  key: NUXT_SESSION_PASSWORD
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /app/data
+              subPath: market-monitor/data
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5847
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            timeoutSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5847
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: market-monitor
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+
+spec:
+  ingressClassName: external
+  rules:
+    - host: market-monitor.rutberg.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: market-monitor
+                port:
+                  number: 3847

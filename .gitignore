@@ -18,6 +18,7 @@ kubeconfig
 talosconfig
 
 # Misc.
+.claude/
 .private/
 .task/
 .venv/

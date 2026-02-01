@@ -20,7 +20,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: market-monitor
-          image: rutbergphilip/market-monitor:latest
+          image: rutbergphilip/market-monitor:v3.2.1
           imagePullPolicy: Always
 
           ports:

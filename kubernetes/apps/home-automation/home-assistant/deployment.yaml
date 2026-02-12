@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
         - name: install-hacs
-          image: homeassistant/home-assistant:2025.5
+          image: homeassistant/home-assistant:2026.2
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -33,7 +33,7 @@ spec:
 
       containers:
         - name: home-assistant
-          image: homeassistant/home-assistant:2025.5
+          image: homeassistant/home-assistant:2026.2
           imagePullPolicy: Always
 
           resources:

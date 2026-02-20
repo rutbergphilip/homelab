@@ -4,6 +4,8 @@ import './cards/glass-chip.js';
 import './cards/glass-header.js';
 import './cards/glass-room-card.js';
 import './cards/glass-light-slider.js';
+import './cards/glass-popup.js';
+import './cards/glass-nav-bar.js';
 
 const w = window as unknown as {
   customCards: { type: string; name: string; description: string }[];
@@ -17,6 +19,8 @@ w.customCards.push(
   { type: 'glass-header', name: 'Glass Header', description: 'Greeting, weather, status chips' },
   { type: 'glass-room-card', name: 'Glass Room Card', description: 'Room with sub-buttons and popup' },
   { type: 'glass-light-slider', name: 'Glass Light Slider', description: 'Brightness slider with glow' },
+  { type: 'glass-popup', name: 'Glass Popup', description: 'Modal overlay' },
+  { type: 'glass-nav-bar', name: 'Glass Nav Bar', description: 'Bottom navigation' },
 );
 
 console.info(

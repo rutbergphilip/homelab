@@ -2,6 +2,8 @@ import './cards/glass-background.js';
 import './cards/glass-button.js';
 import './cards/glass-chip.js';
 import './cards/glass-header.js';
+import './cards/glass-room-card.js';
+import './cards/glass-light-slider.js';
 
 const w = window as unknown as {
   customCards: { type: string; name: string; description: string }[];
@@ -13,6 +15,8 @@ w.customCards.push(
   { type: 'glass-button', name: 'Glass Button', description: 'Toggle/info button' },
   { type: 'glass-chip', name: 'Glass Chip', description: 'Small status pill' },
   { type: 'glass-header', name: 'Glass Header', description: 'Greeting, weather, status chips' },
+  { type: 'glass-room-card', name: 'Glass Room Card', description: 'Room with sub-buttons and popup' },
+  { type: 'glass-light-slider', name: 'Glass Light Slider', description: 'Brightness slider with glow' },
 );
 
 console.info(

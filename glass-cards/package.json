@@ -1,0 +1,21 @@
+{
+  "name": "glass-cards",
+  "version": "0.1.0",
+  "description": "Glassmorphism Lovelace card library for Home Assistant",
+  "type": "module",
+  "main": "dist/glass-cards.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "deploy": "node scripts/deploy.mjs"
+  },
+  "devDependencies": {
+    "lit": "^3.2.0",
+    "rollup": "^4.28.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-typescript": "^12.1.0",
+    "tslib": "^2.8.0",
+    "typescript": "^5.7.0",
+    "@rollup/plugin-terser": "^0.4.4"
+  }
+}

@@ -54,7 +54,7 @@ export class GlassBackground extends LitElement {
   set hass(hass: HomeAssistant) {
     this._hass = hass;
     this._cards.forEach((card) => {
-      if (card.hass !== undefined) card.hass = hass;
+      card.hass = hass;
     });
   }
 

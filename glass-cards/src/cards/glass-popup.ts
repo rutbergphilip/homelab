@@ -140,7 +140,7 @@ export class GlassPopup extends LitElement {
 
   set hass(hass: HomeAssistant) {
     (this as unknown as { _hass: HomeAssistant })._hass = hass;
-    this._cards.forEach((card) => { if (card.hass !== undefined) card.hass = hass; });
+    this._cards.forEach((card) => { card.hass = hass; });
   }
 
   get hass(): HomeAssistant {

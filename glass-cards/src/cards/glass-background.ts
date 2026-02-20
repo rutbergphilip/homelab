@@ -1,6 +1,5 @@
 import { html, css, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { glassAnimations } from '../styles/animations.js';
 import type { HomeAssistant, LovelaceCardConfig } from '../types.js';
 
 interface GlassBackgroundConfig extends LovelaceCardConfig {
@@ -15,7 +14,6 @@ export class GlassBackground extends LitElement {
   private _hass!: HomeAssistant;
 
   static styles = [
-    glassAnimations,
     css`
       :host {
         display: block;
@@ -28,20 +26,30 @@ export class GlassBackground extends LitElement {
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, #0a0a2e 0%, #1a0a30 25%, #0a1a2e 50%, #0d0a25 75%, #0a0a2e 100%);
-        background-size: 400% 400%;
-        animation: gradientShift 30s ease infinite;
+        background: #0b1120;
         z-index: -1;
       }
       .content {
         position: relative;
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
         padding: 12px;
         padding-bottom: 80px;
         max-width: 500px;
         margin: 0 auto;
+      }
+      /* Full-width cards */
+      .content > glass-header,
+      .content > glass-nav-bar,
+      .content > glass-popup,
+      .content > glass-info-row {
+        grid-column: 1 / -1;
+      }
+      /* Buttons and room cards fill 1 column each (2-col grid) */
+      .content > glass-button,
+      .content > glass-room-card {
+        grid-column: span 1;
       }
     `,
   ];

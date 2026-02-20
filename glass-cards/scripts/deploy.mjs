@@ -13,8 +13,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const HA_URL = 'https://home.rutberg.dev';
 const HA_WS_URL = 'wss://home.rutberg.dev/api/websocket';
-const TOKEN = readFileSync('/Users/philiprutberg/Development/homelab/.claude/ha-token', 'utf-8').trim();
-const DASHBOARD_YAML = readFileSync('/Users/philiprutberg/Development/homelab/.claude/worktrees/glass-cards/.claude/ha-glass-dashboard.yaml', 'utf-8');
+const TOKEN = readFileSync(resolve(__dirname, '../../.claude/ha-token'), 'utf-8').trim();
+const DASHBOARD_YAML = readFileSync(resolve(__dirname, '../../.claude/ha-glass-dashboard.yaml'), 'utf-8');
 
 // Parse YAML manually (simple subset needed)
 import { createRequire } from 'module';

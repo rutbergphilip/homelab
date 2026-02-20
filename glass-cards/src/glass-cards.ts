@@ -6,6 +6,8 @@ import './cards/glass-room-card.js';
 import './cards/glass-light-slider.js';
 import './cards/glass-popup.js';
 import './cards/glass-nav-bar.js';
+import './cards/glass-vacuum-card.js';
+import './cards/glass-info-row.js';
 
 const w = window as unknown as {
   customCards: { type: string; name: string; description: string }[];
@@ -21,6 +23,8 @@ w.customCards.push(
   { type: 'glass-light-slider', name: 'Glass Light Slider', description: 'Brightness slider with glow' },
   { type: 'glass-popup', name: 'Glass Popup', description: 'Modal overlay' },
   { type: 'glass-nav-bar', name: 'Glass Nav Bar', description: 'Bottom navigation' },
+  { type: 'glass-vacuum-card', name: 'Glass Vacuum Card', description: 'Vacuum controls' },
+  { type: 'glass-info-row', name: 'Glass Info Row', description: 'Information display' },
 );
 
 console.info(

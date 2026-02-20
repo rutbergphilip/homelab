@@ -23,12 +23,12 @@ export class GlassHeader extends GlassBaseElement {
     GlassBaseElement.glassStyles,
     css`
       :host { display: block; }
-      .header { padding: 16px; }
+      .header { padding: 12px 14px; }
       .top-row {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
+        gap: 10px;
+        margin-bottom: 8px;
       }
       .home-icon {
         display: flex;

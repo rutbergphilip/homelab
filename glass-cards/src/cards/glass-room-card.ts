@@ -22,10 +22,9 @@ export class GlassRoomCard extends GlassBaseElement {
     css`
       :host { display: block; }
       .room-card {
-        padding: 16px;
+        padding: 12px;
         cursor: pointer;
         user-select: none;
-        min-height: 80px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -71,8 +70,8 @@ export class GlassRoomCard extends GlassBaseElement {
       .active .room-status { color: var(--glass-accent); }
       .sub-buttons {
         display: flex;
-        gap: 6px;
-        margin-top: 12px;
+        gap: 5px;
+        margin-top: 8px;
         flex-wrap: wrap;
       }
       .sub-btn {

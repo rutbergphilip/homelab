@@ -17,8 +17,8 @@ export class GlassButton extends GlassBaseElement {
       .button {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 14px 16px;
+        gap: 10px;
+        padding: 12px;
         cursor: pointer;
         user-select: none;
       }

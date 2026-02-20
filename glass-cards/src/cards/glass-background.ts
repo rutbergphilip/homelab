@@ -33,23 +33,40 @@ export class GlassBackground extends LitElement {
         position: relative;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        padding: 12px;
-        padding-bottom: 80px;
-        max-width: 500px;
+        gap: 10px;
+        padding: 8px;
+        padding-bottom: 72px;
+        max-width: 600px;
         margin: 0 auto;
       }
       /* Full-width cards */
       .content > glass-header,
       .content > glass-nav-bar,
       .content > glass-popup,
-      .content > glass-info-row {
+      .content > glass-info-row,
+      .content > glass-section {
         grid-column: 1 / -1;
       }
-      /* Buttons and room cards fill 1 column each (2-col grid) */
+      /* Buttons and room cards fill 1 column each */
       .content > glass-button,
       .content > glass-room-card {
         grid-column: span 1;
+      }
+      /* Responsive: wider screens get more breathing room */
+      @media (min-width: 600px) {
+        .content {
+          gap: 12px;
+          padding: 12px;
+          padding-bottom: 80px;
+          max-width: 700px;
+        }
+      }
+      /* Desktop: allow 3 columns for buttons */
+      @media (min-width: 900px) {
+        .content {
+          max-width: 900px;
+          grid-template-columns: 1fr 1fr 1fr;
+        }
       }
     `,
   ];

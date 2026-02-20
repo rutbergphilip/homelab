@@ -20,8 +20,8 @@ export class GlassInfoRow extends GlassBaseElement {
       .info-card {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 14px 16px;
+        gap: 10px;
+        padding: 10px 12px;
       }
       .info-icon {
         display: flex;

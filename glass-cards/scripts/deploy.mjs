@@ -218,6 +218,13 @@ function parseYamlDashboard(yaml) {
     ]
   });
 
+  // Section: Quick access
+  bgCards.push({
+    type: 'custom:glass-section',
+    label: 'Genvägar',
+    icon: 'mdi:lightning-bolt'
+  });
+
   // Quick access buttons
   bgCards.push({
     type: 'custom:glass-button',
@@ -249,6 +256,13 @@ function parseYamlDashboard(yaml) {
     name: 'TV',
     icon: 'mdi:television',
     show_state: true
+  });
+
+  // Section: Rooms
+  bgCards.push({
+    type: 'custom:glass-section',
+    label: 'Rum',
+    icon: 'mdi:floor-plan'
   });
 
   // Room cards
@@ -327,6 +341,13 @@ function parseYamlDashboard(yaml) {
       { entity: 'light.badrum' },
       { entity: 'light.spotlight_top' }
     ]
+  });
+
+  // Section: Info
+  bgCards.push({
+    type: 'custom:glass-section',
+    label: 'Information',
+    icon: 'mdi:information-outline'
   });
 
   // Info rows

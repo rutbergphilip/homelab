@@ -1,5 +1,7 @@
 import './cards/glass-background.js';
+import './cards/glass-button.js';
 import './cards/glass-chip.js';
+import './cards/glass-header.js';
 
 const w = window as unknown as {
   customCards: { type: string; name: string; description: string }[];
@@ -8,7 +10,9 @@ w.customCards = w.customCards || [];
 
 w.customCards.push(
   { type: 'glass-background', name: 'Glass Background', description: 'Animated gradient background' },
+  { type: 'glass-button', name: 'Glass Button', description: 'Toggle/info button' },
   { type: 'glass-chip', name: 'Glass Chip', description: 'Small status pill' },
+  { type: 'glass-header', name: 'Glass Header', description: 'Greeting, weather, status chips' },
 );
 
 console.info(

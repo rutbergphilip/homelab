@@ -9,6 +9,7 @@ import './cards/glass-nav-bar.js';
 import './cards/glass-vacuum-card.js';
 import './cards/glass-info-row.js';
 import './cards/glass-section.js';
+import './cards/glass-departure-card.js';
 
 const w = window as unknown as {
   customCards: { type: string; name: string; description: string }[];
@@ -27,6 +28,7 @@ w.customCards.push(
   { type: 'glass-vacuum-card', name: 'Glass Vacuum Card', description: 'Vacuum controls' },
   { type: 'glass-info-row', name: 'Glass Info Row', description: 'Information display' },
   { type: 'glass-section', name: 'Glass Section', description: 'Section header label' },
+  { type: 'glass-departure-card', name: 'Glass Departure Card', description: 'Train departure list' },
 );
 
 console.info(

@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: pihole
   annotations:
-    lbipam.cilium.io/ips: "192.168.50.20"
+    lbipam.cilium.io/ips: "192.168.50.24"
 
 spec:
   type: LoadBalancer

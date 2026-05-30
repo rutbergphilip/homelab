@@ -5,6 +5,7 @@ namespace: network
 
 resources:
   - secret.sops.yaml
+  - configmap.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml

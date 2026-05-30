@@ -2,8 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pihole
+  annotations:
+    lbipam.cilium.io/ips: "192.168.50.20"
 
 spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
   selector:
     app: pihole
 
@@ -11,8 +15,12 @@ spec:
     - name: dns
       port: 53
       protocol: UDP
+      targetPort: 53
     - name: dns-tcp
       port: 53
       protocol: TCP
+      targetPort: 53
     - name: web
       port: 80
+      protocol: TCP
+      targetPort: 80

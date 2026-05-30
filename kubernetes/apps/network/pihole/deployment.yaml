@@ -39,6 +39,8 @@ spec:
                   key: FTLCONF_webserver_api_password
             - name: FTLCONF_dns_listeningMode
               value: "all"
+            - name: FTLCONF_dns_upstreams
+              value: "1.1.1.1;1.0.0.1"
             - name: TZ
               value: "Europe/Stockholm"
             - name: PUID
@@ -58,8 +60,15 @@ spec:
             - name: homelab-storage
               mountPath: /etc/pihole
               subPath: pihole/etc/pihole
+            - name: dnsmasq-extra
+              mountPath: /etc/dnsmasq.d/02-rutberg-dev.conf
+              subPath: 02-rutberg-dev.conf
+              readOnly: true
 
       volumes:
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc
+        - name: dnsmasq-extra
+          configMap:
+            name: pihole-dnsmasq

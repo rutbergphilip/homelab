@@ -43,6 +43,8 @@ spec:
               value: "1.1.1.1;1.0.0.1"
             - name: FTLCONF_dns_revServers
               value: "true,192.168.50.0/24,192.168.50.21,rutberg.dev"
+            - name: FTLCONF_dns_hosts
+              value: "192.168.50.1 asusrouter.com router.asus.com"
             - name: TZ
               value: "Europe/Stockholm"
             - name: PUID

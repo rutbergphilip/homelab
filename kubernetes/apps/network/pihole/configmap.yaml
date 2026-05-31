@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: pihole-dnsmasq
-data:
-  02-rutberg-dev.conf: |
-    server=/rutberg.dev/192.168.50.21

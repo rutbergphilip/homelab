@@ -1,0 +1,61 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: restock-watcher
+  namespace: home-automation
+  labels:
+    app: restock-watcher
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 50
+      template:
+        metadata:
+          labels:
+            app: restock-watcher
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000 # lets the bun user write to the state subPath
+          containers:
+            - name: checker
+              image: oven/bun:1-alpine
+              imagePullPolicy: IfNotPresent
+              command: ["bun", "run", "/app/checker.ts"]
+              env:
+                - name: TZ
+                  value: "Europe/Stockholm"
+                - name: STORE_BASE
+                  value: "https://escentica.se"
+                - name: PRODUCT_HANDLE
+                  value: "blonde-amber"
+                - name: STATE_FILE
+                  value: "/state/state.json"
+                - name: RENOTIFY_MINUTES
+                  value: "60"
+                - name: DISCORD_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: restock-watcher-secrets
+                      key: discord-webhook-url
+              resources:
+                requests: { cpu: "10m", memory: "32Mi" }
+                limits: { cpu: "100m", memory: "128Mi" }
+              volumeMounts:
+                - { name: script, mountPath: /app, readOnly: true }
+                - { name: state, mountPath: /state, subPath: restock-watcher }
+          volumes:
+            - name: script
+              configMap:
+                name: restock-watcher-script
+            - name: state
+              persistentVolumeClaim:
+                claimName: homelab-nfs-pvc

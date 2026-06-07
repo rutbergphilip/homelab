@@ -41,6 +41,8 @@ spec:
                   value: "/state/state.json"
                 - name: RENOTIFY_MINUTES
                   value: "60"
+                - name: DISCORD_MENTION_USER_ID
+                  value: "743211997910270053"
                 - name: DISCORD_WEBHOOK_URL
                   valueFrom:
                     secretKeyRef:

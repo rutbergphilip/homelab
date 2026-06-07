@@ -9,6 +9,7 @@ const WEBHOOK = requireEnv("DISCORD_WEBHOOK_URL");
 const STATE_FILE = process.env.STATE_FILE; // unset => stateless (ping every run)
 const RENOTIFY_MINUTES = Number(process.env.RENOTIFY_MINUTES ?? "60");
 const FORCE_NOTIFY = process.env.FORCE_NOTIFY === "true"; // for testing the webhook
+const MENTION_USER_ID = process.env.DISCORD_MENTION_USER_ID; // ping this user on notify
 const USER_AGENT =
   process.env.USER_AGENT ?? "homelab-restock-watcher/1.0 (personal use)";
 
@@ -63,6 +64,9 @@ async function notifyDiscord(product: ProductJs, available: Variant[]): Promise<
 
   const body = {
     username: "Restock Watcher",
+    // Mentions only ping when placed in `content`, not inside an embed.
+    content: MENTION_USER_ID ? `<@${MENTION_USER_ID}>` : undefined,
+    allowed_mentions: MENTION_USER_ID ? { users: [MENTION_USER_ID] } : undefined,
     embeds: [
       {
         title: `🟢 ${product.title} is back in stock`,

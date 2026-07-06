@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kcal-assistant-backup
+  labels:
+    app: kcal-assistant
+
+spec:
+  schedule: "0 3 * * *"
+  timeZone: "Europe/Stockholm"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 120
+      template:
+        metadata:
+          labels:
+            app: kcal-assistant-backup
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: backup
+              image: oven/bun:1-alpine
+              imagePullPolicy: IfNotPresent
+              command: ["bun", "run", "/app/backup.ts"]
+              env:
+                - name: SRC
+                  value: "/data/kcal.db"
+              volumeMounts:
+                - name: script
+                  mountPath: /app
+                  readOnly: true
+                - name: homelab-storage
+                  mountPath: /data
+                  subPath: kcal-assistant/data
+                  readOnly: true
+                - name: homelab-storage
+                  mountPath: /backups
+                  subPath: kcal-assistant/backups
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          volumes:
+            - name: script
+              configMap:
+                name: kcal-assistant-backup-script
+            - name: homelab-storage
+              persistentVolumeClaim:
+                claimName: homelab-nfs-pvc

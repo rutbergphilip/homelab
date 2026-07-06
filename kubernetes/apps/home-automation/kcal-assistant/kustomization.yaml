@@ -9,3 +9,9 @@ resources:
   - ./deployment.yaml
   - ./service.yaml
   - ./ingress.yaml
+  - ./backup-cronjob.yaml
+
+configMapGenerator:
+  - name: kcal-assistant-backup-script
+    files:
+      - backup.ts

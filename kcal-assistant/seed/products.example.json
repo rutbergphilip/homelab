@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Kycklingfilé",
+    "per_100g": { "kcal": 106, "protein": 23, "fat": 1.5, "carbs": 0 },
+    "aliases": ["kyckling"],
+    "verified": true
+  },
+  {
+    "name": "ProPud Milkshake Choklad",
+    "brand": "NJIE",
+    "per_100g": { "kcal": 58, "protein": 6.1, "fat": 0.9, "carbs": 4.7 },
+    "aliases": ["propud", "proteinshake"],
+    "portions": [{ "name": "flaska", "grams": 330 }],
+    "notes": "ProPud betyder alltid flaskan, aldrig burken",
+    "verified": true
+  },
+  {
+    "name": "Kycklingkebab fryst",
+    "brand": "Eldorado",
+    "per_100g": { "kcal": 113, "protein": 9.7, "fat": 3.3, "carbs": 11.1 },
+    "aliases": ["kebab", "kycklingkebaben"],
+    "portions": [{ "name": "påse", "grams": 500 }],
+    "notes": "Väg fryst",
+    "verified": true
+  }
+]

@@ -16,3 +16,4 @@ resources:
   - ./homarr
   - ./market-monitor
   - ./restock-watcher
+  - ./kcal-assistant

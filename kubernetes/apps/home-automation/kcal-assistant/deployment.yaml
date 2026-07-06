@@ -1,0 +1,78 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kcal-assistant
+  labels:
+    app: kcal-assistant
+
+spec:
+  replicas: 1
+  # SQLite on NFS tolerates exactly one writer process; never run two pods.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kcal-assistant
+  template:
+    metadata:
+      labels:
+        app: kcal-assistant
+
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: kcal-assistant
+          image: rutbergphilip/kcal-assistant:v0.1.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 3000
+
+          env:
+            - name: TZ
+              value: "Europe/Stockholm"
+            - name: PORT
+              value: "3000"
+            - name: DB_PATH
+              value: "/app/data/kcal.db"
+            - name: MCP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kcal-assistant-secrets
+                  key: MCP_TOKEN
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /app/data
+              subPath: kcal-assistant/data
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

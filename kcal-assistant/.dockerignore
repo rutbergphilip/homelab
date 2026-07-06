@@ -1,0 +1,9 @@
+node_modules
+tests
+seed
+scripts
+*.db
+*.db-journal
+README.md
+Dockerfile
+.dockerignore

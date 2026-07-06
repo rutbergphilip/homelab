@@ -1,6 +1,8 @@
 # kcal-assistant
 
-Personal MCP server for Philip's calorie tracking, used as a custom connector in the Claude app. Holds the product database, meal log, standing preferences/rules, and an Open Food Facts lookup. Runs on the homelab cluster at `https://kcal.rutberg.dev/mcp/<token>`.
+Personal MCP server for Philip's calorie tracking, used as a custom connector in the Claude app. Holds the product database, meal log, standing preferences/rules, an Open Food Facts lookup, live discovery against his ICA store (Maxi ICA Stormarknad Nynäshamn via handlaprivatkund.ica.se, `search_store`), and a week summary (`get_week`). Runs on the homelab cluster at `https://kcal.rutberg.dev/mcp/<token>`.
+
+Note on ICA: the endpoints are the store site's own web API (no auth). Its WAF requires a browser User-Agent. Nutrition per 100g/100ml is parsed from the product pages' näringsvärde table; details are cached in-memory for 7 days.
 
 The server owns all arithmetic: item macros, day totals and remaining vs targets are computed here with the "räkna högt" rules (kcal/fat/carbs rounded up, protein rounded down) so the LLM never does math.
 
@@ -27,6 +29,7 @@ bunx tsc --noEmit
 | `MCP_TOKEN` | yes | - | Secret URL path segment; requests to `/mcp/<MCP_TOKEN>` are served, all else 404s |
 | `DB_PATH` | no | `./kcal.db` | SQLite file (NFS-mounted in the cluster) |
 | `PORT` | no | `3000` | HTTP port |
+| `ICA_STORE_ID` | no | `1003421` | Store for `search_store` (Maxi ICA Stormarknad Nynäshamn) |
 
 ## Seed products
 

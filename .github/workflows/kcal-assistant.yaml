@@ -1,0 +1,36 @@
+---
+name: kcal-assistant
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["kcal-assistant/**"]
+  workflow_dispatch: {}
+
+jobs:
+  build-push:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: echo "version=$(jq -r .version kcal-assistant/package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: kcal-assistant
+          push: true
+          platforms: linux/amd64
+          tags: |
+            rutbergphilip/kcal-assistant:v${{ steps.version.outputs.version }}
+            rutbergphilip/kcal-assistant:latest

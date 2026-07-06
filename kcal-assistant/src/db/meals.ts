@@ -254,6 +254,63 @@ export function editMeal(
   return getDay(db, meal.day_date);
 }
 
+export interface WeekView {
+  start_date: string;
+  end_date: string;
+  days: Array<{
+    date: string;
+    day_type: string;
+    has_meals: boolean;
+    totals: Macros;
+    target_kcal: number;
+  }>;
+  days_logged: number;
+  avg_logged: Macros | null; // averages over days that have meals
+  avg_target_kcal: number; // average target across all 7 days by their day type
+}
+
+export function getWeek(db: Database, endDate?: string): WeekView {
+  const end = resolveDate(endDate);
+  const [y, m, d] = end.split("-").map(Number) as [number, number, number];
+  const dates: string[] = [];
+  for (let offset = 6; offset >= 0; offset--) {
+    const dt = new Date(Date.UTC(y, m - 1, d - offset));
+    dates.push(dt.toISOString().slice(0, 10));
+  }
+
+  const days = dates.map((date) => {
+    const day = getDay(db, date);
+    return {
+      date,
+      day_type: day.day_type,
+      has_meals: day.meals.length > 0,
+      totals: day.totals,
+      target_kcal: day.targets.kcal,
+    };
+  });
+
+  const logged = days.filter((day) => day.has_meals);
+  const r1 = (x: number) => Math.round(x * 10) / 10;
+  const avgLogged =
+    logged.length === 0
+      ? null
+      : {
+          kcal: Math.round(logged.reduce((a, day) => a + day.totals.kcal, 0) / logged.length),
+          protein: r1(logged.reduce((a, day) => a + day.totals.protein, 0) / logged.length),
+          fat: r1(logged.reduce((a, day) => a + day.totals.fat, 0) / logged.length),
+          carbs: r1(logged.reduce((a, day) => a + day.totals.carbs, 0) / logged.length),
+        };
+
+  return {
+    start_date: dates[0]!,
+    end_date: end,
+    days,
+    days_logged: logged.length,
+    avg_logged: avgLogged,
+    avg_target_kcal: Math.round(days.reduce((a, day) => a + day.target_kcal, 0) / days.length),
+  };
+}
+
 export function setDayType(db: Database, dayType: string, date?: string): DayView {
   getTargetsFor(db, dayType); // validates the type
   const resolved = resolveDate(date);

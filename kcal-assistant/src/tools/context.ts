@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
-import { getDay } from "../db/meals";
+import { getDay, getWeek } from "../db/meals";
 import { listPreferences, getTargets, type Preference } from "../db/preferences";
 import { dateSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
@@ -38,5 +38,15 @@ export function registerContextTools(server: McpServer, db: Database): void {
       inputSchema: { date: dateSchema.optional() },
     },
     wrap(({ date }) => jsonResult(getDay(db, date))),
+  );
+
+  server.registerTool(
+    "get_week",
+    {
+      description:
+        "Week summary (veckosnitt) for the 7 days ending at end_date (default today): per-day totals and day types, averages over logged days, and the average kcal target. Use to evaluate kalori-cykling — the weekly average is what counts.",
+      inputSchema: { end_date: dateSchema.optional() },
+    },
+    wrap(({ end_date }) => jsonResult(getWeek(db, end_date))),
   );
 }

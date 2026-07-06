@@ -63,7 +63,7 @@ describe("http routing", () => {
 });
 
 describe("mcp over streamable http", () => {
-  test("lists all 12 tools", async () => {
+  test("lists all 14 tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
@@ -77,10 +77,12 @@ describe("mcp over streamable http", () => {
         "log_meal",
         "edit_meal",
         "get_day",
+        "get_week",
         "set_day_type",
         "set_targets",
         "save_preference",
         "delete_preference",
+        "search_store",
       ].sort(),
     );
     await client.close();

@@ -10,4 +10,5 @@ export const config = {
   },
   dbPath: process.env.DB_PATH ?? "./kcal.db",
   port: Number(process.env.PORT ?? 3000),
+  icaStoreId: process.env.ICA_STORE_ID ?? "1003421", // Maxi ICA Stormarknad Nynäshamn
 };

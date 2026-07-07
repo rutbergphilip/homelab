@@ -1,6 +1,8 @@
 # kcal-assistant
 
-Personal MCP server for Philip's calorie tracking, used as a custom connector in the Claude app. Holds the product database, meal log, standing preferences/rules, an Open Food Facts lookup, live discovery against his ICA store (Maxi ICA Stormarknad Nynäshamn via handlaprivatkund.ica.se, `search_store`), and a week summary (`get_week`). Runs on the homelab cluster at `https://kcal.rutberg.dev/mcp/<token>`.
+Personal MCP server for Philip's calorie tracking, used as a custom connector in the Claude app. Holds the product database, meal log, standing preferences/rules, an Open Food Facts lookup, live discovery against his ICA store (Maxi ICA Stormarknad Nynäshamn via handlaprivatkund.ica.se, `search_store`), week summaries (`get_week`), a weight log with backwards-computed TDEE (`log_weight`/`get_trend`), a mealprep batch calculator (`compute_batch`), and dry-run day planning (`preview_day`). Runs on the homelab cluster at `https://kcal.rutberg.dev/mcp/<token>`.
+
+The server owns ALL nutrition math: item/meal/day computation at logging, plan previews, batch per-100g derivation, and the TDEE trend (`TDEE = snittintag + Δkg × 7700 ÷ dagar`, intake averaged over the same span as the weight delta, with staleness and uncertainty flags). Weight data lives only in the SQLite database, never in this repo.
 
 Note on ICA: the endpoints are the store site's own web API (no auth). Its WAF requires a browser User-Agent. Nutrition per 100g/100ml is parsed from the product pages' näringsvärde table; details are cached in-memory for 7 days.
 

@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
 import { getDay, getWeek } from "../db/meals";
+import { getTrend } from "../db/weights";
 import { listPreferences, getTargets, type Preference } from "../db/preferences";
 import { dateSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
@@ -21,13 +22,23 @@ export function registerContextTools(server: McpServer, db: Database): void {
         "Call this at the START of every conversation. Returns Philip's standing rules and style preferences (follow them exactly; user-facing text is Swedish), all day-type targets, and today's log with totals and remaining vs targets. Always use the server's numbers, never compute macros yourself.",
       inputSchema: { date: dateSchema.optional() },
     },
-    wrap(({ date }) =>
-      jsonResult({
+    wrap(({ date }) => {
+      const trend = getTrend(db);
+      return jsonResult({
         preferences: groupPreferences(listPreferences(db)),
         all_targets: getTargets(db),
         day: getDay(db, date),
-      }),
-    ),
+        ...(trend.latest && {
+          weight: {
+            latest: trend.latest,
+            rate_kg_week: trend.trend?.rate_kg_week ?? null,
+            est_tdee: trend.trend?.est_tdee ?? null,
+            uncertain: trend.trend?.uncertain ?? null,
+            stale: trend.stale,
+          },
+        }),
+      });
+    }),
   );
 
   server.registerTool(

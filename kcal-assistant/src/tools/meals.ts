@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
 import { z } from "zod";
-import { logMeal, editMeal, setDayType } from "../db/meals";
+import { logMeal, editMeal, setDayType, previewDay } from "../db/meals";
 import { setTargets } from "../db/preferences";
 import { dateSchema, dayTypeSchema, mealItemSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
@@ -36,6 +36,31 @@ export function registerMealTools(server: McpServer, db: Database): void {
       },
     },
     wrap((input) => jsonResult(editMeal(db, input))),
+  );
+
+  server.registerTool(
+    "preview_day",
+    {
+      description:
+        "Dry-run a day plan with EXACT server math — use this for ALL day planning instead of computing macros yourself. Saves nothing. Returns logged meals (already eaten today) separately from planned meals, combined totals, remaining vs targets, and floor checks. If a planned meal duplicates a logged one, drop it from the plan or set include_logged false.",
+      inputSchema: {
+        date: dateSchema.optional(),
+        meals: z
+          .array(
+            z.object({
+              name: z.string().min(1),
+              items: z.array(mealItemSchema).min(1),
+              post_gym_shake: z.boolean().optional(),
+            }),
+          )
+          .min(1),
+        include_logged: z
+          .boolean()
+          .optional()
+          .describe("Default true: today's logged meals count toward the totals"),
+      },
+    },
+    wrap((input) => jsonResult(previewDay(db, input))),
   );
 
   server.registerTool(

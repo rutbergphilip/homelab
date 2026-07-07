@@ -2,7 +2,8 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
 import { z } from "zod";
 import { getProduct, saveProduct, searchProducts } from "../db/products";
-import { macrosSchema, portionSchema } from "./schemas";
+import { computeBatch } from "../db/batch";
+import { macrosSchema, mealItemSchema, portionSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
 
 export function registerProductTools(server: McpServer, db: Database): void {
@@ -50,5 +51,30 @@ export function registerProductTools(server: McpServer, db: Database): void {
       },
     },
     wrap((input) => jsonResult(saveProduct(db, input))),
+  );
+
+  server.registerTool(
+    "compute_batch",
+    {
+      description:
+        "Recalculate a mealprep batch (e.g. köttfärsblandningen) with exact server math and optionally save it as a product. Enter ingredients AS THEY END UP IN THE BATCH (e.g. 'stekt färs efter fettavhällning' as its own entry with its macros). cooked_weight_g = weighed batch after cooking; defaults to the ingredient gram sum. save defaults to FALSE — set true (with product_id to update in place) once Philip confirms.",
+      inputSchema: {
+        name: z.string().min(1),
+        product_id: z.number().int().optional().describe("Update this product instead of creating"),
+        ingredients: z.array(mealItemSchema).min(1),
+        cooked_weight_g: z.number().positive().optional(),
+        portion: z
+          .object({
+            name: z.string().min(1).describe("E.g. 'låda'"),
+            grams: z.number().positive().optional(),
+            count: z.number().positive().optional().describe("Portions per batch, e.g. 7.5"),
+          })
+          .optional(),
+        aliases: z.array(z.string()).optional(),
+        notes: z.string().optional().describe("Recipe summary so it can be recomputed later"),
+        save: z.boolean().optional(),
+      },
+    },
+    wrap((input) => jsonResult(computeBatch(db, input))),
   );
 }

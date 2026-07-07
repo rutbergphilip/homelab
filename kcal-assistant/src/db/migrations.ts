@@ -97,6 +97,15 @@ const MIGRATIONS: string[] = [
     ('regel', 'Ingen kompensation dagen efter en flexdag', 70),
     ('regel', 'Post-gym-shaken listas alltid sist i dagslistan', 80);
   `,
+  // 2: weight log
+  `
+  CREATE TABLE weights (
+    date       TEXT PRIMARY KEY,
+    weight_kg  REAL NOT NULL CHECK (weight_kg > 0 AND weight_kg < 500),
+    note       TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  `,
 ];
 
 export function migrate(db: Database): void {

@@ -63,7 +63,7 @@ describe("http routing", () => {
 });
 
 describe("mcp over streamable http", () => {
-  test("lists all 14 tools", async () => {
+  test("lists all 18 tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
@@ -83,8 +83,34 @@ describe("mcp over streamable http", () => {
         "save_preference",
         "delete_preference",
         "search_store",
+        "log_weight",
+        "get_trend",
+        "compute_batch",
+        "preview_day",
       ].sort(),
     );
+    await client.close();
+  });
+
+  test("preview_day round-trips through the MCP client", async () => {
+    const client = await connect();
+    const preview = parseResult(
+      await client.callTool({
+        name: "preview_day",
+        arguments: {
+          date: "2026-07-08",
+          meals: [
+            {
+              name: "Planerad lunch",
+              items: [{ description: "Testrätt", macros: { kcal: 700, protein: 190, fat: 65, carbs: 30 } }],
+            },
+          ],
+        },
+      }),
+    );
+    expect(preview.planned_meals).toHaveLength(1);
+    expect(preview.totals.kcal).toBe(700);
+    expect(preview.checks.protein_floor_ok).toBe(true);
     await client.close();
   });
 

@@ -49,7 +49,7 @@ function ensureDay(db: Database, date: string): void {
   db.run("INSERT OR IGNORE INTO days (date) VALUES (?)", [date]);
 }
 
-interface ResolvedItem {
+export interface ResolvedItem {
   product_id: number | null;
   description: string;
   grams: number | null;
@@ -58,7 +58,7 @@ interface ResolvedItem {
   macros: Macros;
 }
 
-function resolveItem(db: Database, item: MealItemInput): ResolvedItem {
+export function resolveItem(db: Database, item: MealItemInput): ResolvedItem {
   if (item.macros) {
     const description =
       item.description ?? (item.product_id ? getProduct(db, item.product_id)?.name : undefined);
@@ -152,23 +152,14 @@ function insertItems(db: Database, mealId: number, items: MealItemInput[]): void
   }
 }
 
-export function getDay(db: Database, date?: string): DayView {
-  const resolved = resolveDate(date);
-  ensureDay(db, resolved);
-  const day = db
-    .query<{ date: string; day_type: string }, [string]>(
-      "SELECT date, day_type FROM days WHERE date = ?",
-    )
-    .get(resolved)!;
-  const targets = getTargetsFor(db, day.day_type);
-
+function readMeals(db: Database, date: string): MealView[] {
   const mealRows = db
     .query<{ id: number; name: string; post_gym_shake: number; logged_at: string }, [string]>(
       "SELECT id, name, post_gym_shake, logged_at FROM meals WHERE day_date = ? ORDER BY post_gym_shake ASC, logged_at ASC, id ASC",
     )
-    .all(resolved);
+    .all(date);
 
-  const meals: MealView[] = mealRows.map((m) => {
+  return mealRows.map((m) => {
     const items = db
       .query<MealItemView, [number]>(
         "SELECT id, product_id, description, grams, quantity, portion_name, kcal, protein, fat, carbs FROM meal_items WHERE meal_id = ? ORDER BY id",
@@ -184,7 +175,18 @@ export function getDay(db: Database, date?: string): DayView {
       ...mealMacros,
     };
   });
+}
 
+export function getDay(db: Database, date?: string): DayView {
+  const resolved = resolveDate(date);
+  ensureDay(db, resolved);
+  const day = db
+    .query<{ date: string; day_type: string }, [string]>(
+      "SELECT date, day_type FROM days WHERE date = ?",
+    )
+    .get(resolved)!;
+  const targets = getTargetsFor(db, day.day_type);
+  const meals = readMeals(db, resolved);
   const totals = sumMacros(meals);
   const r1 = (x: number) => Math.round(x * 10) / 10;
   return {
@@ -308,6 +310,81 @@ export function getWeek(db: Database, endDate?: string): WeekView {
     days_logged: logged.length,
     avg_logged: avgLogged,
     avg_target_kcal: Math.round(days.reduce((a, day) => a + day.target_kcal, 0) / days.length),
+  };
+}
+
+export interface PreviewMealInput {
+  name: string;
+  items: MealItemInput[];
+  post_gym_shake?: boolean;
+}
+
+export interface PreviewMealView extends Macros {
+  name: string;
+  post_gym_shake: boolean;
+  items: Array<{ description: string; grams: number | null } & Macros>;
+}
+
+export interface DayPreview {
+  date: string;
+  day_type: string;
+  targets: DayTargets;
+  logged_meals: Array<{ name: string } & Macros>;
+  planned_meals: PreviewMealView[];
+  totals: Macros;
+  remaining: DayView["remaining"];
+  checks: { protein_floor_ok: boolean; fat_floor_ok: boolean };
+}
+
+// Dry-run day planning: identical math to logging, zero writes (no ensureDay).
+export function previewDay(
+  db: Database,
+  input: { date?: string; meals: PreviewMealInput[]; include_logged?: boolean },
+): DayPreview {
+  const date = resolveDate(input.date);
+  const dayRow = db
+    .query<{ day_type: string }, [string]>("SELECT day_type FROM days WHERE date = ?")
+    .get(date);
+  const dayType = dayRow?.day_type ?? "vilodag";
+  const targets = getTargetsFor(db, dayType);
+
+  const logged = input.include_logged === false ? [] : readMeals(db, date);
+  const planned: PreviewMealView[] = input.meals.map((meal) => {
+    const resolved = meal.items.map((item) => resolveItem(db, item));
+    const macros = sumMacros(resolved.map((r) => r.macros));
+    return {
+      name: meal.name,
+      post_gym_shake: meal.post_gym_shake ?? false,
+      items: resolved.map((r) => ({ description: r.description, grams: r.grams, ...r.macros })),
+      ...macros,
+    };
+  });
+
+  const totals = sumMacros([...logged, ...planned]);
+  const r1 = (x: number) => Math.round(x * 10) / 10;
+  return {
+    date,
+    day_type: dayType,
+    targets,
+    logged_meals: logged.map((m) => ({
+      name: m.name,
+      kcal: m.kcal,
+      protein: m.protein,
+      fat: m.fat,
+      carbs: m.carbs,
+    })),
+    planned_meals: planned,
+    totals,
+    remaining: {
+      kcal: targets.kcal - totals.kcal,
+      protein_to_min: Math.max(0, r1(targets.protein_min - totals.protein)),
+      fat_to_min: Math.max(0, r1(targets.fat_min - totals.fat)),
+      carbs: targets.carbs === null ? null : r1(targets.carbs - totals.carbs),
+    },
+    checks: {
+      protein_floor_ok: totals.protein >= targets.protein_min,
+      fat_floor_ok: totals.fat >= targets.fat_min,
+    },
   };
 }
 

@@ -74,6 +74,41 @@ describe("saveProduct / getProduct", () => {
     expect(updated.portions[0]!.grams).toBeNull();
   });
 
+  test("update by id is PARTIAL: omitted fields are preserved", () => {
+    const p = saveProduct(db, {
+      name: "Kycklingspett",
+      brand: "Lönneberga",
+      per_100g: { kcal: 100, protein: 21, fat: 1.3, carbs: 1 },
+      aliases: ["spett"],
+      portions: [{ name: "spett", grams: 120 }],
+      notes: "Ursprunglig regel",
+      verified: false,
+      source: "estimate",
+    });
+    // The LLM's typical "just update the note" call must not destroy anything else
+    const updated = saveProduct(db, { id: p.id, name: "Kycklingspett", notes: "Räknas styckvis" });
+    expect(updated.notes).toBe("Räknas styckvis");
+    expect(updated.per_100g).toEqual({ kcal: 100, protein: 21, fat: 1.3, carbs: 1 });
+    expect(updated.brand).toBe("Lönneberga");
+    expect(updated.aliases).toEqual(["spett"]);
+    expect(updated.portions).toHaveLength(1);
+    expect(updated.verified).toBe(false);
+    expect(updated.source).toBe("estimate");
+  });
+
+  test("explicit empty string clears notes; explicit values still replace", () => {
+    const p = saveProduct(db, {
+      name: "X",
+      per_100g: { kcal: 100, protein: 10, fat: 5, carbs: 2 },
+      notes: "gammal",
+      verified: false,
+    });
+    const updated = saveProduct(db, { id: p.id, name: "X", notes: "", verified: true });
+    expect(updated.notes).toBeNull();
+    expect(updated.verified).toBe(true);
+    expect(updated.per_100g!.kcal).toBe(100);
+  });
+
   test("unverified estimate keeps its source marker", () => {
     const p = saveProduct(db, {
       name: "Okänd sås",

@@ -126,8 +126,15 @@ export function saveProduct(db: Database, input: ProductInput): Product {
     let id = input.id;
     const m = input.per_100g;
     if (id) {
-      const exists = db.query("SELECT 1 FROM products WHERE id = ?").get(id);
-      if (!exists) throw new Error(`Product ${id} not found`);
+      const existing = db
+        .query<ProductRow, [number]>("SELECT * FROM products WHERE id = ?")
+        .get(id);
+      if (!existing) throw new Error(`Product ${id} not found`);
+      // PARTIAL update: omitted fields keep their current values so a
+      // "just update the note" call can never wipe macros. Empty string
+      // explicitly clears a text field.
+      const clearable = (value: string | null | undefined, current: string | null) =>
+        value === undefined ? current : value === "" ? null : value;
       db.run(
         `UPDATE products SET
            name = ?, brand = ?, kcal_100g = ?, protein_100g = ?, fat_100g = ?, carbs_100g = ?,
@@ -135,14 +142,14 @@ export function saveProduct(db: Database, input: ProductInput): Product {
          WHERE id = ?`,
         [
           input.name,
-          input.brand ?? null,
-          m?.kcal ?? null,
-          m?.protein ?? null,
-          m?.fat ?? null,
-          m?.carbs ?? null,
-          input.notes ?? null,
-          input.verified === false ? 0 : 1,
-          input.source ?? "manual",
+          clearable(input.brand, existing.brand),
+          m === undefined ? existing.kcal_100g : m?.kcal ?? null,
+          m === undefined ? existing.protein_100g : m?.protein ?? null,
+          m === undefined ? existing.fat_100g : m?.fat ?? null,
+          m === undefined ? existing.carbs_100g : m?.carbs ?? null,
+          clearable(input.notes, existing.notes),
+          input.verified === undefined ? existing.verified : input.verified ? 1 : 0,
+          input.source ?? existing.source,
           id,
         ],
       );

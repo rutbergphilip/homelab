@@ -7,6 +7,7 @@ import { registerPreferenceTools } from "./tools/preferences";
 import { registerNutritionTools } from "./tools/nutrition";
 import { registerStoreTools } from "./tools/store";
 import { registerWeightTools } from "./tools/weights";
+import { registerRecipeTools } from "./tools/recipes";
 
 // A fresh McpServer per request (stateless Streamable HTTP). The Database is
 // the shared singleton — safe because bun:sqlite is synchronous.
@@ -19,5 +20,6 @@ export function buildMcpServer(db: Database): McpServer {
   registerNutritionTools(server);
   registerStoreTools(server);
   registerWeightTools(server, db);
+  registerRecipeTools(server, db);
   return server;
 }

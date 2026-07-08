@@ -63,7 +63,7 @@ describe("http routing", () => {
 });
 
 describe("mcp over streamable http", () => {
-  test("lists all 18 tools", async () => {
+  test("lists all 22 tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
@@ -87,8 +87,32 @@ describe("mcp over streamable http", () => {
         "get_trend",
         "compute_batch",
         "preview_day",
+        "save_recipe",
+        "get_recipe",
+        "find_recipes",
+        "delete_recipe",
       ].sort(),
     );
+    await client.close();
+  });
+
+  test("save_recipe -> get_recipe round-trips through the MCP client", async () => {
+    const client = await connect();
+    const saved = parseResult(
+      await client.callTool({
+        name: "save_recipe",
+        arguments: {
+          name: "Testrecept",
+          servings: 2,
+          ingredients: [
+            { description: "Testbas", macros: { kcal: 400, protein: 40, fat: 10, carbs: 20 } },
+          ],
+        },
+      }),
+    );
+    expect(saved.id).toBeGreaterThan(0);
+    const fetched = parseResult(await client.callTool({ name: "get_recipe", arguments: { id: saved.id } }));
+    expect(fetched.per_serving.kcal).toBe(200);
     await client.close();
   });
 

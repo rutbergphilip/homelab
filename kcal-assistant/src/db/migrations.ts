@@ -106,6 +106,32 @@ const MIGRATIONS: string[] = [
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   `,
+  // 3: recipes — ingredient rows store the raw INPUT (portion items keep
+  // portion_name+quantity with grams NULL) so macros resolve live at read time
+  `
+  CREATE TABLE recipes (
+    id           INTEGER PRIMARY KEY,
+    name         TEXT NOT NULL,
+    instructions TEXT,
+    notes        TEXT,
+    tags         TEXT,
+    servings     REAL,
+    product_id   INTEGER REFERENCES products(id) ON DELETE SET NULL,
+    created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE recipe_ingredients (
+    id          INTEGER PRIMARY KEY,
+    recipe_id   INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+    position    INTEGER NOT NULL,
+    product_id  INTEGER REFERENCES products(id) ON DELETE SET NULL,
+    description TEXT NOT NULL,
+    grams REAL, quantity REAL, portion_name TEXT,
+    kcal REAL, protein REAL, fat REAL, carbs REAL,
+    CHECK ((kcal IS NULL) = (protein IS NULL) AND (kcal IS NULL) = (fat IS NULL) AND (kcal IS NULL) = (carbs IS NULL))
+  );
+  CREATE INDEX idx_recipe_ingredients_recipe ON recipe_ingredients(recipe_id);
+  `,
 ];
 
 export function migrate(db: Database): void {

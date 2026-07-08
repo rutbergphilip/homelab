@@ -37,7 +37,7 @@ export function registerProductTools(server: McpServer, db: Database): void {
     "save_product",
     {
       description:
-        "Create a product, or update one by passing id (THE single place to correct values when packaging/recipes change). aliases and portions replace the existing lists wholesale when provided. For estimated values set verified:false and round kcal/fat/carbs UP, protein DOWN. Store product-specific rules in notes (e.g. 'väg fryst').",
+        "Create a product, or update one by passing id (THE single place to correct values when packaging/recipes change). Updates are PARTIAL: omitted fields keep their current values, so updating notes never touches macros. Empty string clears a text field; aliases and portions replace the existing lists wholesale when provided. For estimated values set verified:false and round kcal/fat/carbs UP, protein DOWN. Store product-specific rules in notes (e.g. 'väg fryst', 'räknas styckvis').",
       inputSchema: {
         id: z.number().int().optional().describe("Set to update an existing product"),
         name: z.string().min(1),

@@ -7,6 +7,10 @@ metadata:
   namespace: security
 spec:
   interval: 1h
+  # Authentik's first boot runs hundreds of DB migrations + blueprint apply,
+  # which exceeds the default 5m. 15m gives it room so the release doesn't get
+  # marked Failed while it is in fact still coming up healthy.
+  timeout: 15m
   chart:
     spec:
       chart: authentik
@@ -16,9 +20,11 @@ spec:
         name: authentik
         namespace: flux-system
   install:
+    timeout: 15m
     remediation:
       retries: 3
   upgrade:
+    timeout: 15m
     cleanupOnFail: true
     remediation:
       retries: 3

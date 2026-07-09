@@ -5,6 +5,7 @@ import { resolveUiAuthState } from "./ui/auth";
 
 const db = getDb(); // opens + migrates before we accept traffic
 const uiAuth = resolveUiAuthState({
+  authentikEmail: config.authentikAllowedEmail,
   teamDomain: config.cfAccessTeamDomain,
   aud: config.cfAccessAud,
   email: config.cfAccessEmail,

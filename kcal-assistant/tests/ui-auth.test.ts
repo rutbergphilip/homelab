@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll } from "bun:test";
 import { generateKeyPair, exportJWK, SignJWT, createLocalJWKSet } from "jose";
-import { createUiAuth, resolveUiAuthState } from "../src/ui/auth";
+import { createUiAuth, createAuthentikAuth, resolveUiAuthState } from "../src/ui/auth";
 
 const ISSUER = "https://test.cloudflareaccess.com";
 const AUD = "test-aud-tag";
@@ -112,5 +112,39 @@ describe("resolveUiAuthState", () => {
   test("dev bypass works outside production, REFUSED in production", () => {
     expect(resolveUiAuthState({ devNoAuth: true, nodeEnv: "development" }).mode).toBe("dev-bypass");
     expect(resolveUiAuthState({ devNoAuth: true, nodeEnv: "production" }).mode).toBe("unconfigured");
+  });
+
+  test("CF configured state reads the CF header", () => {
+    const state = resolveUiAuthState({ ...env, devNoAuth: false, nodeEnv: "production" });
+    expect(state.mode).toBe("configured");
+    if (state.mode === "configured") expect(state.header).toBe("cf-access-jwt-assertion");
+  });
+
+  test("Authentik email takes precedence and reads the authentik header", () => {
+    const state = resolveUiAuthState({
+      ...env,
+      authentikEmail: "philip@rutberg.dev",
+      devNoAuth: false,
+      nodeEnv: "production",
+    });
+    expect(state.mode).toBe("configured");
+    if (state.mode === "configured") expect(state.header).toBe("x-authentik-email");
+  });
+});
+
+describe("createAuthentikAuth", () => {
+  const auth = createAuthentikAuth("Philip@Rutberg.dev");
+
+  test("accepts the allowed email case-insensitively", async () => {
+    expect((await auth("philip@rutberg.dev")).ok).toBe(true);
+    expect((await auth("PHILIP@RUTBERG.DEV ")).ok).toBe(true); // trims + folds case
+  });
+
+  test("rejects wrong or missing email with 403", async () => {
+    for (const bad of [undefined, "", "attacker@evil.com"]) {
+      const r = await auth(bad);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.status).toBe(403);
+    }
   });
 });

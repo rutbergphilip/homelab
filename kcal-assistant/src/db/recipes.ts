@@ -9,6 +9,8 @@ export interface RecipeInput {
   notes?: string;
   tags?: string;
   servings?: number | null;
+  active_minutes?: number | null;
+  total_minutes?: number | null;
   product_id?: number | null;
   ingredients?: MealItemInput[];
 }
@@ -34,6 +36,8 @@ export interface RecipeView {
   notes: string | null;
   tags: string | null;
   servings: number | null;
+  active_minutes: number | null;
+  total_minutes: number | null;
   product_id: number | null;
   updated_at: string;
   ingredients: RecipeIngredientView[];
@@ -47,6 +51,7 @@ export interface RecipeSummary {
   name: string;
   tags: string | null;
   servings: number | null;
+  total_minutes: number | null;
   kcal_per_serving: number | null;
   incomplete?: true;
 }
@@ -58,6 +63,8 @@ interface RecipeRow {
   notes: string | null;
   tags: string | null;
   servings: number | null;
+  active_minutes: number | null;
+  total_minutes: number | null;
   product_id: number | null;
   updated_at: string;
 }
@@ -172,6 +179,8 @@ export function getRecipe(db: Database, id: number): RecipeView | null {
     notes: row.notes,
     tags: row.tags,
     servings: row.servings,
+    active_minutes: row.active_minutes,
+    total_minutes: row.total_minutes,
     product_id: row.product_id,
     updated_at: row.updated_at,
     ingredients,
@@ -179,6 +188,20 @@ export function getRecipe(db: Database, id: number): RecipeView | null {
     ...(incomplete && { totals_incomplete: true as const }),
     per_serving,
   };
+}
+
+function validateTimes(active: number | null, total: number | null): void {
+  for (const [label, v] of [
+    ["active_minutes", active],
+    ["total_minutes", total],
+  ] as const) {
+    if (v !== null && (!Number.isInteger(v) || v <= 0)) {
+      throw new Error(`${label} måste vara ett positivt heltal (minuter)`);
+    }
+  }
+  if (active !== null && total !== null && total < active) {
+    throw new Error("total_minutes kan inte vara mindre än active_minutes");
+  }
 }
 
 export function saveRecipe(db: Database, input: RecipeInput): RecipeView {
@@ -190,9 +213,15 @@ export function saveRecipe(db: Database, input: RecipeInput): RecipeView {
     if (id) {
       const existing = db.query<RecipeRow, [number]>("SELECT * FROM recipes WHERE id = ?").get(id);
       if (!existing) throw new Error(`Recipe ${id} not found`);
+      const active =
+        input.active_minutes === undefined ? existing.active_minutes : input.active_minutes;
+      const total =
+        input.total_minutes === undefined ? existing.total_minutes : input.total_minutes;
+      validateTimes(active, total);
       db.run(
         `UPDATE recipes SET
            name = ?, instructions = ?, notes = ?, tags = ?, servings = ?, product_id = ?,
+           active_minutes = ?, total_minutes = ?,
            updated_at = datetime('now')
          WHERE id = ?`,
         [
@@ -202,6 +231,8 @@ export function saveRecipe(db: Database, input: RecipeInput): RecipeView {
           clearable(input.tags, existing.tags),
           input.servings === undefined ? existing.servings : input.servings,
           input.product_id === undefined ? existing.product_id : input.product_id,
+          active,
+          total,
           id,
         ],
       );
@@ -209,8 +240,11 @@ export function saveRecipe(db: Database, input: RecipeInput): RecipeView {
       if (!input.ingredients || input.ingredients.length === 0) {
         throw new Error("Ett recept behöver minst en ingrediens");
       }
+      const active = input.active_minutes ?? null;
+      const total = input.total_minutes ?? null;
+      validateTimes(active, total);
       const result = db.run(
-        "INSERT INTO recipes (name, instructions, notes, tags, servings, product_id) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO recipes (name, instructions, notes, tags, servings, product_id, active_minutes, total_minutes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
           input.name,
           input.instructions ?? null,
@@ -218,6 +252,8 @@ export function saveRecipe(db: Database, input: RecipeInput): RecipeView {
           input.tags ?? null,
           input.servings ?? null,
           input.product_id ?? null,
+          active,
+          total,
         ],
       );
       id = Number(result.lastInsertRowid);
@@ -274,6 +310,7 @@ export function findRecipes(db: Database, query?: string): RecipeSummary[] {
       name: row.name,
       tags: row.tags,
       servings: row.servings,
+      total_minutes: row.total_minutes,
       kcal_per_serving: full.per_serving?.kcal ?? null,
       ...(full.totals_incomplete && { incomplete: true as const }),
     };

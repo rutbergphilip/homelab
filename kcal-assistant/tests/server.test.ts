@@ -63,7 +63,7 @@ describe("http routing", () => {
 });
 
 describe("mcp over streamable http", () => {
-  test("lists all 22 tools", async () => {
+  test("lists all 24 tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
@@ -91,6 +91,8 @@ describe("mcp over streamable http", () => {
         "get_recipe",
         "find_recipes",
         "delete_recipe",
+        "set_profile",
+        "get_forecast",
       ].sort(),
     );
     await client.close();
@@ -188,6 +190,21 @@ describe("mcp over streamable http", () => {
       arguments: { name: "Trasig", items: [{ product_id: 99999, grams: 100 }] },
     });
     expect(result.isError).toBe(true);
+    await client.close();
+  });
+
+  test("set_profile -> get_forecast round-trips", async () => {
+    const client = await connect();
+    await client.callTool({
+      name: "set_profile",
+      arguments: { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5, goal_weight_kg: 80 },
+    });
+    await client.callTool({ name: "log_weight", arguments: { weight_kg: 82 } });
+    const res = await client.callTool({ name: "get_forecast", arguments: {} });
+    const body = JSON.parse((res.content as Array<{ text: string }>)[0]!.text);
+    expect(body.forecast.goal.weight_kg).toBe(80);
+    expect(body.forecast.curve.length).toBeGreaterThan(40); // weekly points over 365 days
+    expect(body.forecast.curve.length).toBeLessThan(60);
     await client.close();
   });
 });

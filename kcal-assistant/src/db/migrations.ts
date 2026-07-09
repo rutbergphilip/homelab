@@ -132,6 +132,23 @@ const MIGRATIONS: string[] = [
   );
   CREATE INDEX idx_recipe_ingredients_recipe ON recipe_ingredients(recipe_id);
   `,
+  // 4: recipe cooking times (Claude estimates, server stores) + single-row
+  // physiological profile used by the weight forecast
+  `
+  ALTER TABLE recipes ADD COLUMN active_minutes INTEGER;
+  ALTER TABLE recipes ADD COLUMN total_minutes INTEGER;
+
+  CREATE TABLE profile (
+    id              INTEGER PRIMARY KEY CHECK (id = 1),
+    birth_date      TEXT NOT NULL,
+    sex             TEXT NOT NULL CHECK (sex IN ('man','kvinna')),
+    height_cm       REAL NOT NULL CHECK (height_cm > 0),
+    activity_factor REAL NOT NULL CHECK (activity_factor >= 1.2 AND activity_factor <= 2.5),
+    goal_weight_kg  REAL CHECK (goal_weight_kg > 0),
+    goal_date       TEXT,
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  `,
 ];
 
 export function migrate(db: Database): void {

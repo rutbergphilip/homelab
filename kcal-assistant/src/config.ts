@@ -11,4 +11,9 @@ export const config = {
   dbPath: process.env.DB_PATH ?? "./kcal.db",
   port: Number(process.env.PORT ?? 3000),
   icaStoreId: process.env.ICA_STORE_ID ?? "1003421", // Maxi ICA Stormarknad Nynäshamn
+  cfAccessTeamDomain: process.env.CF_ACCESS_TEAM_DOMAIN,
+  cfAccessAud: process.env.CF_ACCESS_AUD,
+  cfAccessEmail: process.env.CF_ACCESS_EMAIL,
+  uiDevNoAuth: process.env.UI_DEV_NO_AUTH === "1",
+  nodeEnv: process.env.NODE_ENV,
 };

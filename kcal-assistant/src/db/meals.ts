@@ -177,21 +177,21 @@ function readMeals(db: Database, date: string): MealView[] {
   });
 }
 
-export function getDay(db: Database, date?: string): DayView {
+// Non-mutating read: no ensureDay INSERT — missing day rows default to
+// vilodag. The UI's read-only guarantee depends on this.
+export function readDay(db: Database, date?: string): DayView {
   const resolved = resolveDate(date);
-  ensureDay(db, resolved);
   const day = db
-    .query<{ date: string; day_type: string }, [string]>(
-      "SELECT date, day_type FROM days WHERE date = ?",
-    )
-    .get(resolved)!;
-  const targets = getTargetsFor(db, day.day_type);
+    .query<{ day_type: string }, [string]>("SELECT day_type FROM days WHERE date = ?")
+    .get(resolved);
+  const dayType = day?.day_type ?? "vilodag";
+  const targets = getTargetsFor(db, dayType);
   const meals = readMeals(db, resolved);
   const totals = sumMacros(meals);
   const r1 = (x: number) => Math.round(x * 10) / 10;
   return {
     date: resolved,
-    day_type: day.day_type,
+    day_type: dayType,
     targets,
     meals,
     totals,
@@ -202,6 +202,45 @@ export function getDay(db: Database, date?: string): DayView {
       carbs: targets.carbs === null ? null : r1(targets.carbs - totals.carbs),
     },
   };
+}
+
+export function getDay(db: Database, date?: string): DayView {
+  const resolved = resolveDate(date);
+  ensureDay(db, resolved);
+  return readDay(db, resolved);
+}
+
+export interface DaySummary {
+  date: string;
+  day_type: string;
+  meal_count: number;
+  totals: Macros;
+}
+
+// Read-only list of days that actually have meals, newest first.
+export function listDays(
+  db: Database,
+  limit = 60,
+  offset = 0,
+): { total: number; days: DaySummary[] } {
+  const total = db
+    .query<{ n: number }, []>("SELECT count(DISTINCT day_date) AS n FROM meals")
+    .get()!.n;
+  const dates = db
+    .query<{ day_date: string }, [number, number]>(
+      "SELECT DISTINCT day_date FROM meals ORDER BY day_date DESC LIMIT ? OFFSET ?",
+    )
+    .all(limit, offset);
+  const days = dates.map(({ day_date }) => {
+    const day = readDay(db, day_date);
+    return {
+      date: day_date,
+      day_type: day.day_type,
+      meal_count: day.meals.length,
+      totals: day.totals,
+    };
+  });
+  return { total, days };
 }
 
 export function logMeal(
@@ -281,7 +320,7 @@ export function getWeek(db: Database, endDate?: string): WeekView {
   }
 
   const days = dates.map((date) => {
-    const day = getDay(db, date);
+    const day = readDay(db, date); // non-mutating: getWeek never creates day rows
     return {
       date,
       day_type: day.day_type,

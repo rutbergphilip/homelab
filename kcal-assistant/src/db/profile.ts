@@ -41,6 +41,24 @@ export function setProfile(db: Database, input: ProfileInput): Profile {
       throw new Error(`Ogiltigt datum för ${field}: ${value} (YYYY-MM-DD)`);
     }
   }
+  if (input.sex !== undefined && input.sex !== "man" && input.sex !== "kvinna") {
+    throw new Error(`Ogiltigt kön: ${input.sex} (man eller kvinna)`);
+  }
+  if (input.height_cm !== undefined && !(input.height_cm > 0)) {
+    throw new Error(`Orimlig längd: ${input.height_cm} cm`);
+  }
+  if (
+    input.activity_factor !== undefined &&
+    !(input.activity_factor >= 1.2 && input.activity_factor <= 2.5)
+  ) {
+    throw new Error(`Orimlig aktivitetsfaktor: ${input.activity_factor} (1.2–2.5)`);
+  }
+  if (
+    typeof input.goal_weight_kg === "number" &&
+    !(input.goal_weight_kg > 0)
+  ) {
+    throw new Error(`Orimlig målvikt: ${input.goal_weight_kg} kg`);
+  }
   const existing = getProfile(db);
   if (!existing) {
     if (

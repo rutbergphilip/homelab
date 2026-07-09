@@ -41,4 +41,17 @@ describe("profile", () => {
       setProfile(db, { birth_date: "15/01/2000", sex: "man", height_cm: 180, activity_factor: 1.5 }),
     ).toThrow(/datum/i);
   });
+
+  test("rejects out-of-range physiological fields with Swedish messages", () => {
+    const base = { birth_date: "2000-01-15", height_cm: 180, activity_factor: 1.5 } as const;
+    expect(() => setProfile(db, { ...base, sex: "male" as never })).toThrow(/kön/);
+    expect(() => setProfile(db, { ...base, sex: "man", height_cm: -5 })).toThrow(/längd/i);
+    expect(() => setProfile(db, { ...base, sex: "man", activity_factor: 3.0 })).toThrow(
+      /aktivitetsfaktor/,
+    );
+    expect(() =>
+      setProfile(db, { ...base, sex: "man", goal_weight_kg: -1 }),
+    ).toThrow(/målvikt/);
+    expect(getProfile(db)).toBeNull();
+  });
 });

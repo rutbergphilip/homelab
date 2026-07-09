@@ -25,6 +25,14 @@ export function logWeight(
   return getTrend(db);
 }
 
+export function listWeights(db: Database): Array<WeightEntry & { note: string | null }> {
+  return db
+    .query<WeightEntry & { note: string | null }, []>(
+      "SELECT date, weight_kg, note FROM weights ORDER BY date DESC",
+    )
+    .all();
+}
+
 export function getTrend(db: Database, windowDays = 28): WeightTrendView {
   const allWeights = db
     .query<WeightEntry, []>("SELECT date, weight_kg FROM weights ORDER BY date")

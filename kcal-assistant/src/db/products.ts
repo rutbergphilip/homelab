@@ -198,6 +198,13 @@ export function saveProduct(db: Database, input: ProductInput): Product {
   return getProduct(db, id)!;
 }
 
+export function listProducts(db: Database): Product[] {
+  return db
+    .query<{ id: number }, []>("SELECT id FROM products ORDER BY name COLLATE NOCASE")
+    .all()
+    .map(({ id }) => getProduct(db, id)!);
+}
+
 export function searchProducts(db: Database, query: string, limit = 8): Product[] {
   const tokens = query
     .trim()

@@ -14,7 +14,7 @@ let baseUrl: string;
 
 beforeAll(async () => {
   db = openDb(":memory:");
-  httpServer = createHttpServer({ token: TOKEN, db });
+  httpServer = createHttpServer({ token: TOKEN, db, uiAuth: { mode: "unconfigured" } });
   await new Promise<void>((resolve) => httpServer.listen(0, resolve));
   const { port } = httpServer.address() as AddressInfo;
   baseUrl = `http://127.0.0.1:${port}`;

@@ -1,0 +1,26 @@
+# Serves /outpost.goauthentik.io/* on kcal.rutberg.dev (login page, callback,
+# auth endpoint) by proxying to the Authentik embedded outpost. NO forward-auth
+# here — this IS the auth handshake. upstream-vhost keeps Host: kcal.rutberg.dev
+# so the outpost matches the kcal provider (external_host https://kcal.rutberg.dev).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kcal-assistant-outpost
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/upstream-vhost: "kcal.rutberg.dev"
+spec:
+  ingressClassName: external
+  rules:
+    - host: kcal.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80

@@ -43,7 +43,7 @@ spec:
             # forwarded identity. Setting this switches UI auth from Cloudflare
             # Access to Authentik. Unset => UI fails closed (503).
             - name: AUTHENTIK_ALLOWED_EMAIL
-              value: "admin@rutberg.dev"
+              value: "philiprutberg00@gmail.com"
             - name: MCP_TOKEN
               valueFrom:
                 secretKeyRef:

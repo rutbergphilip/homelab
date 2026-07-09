@@ -479,12 +479,3 @@ button.chip:focus-visible { outline: 2px solid var(--accent-dim); outline-offset
   cursor: pointer;
 }
 .pill-flags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-
-/* forecast (v0.6) */
-.forecast-line { stroke: var(--accent); stroke-width: 2; fill: none; opacity: .4; stroke-dasharray: 6 5; stroke-linejoin: round; }
-.forecast-band { fill: var(--accent); opacity: .07; }
-.goal-line { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
-.marker-line { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
-.forecast-picker { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
-.forecast-picker input[type="date"] { font: inherit; background: var(--bg); color: var(--ink); border: 1px solid var(--hair); border-radius: 4px; padding: 4px 8px; }
-button.chip { font: inherit; cursor: pointer; }

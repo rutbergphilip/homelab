@@ -139,6 +139,13 @@ spec:
           cpu: 300m
           memory: 512Mi
 
+    # Git-managed Authentik objects (providers/applications/outpost config).
+    # Mounts every *.yaml key of the ConfigMap on server + worker under
+    # /blueprints/mounted/; authentik auto-discovers and re-applies them.
+    blueprints:
+      configMaps:
+        - authentik-blueprints
+
     # Persistence - disabled since we use external PostgreSQL
     postgresql:
       enabled: false

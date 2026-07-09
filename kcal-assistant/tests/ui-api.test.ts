@@ -8,6 +8,7 @@ import { saveProduct } from "../src/db/products";
 import { logMeal } from "../src/db/meals";
 import { logWeight } from "../src/db/weights";
 import { saveRecipe } from "../src/db/recipes";
+import { setProfile } from "../src/db/profile";
 
 const TOKEN = "test-token";
 let httpServer: Server;
@@ -147,5 +148,25 @@ describe("read-only UI API", () => {
     // MCP and healthz unaffected
     expect((await fetch(`http://127.0.0.1:${port}/healthz`)).status).toBe(200);
     await new Promise((r) => closed.close(r));
+  });
+
+  test("forecast without profile returns a reason", async () => {
+    const body = await (await get("/ui/api/forecast")).json();
+    expect(body.forecast).toBeNull();
+    expect(body.reason).toContain("profil");
+  });
+
+  test("forecast with profile returns the full daily curve", async () => {
+    setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5, goal_weight_kg: 80 });
+    const res = await get("/ui/api/forecast?source=targets");
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.forecast.curve.length).toBeGreaterThan(300);
+    expect(body.forecast.assumptions.intake_source).toBe("targets");
+    expect(body.forecast.goal.weight_kg).toBe(80);
+  });
+
+  test("forecast rejects an unknown source", async () => {
+    expect((await get("/ui/api/forecast?source=x")).status).toBe(400);
   });
 });

@@ -4,6 +4,7 @@ import { listProducts } from "../db/products";
 import { findRecipes, getRecipe } from "../db/recipes";
 import { getTrend, listWeights } from "../db/weights";
 import { listPreferences, getTargets } from "../db/preferences";
+import { buildForecast, type IntakeSource } from "../db/forecast";
 import { isValidDate } from "../lib/dates";
 
 export interface UiApiResponse {
@@ -67,6 +68,17 @@ export function handleUiApi(db: Database, pathname: string, search: URLSearchPar
       case "weights": {
         if (param !== undefined) return NOT_FOUND;
         return { status: 200, body: { weights: listWeights(db), trend: getTrend(db, 28) } };
+      }
+      case "forecast": {
+        if (param !== undefined) return NOT_FOUND;
+        const raw = search.get("source");
+        if (raw !== null && raw !== "targets" && raw !== "recent") {
+          return { status: 400, body: { error: "ogiltig källa" } };
+        }
+        // raw is typed string|null — literal comparisons don't narrow it,
+        // so pick the union value explicitly.
+        const source: IntakeSource = raw === "recent" ? "recent" : "targets";
+        return { status: 200, body: buildForecast(db, { intake_source: source }) };
       }
       case "preferences": {
         if (param !== undefined) return NOT_FOUND;

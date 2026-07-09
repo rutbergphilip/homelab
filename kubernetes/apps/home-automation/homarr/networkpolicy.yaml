@@ -1,0 +1,22 @@
+# Restrict who can reach the homarr pod so the X-authentik-* headers cannot
+# be forged by a pod that bypasses nginx in-cluster. Ingress-only policy —
+# homarr's own outbound widget/integration calls are unaffected. Allowed:
+#   - the external ingress-nginx controller (all real traffic), and
+#   - host + remote-node entities (kubelet probes come from the node).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: homarr
+spec:
+  endpointSelector:
+    matchLabels:
+      app: homarr
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: network
+            app.kubernetes.io/instance: external-ingress-nginx
+            app.kubernetes.io/component: controller
+    - fromEntities:
+        - host
+        - remote-node

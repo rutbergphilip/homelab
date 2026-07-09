@@ -362,7 +362,8 @@ async function renderVikt() {
   }
 
   const series = [...data.weights].reverse(); // ascending by date
-  if (series.length >= 2) view.append(weightChart(series));
+  const chartHost = el("div");
+  view.append(chartHost);
 
   const tiles = el("div", "tiles");
   tiles.append(tile("Senast", `${sv(data.trend.latest.weight_kg)} kg`, data.trend.latest.date + (data.trend.stale ? " · gammal" : "")));
@@ -380,6 +381,11 @@ async function renderVikt() {
   }
   view.append(tiles);
 
+  view.append(el("h2", "", "Prognos"));
+  const prognosHost = el("div");
+  view.append(prognosHost);
+  await loadPrognos(chartHost, prognosHost, series, "targets");
+
   view.append(el("h2", "", "Alla vägningar"));
   const wrap = el("div", "tablewrap");
   const table = el("table");
@@ -395,20 +401,106 @@ async function renderVikt() {
   view.append(wrap);
 }
 
-function weightChart(series) {
+async function loadPrognos(chartHost, prognosHost, series, source) {
+  let fc;
+  try {
+    fc = await api(`/ui/api/forecast?source=${source}`);
+  } catch (e) {
+    fc = { forecast: null, reason: "kunde inte hämtas" };
+  }
+  chartHost.replaceChildren();
+  if (series.length >= 2 || fc.forecast) chartHost.append(weightChart(series, fc.forecast));
+  prognosHost.replaceChildren();
+
+  if (!fc.forecast) {
+    prognosHost.append(el("div", "empty", `Ingen prognos: ${fc.reason}`));
+    return;
+  }
+  const f = fc.forecast;
+
+  const tiles = el("div", "tiles");
+  if (f.goal) {
+    tiles.append(
+      tile("Målvikt", `${sv(f.goal.weight_kg)} kg`, f.goal.reached ? "uppnådd" : f.goal.eta ? `nås ≈ ${f.goal.eta}` : f.goal.reason),
+    );
+  }
+  if (f.weight_at_goal_date) {
+    tiles.append(tile("Vid måldatum", `≈ ${sv(f.weight_at_goal_date.kg)} kg`, f.weight_at_goal_date.date));
+  }
+  tiles.append(
+    tile("TDEE i kalkylen", sv(f.assumptions.tdee_start, 0), f.assumptions.calibration === "mätdata" ? "kalibrerad mot mätdata" : "formel (Mifflin-St Jeor)"),
+  );
+  tiles.append(
+    tile(
+      "Intag i kalkylen",
+      sv(f.assumptions.intake_kcal, 0),
+      f.assumptions.intake_source === "targets" ? "planmål (dagstypsmix)" : f.assumptions.intake_source === "recent" ? "snitt senaste 28 d" : "angivet",
+    ),
+  );
+  prognosHost.append(tiles);
+
+  // Real-time lookup: the daily curve is already here — no network per date.
+  const byDate = new Map(f.curve.map((p) => [p.date, p]));
+  const picker = el("div", "forecast-picker");
+  const input = el("input");
+  input.type = "date";
+  input.min = f.curve[0].date;
+  input.max = f.curve[f.curve.length - 1].date;
+  input.value = f.weight_at_goal_date ? f.weight_at_goal_date.date : f.curve[Math.min(30, f.curve.length - 1)].date;
+  const out = el("span", "num");
+  const show = () => {
+    const p = byDate.get(input.value);
+    out.textContent = p ? `≈ ${sv(p.kg)} kg (${sv(p.low)}–${sv(p.high)})` : "—";
+  };
+  input.addEventListener("input", show);
+  picker.append(el("span", "label", "Uppskattad vikt"), input, out);
+  prognosHost.append(picker);
+
+  const toggle = el("div", "chip-row");
+  for (const [key, label] of [["targets", "planmål"], ["recent", "senaste 28 d"]]) {
+    const chip = el("button", `chip${key === source ? " accent" : ""}`, label);
+    chip.addEventListener("click", () => {
+      if (key !== source) loadPrognos(chartHost, prognosHost, series, key);
+    });
+    toggle.append(chip);
+  }
+  prognosHost.append(toggle);
+
+  if (f.notes.length) prognosHost.append(el("div", "note", f.notes.join(" · ")));
+  show();
+}
+
+function weightChart(series, forecast) {
   const NS = "http://www.w3.org/2000/svg";
   const W = 640, H = 240, M = { top: 16, right: 52, bottom: 24, left: 10 };
   const frame = el("div", "chart-frame");
   const svg = document.createElementNS(NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", "Viktutveckling, kg över tid");
+  svg.setAttribute("aria-label", "Viktutveckling och prognos, kg över tid");
+
+  // Draw the projection only to just past the goal anchors (or 60 days) so
+  // the history is not compressed into a sliver by a 365-day tail.
+  const proj = forecast ? forecast.curve : [];
+  const DAY = 86400000;
+  const anchors = forecast
+    ? [forecast.goal && forecast.goal.eta, forecast.weight_at_goal_date && forecast.weight_at_goal_date.date]
+        .filter(Boolean)
+        .map((d) => Date.parse(d))
+    : [];
+  const horizon = proj.length
+    ? (anchors.length ? Math.max(...anchors) + 7 * DAY : Date.parse(proj[0].date) + 60 * DAY)
+    : 0;
+  const drawn = proj.filter((p) => Date.parse(p.date) <= horizon);
+  const goalKg = forecast && forecast.goal ? forecast.goal.weight_kg : null;
 
   const days = series.map((w) => Date.parse(w.date));
   const kgs = series.map((w) => w.weight_kg);
-  const x0 = Math.min(...days), x1 = Math.max(...days);
-  const pad = Math.max(0.4, (Math.max(...kgs) - Math.min(...kgs)) * 0.15);
-  const y0 = Math.min(...kgs) - pad, y1 = Math.max(...kgs) + pad;
+  const allDays = [...days, ...drawn.map((p) => Date.parse(p.date))];
+  const allKgs = [...kgs, ...drawn.flatMap((p) => [p.low, p.high]), ...(goalKg !== null ? [goalKg] : [])];
+  const x0 = Math.min(...allDays), x1 = Math.max(...allDays);
+  const pad = Math.max(0.4, (Math.max(...allKgs) - Math.min(...allKgs)) * 0.15);
+  const y0 = Math.min(...allKgs) - pad, y1 = Math.max(...allKgs) + pad;
   const X = (t) => M.left + ((t - x0) / Math.max(1, x1 - x0)) * (W - M.left - M.right);
   const Y = (kg) => H - M.bottom - ((kg - y0) / (y1 - y0)) * (H - M.top - M.bottom);
 
@@ -429,7 +521,7 @@ function weightChart(series) {
     label.textContent = sv(kg, 1);
     svg.append(label);
   }
-  // x labels: first + last date
+  // x labels: first + last date of the drawn domain
   for (const [t, anchor] of [[x0, "start"], [x1, "end"]]) {
     const label = document.createElementNS(NS, "text");
     label.setAttribute("class", "axis-label");
@@ -440,11 +532,67 @@ function weightChart(series) {
     svg.append(label);
   }
 
-  const path = document.createElementNS(NS, "path");
-  path.setAttribute("class", "trend-line");
-  path.setAttribute("d", series.map((w, i) => `${i === 0 ? "M" : "L"}${X(days[i]).toFixed(1)},${Y(kgs[i]).toFixed(1)}`).join(""));
-  svg.append(path);
+  // uncertainty band (under everything else)
+  if (drawn.length >= 2) {
+    const band = document.createElementNS(NS, "path");
+    band.setAttribute("class", "forecast-band");
+    const top = drawn.map((p, i) => `${i === 0 ? "M" : "L"}${X(Date.parse(p.date)).toFixed(1)},${Y(p.high).toFixed(1)}`).join("");
+    const bottom = [...drawn].reverse().map((p) => `L${X(Date.parse(p.date)).toFixed(1)},${Y(p.low).toFixed(1)}`).join("");
+    band.setAttribute("d", `${top}${bottom}Z`);
+    svg.append(band);
+  }
 
+  // goal weight line + vertical markers (eta, goal date)
+  if (goalKg !== null) {
+    const gl = document.createElementNS(NS, "line");
+    gl.setAttribute("class", "goal-line");
+    gl.setAttribute("x1", M.left);
+    gl.setAttribute("x2", W - M.right);
+    gl.setAttribute("y1", Y(goalKg));
+    gl.setAttribute("y2", Y(goalKg));
+    svg.append(gl);
+  }
+  const markers = [];
+  if (forecast && forecast.goal && forecast.goal.eta) markers.push([forecast.goal.eta, "mål"]);
+  if (forecast && forecast.weight_at_goal_date) markers.push([forecast.weight_at_goal_date.date, "måldatum"]);
+  for (const [date, text] of markers) {
+    const t = Date.parse(date);
+    if (t < x0 || t > x1) continue;
+    const ml = document.createElementNS(NS, "line");
+    ml.setAttribute("class", "marker-line");
+    ml.setAttribute("x1", X(t));
+    ml.setAttribute("x2", X(t));
+    ml.setAttribute("y1", M.top);
+    ml.setAttribute("y2", H - M.bottom);
+    svg.append(ml);
+    const label = document.createElementNS(NS, "text");
+    label.setAttribute("class", "axis-label");
+    label.setAttribute("x", X(t) + 3);
+    label.setAttribute("y", M.top + 8);
+    label.textContent = text;
+    svg.append(label);
+  }
+
+  // projection: dashed, low opacity — clearly an estimate
+  if (drawn.length >= 1 && series.length >= 1) {
+    const lastT = days[days.length - 1];
+    const lastKg = kgs[kgs.length - 1];
+    const fp = document.createElementNS(NS, "path");
+    fp.setAttribute("class", "forecast-line");
+    const d =
+      `M${X(lastT).toFixed(1)},${Y(lastKg).toFixed(1)}` +
+      drawn.map((p) => `L${X(Date.parse(p.date)).toFixed(1)},${Y(p.kg).toFixed(1)}`).join("");
+    fp.setAttribute("d", d);
+    svg.append(fp);
+  }
+
+  // actual weigh-ins: full opacity line + dots (drawn last, on top)
+  if (series.length >= 2) {
+    const path = document.createElementNS(NS, "path");
+    path.setAttribute("class", "trend-line");
+    path.setAttribute("d", series.map((w, i) => `${i === 0 ? "M" : "L"}${X(days[i]).toFixed(1)},${Y(kgs[i]).toFixed(1)}`).join(""));
+    svg.append(path);
+  }
   series.forEach((w, i) => {
     const dot = document.createElementNS(NS, "circle");
     dot.setAttribute("class", `trend-dot${i === series.length - 1 ? " last" : ""}`);
@@ -457,7 +605,7 @@ function weightChart(series) {
     svg.append(dot);
   });
 
-  // selective direct label: last point only
+  // selective direct label: last actual point only
   const last = series[series.length - 1];
   const label = document.createElementNS(NS, "text");
   label.setAttribute("class", "point-label");

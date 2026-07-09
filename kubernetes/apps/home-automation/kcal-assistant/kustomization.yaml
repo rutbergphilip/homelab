@@ -10,6 +10,7 @@ resources:
   - ./service.yaml
   - ./ingress.yaml
   - ./ingress-ui.yaml
+  - ./networkpolicy.yaml
   - ./backup-cronjob.yaml
 
 configMapGenerator:

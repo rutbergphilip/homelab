@@ -50,7 +50,15 @@ conversation.
 Self-hosted SSO at `https://auth.rutberg.dev` (namespace `security`). Chosen over
 Cloudflare Access. Resurrecting it also fixed the long-red flux-local CI.
 
-**Status: LIVE and protecting kcal `/ui`.** Login verified end-to-end.
+**Status: LIVE and protecting kcal `/ui`, homarr (dashboard.rutberg.dev) and
+pihole (pihole.rutberg.dev).** Login verified end-to-end. Provider/application/
+outpost config now lives in git as a blueprint (see below) — the "config only
+in DB" gap is closed.
+
+**Scope decisions (2026-07-09):** jellyfin, plex, home-assistant, jellyseerr,
+the arr-stack and qbittorrent get NO Authentik middleware (native auth,
+NAS-backed, client apps break under forward-auth). trilium skipped for now
+(Philip's call). market-monitor skipped (full native JWT+session auth).
 
 **How kcal /ui is protected (single-application forward auth):**
 - The whole auth handshake runs on `kcal.rutberg.dev` so the session cookie and
@@ -71,15 +79,14 @@ under `authentik.*` (it flattens to literal env). Secrets are injected via
 `global.env` with real `valueFrom.secretKeyRef`. Postgres/Redis are raw manifests
 on `local-path-provisioner`; postgres runs as uid 70.
 
-> **Robustness gap:** the Authentik provider / application / outpost config for
-> kcal was created via the API and lives ONLY in the postgres DB (PVC-persistent),
-> NOT in git. It survives restarts and normal deploys. If the DB is ever lost,
-> recreate: proxy provider `kcal` (mode forward_single, external_host
-> `https://kcal.rutberg.dev`, authz flow default-provider-authorization-implicit-consent,
-> invalidation default-provider-invalidation-flow), application slug `kcal`,
-> assign to the embedded outpost, and set the outpost `authentik_host` +
-> `authentik_host_browser` to `https://auth.rutberg.dev`. The GitOps-correct
-> fix is to capture this as Authentik **blueprints** in git (see "What's left").
+> **Robustness gap CLOSED (2026-07-09, PR #376):** all forward-auth providers/
+> applications and the embedded-outpost assignment are now a git blueprint at
+> `kubernetes/apps/security/authentik/app/blueprints/forward-auth.yaml`,
+> mounted via the chart's `blueprints.configMaps` and re-applied automatically.
+> **Do NOT edit these objects in the UI/API** — the blueprint overwrites drift.
+> To add an app: append provider+application entries AND the provider to the
+> outpost's cumulative `providers:` list (full-replacement semantics), plus the
+> per-app k8s manifests. Full recipe in `security/authentik/SETUP-GUIDE.md`.
 
 ---
 
@@ -96,23 +103,32 @@ on `local-path-provisioner`; postgres runs as uid 70.
 
 ## What's left (all optional / follow-ups)
 
-- **Authentik config as blueprints in git** — closes the "config only in DB" gap;
-  makes the kcal provider/app/outpost reproducible via GitOps.
-- **Personal Authentik user** instead of `akadmin` (then update `AUTHENTIK_ALLOWED_EMAIL`);
-  optionally bind the kcal Application to an only-Philip policy.
-- **Expand SSO** to other home-automation apps (each needs its own Authentik proxy
-  provider + application + a local /outpost path, same pattern as kcal). Grafana
-  OIDC (its `[auth.generic_oauth]` block + re-enable).
+- **Personal Authentik user** (email philiprutberg00@gmail.com): Philip creates
+  it in the UI (Directory → Users), then a one-line PR updates
+  `AUTHENTIK_ALLOWED_EMAIL` in kcal's deployment.yaml; optionally bind
+  applications to an only-Philip group policy via blueprint.
+- **trilium SSO** (skipped 2026-07-09) — if resurrected, pre-check desktop/
+  mobile sync clients first (exempt /etapi + sync paths), and clean up its
+  stale ingress-with-auth.yaml/ingress.yaml.backup in the same PR.
+- **Grafana OIDC** — blocked on resurrecting the observability stack first
+  (Grafana isn't deployed; orphaned `observability/prometheus` Kustomization).
 - **kcal get_week UX / preview_meal** and other product ideas as they come up.
-- **Move Authentik off the pinned 2025.12.4** when convenient (Renovate PRs exist).
+- **Move Authentik off the pinned 2025.12.4** (Renovate PR #257): only after
+  blueprints have soaked; take a postgres pg_dump first (no migration
+  downgrades — the dump IS the rollback), re-check worker probe overrides
+  against upstream changes.
 
 ## Known minor issues
 
-- `authentik-worker` readiness probe flaps (0/1) due to the pid-file startup-probe
-  timing; the worker is functionally healthy (processes tasks, `ak healthcheck`
-  passes) and nothing routes to it via a Service, so it's cosmetic.
+- ~~authentik-worker probe flap~~ **FIXED 2026-07-09 (PR #375):** `ak
+  healthcheck` exceeded the chart-default 3s exec-probe timeout and liveness
+  was killing the healthy worker (had escalated to CrashLoopBackOff);
+  timeoutSeconds now 15 via HelmRelease worker probe overrides.
 - Pre-existing unrelated drift: a red `observability/prometheus` Kustomization
   points at a repo path that doesn't exist (observability is disabled).
+- If a future ingress-nginx upgrade tightens `annotations-risk-level`, snippet
+  annotations (auth-snippet) break ALL forward-auth apps at once — browser-test
+  kcal /ui after any ingress-nginx bump.
 
 ## Operational notes / gotchas learned
 

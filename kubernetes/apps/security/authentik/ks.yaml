@@ -11,6 +11,12 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+    # Required: the parent security/kustomization.yaml sets namespace: security,
+    # which forces this Kustomization CR into the security namespace. Without an
+    # explicit source namespace it looks for GitRepository in security and fails
+    # with "GitRepository flux-system not found". Every working app pins this.
+    namespace: flux-system
+  targetNamespace: security
   path: ./kubernetes/apps/security/authentik/app
   prune: true
   wait: true

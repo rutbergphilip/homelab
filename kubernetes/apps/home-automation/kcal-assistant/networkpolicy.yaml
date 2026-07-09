@@ -1,0 +1,24 @@
+# Restrict who can reach the kcal pod so the /ui X-authentik-email header
+# cannot be forged by a pod that bypasses nginx in-cluster. Allowed sources:
+#   - the external ingress-nginx controller (all real traffic — /mcp AND /ui
+#     arrive via nginx), and
+#   - host + remote-node entities (kubelet liveness/readiness probes come from
+#     the node; without this the probes would fail and the pod — which serves
+#     /mcp — would be killed).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: kcal-assistant
+spec:
+  endpointSelector:
+    matchLabels:
+      app: kcal-assistant
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: network
+            app.kubernetes.io/instance: external-ingress-nginx
+            app.kubernetes.io/component: controller
+    - fromEntities:
+        - host
+        - remote-node

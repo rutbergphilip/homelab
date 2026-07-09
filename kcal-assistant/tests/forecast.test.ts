@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { computeForecast, type ForecastProfile } from "../src/lib/forecast";
 import { addDays } from "../src/lib/dates";
+import type { Database } from "bun:sqlite";
+import { openDb } from "../src/db/index";
+import { setProfile } from "../src/db/profile";
+import { logWeight } from "../src/db/weights";
+import { logMeal } from "../src/db/meals";
+import { buildForecast } from "../src/db/forecast";
 
 // Synthetic fixtures only — public repo.
 //
@@ -111,5 +117,63 @@ describe("computeForecast", () => {
     expect(f.curve.at(-1)!.kg).toBeGreaterThanOrEqual(40);
     expect(f.curve.length).toBeLessThan(365);
     expect(f.notes.join(" ")).toContain("40 kg");
+  });
+});
+
+describe("buildForecast", () => {
+  const TODAY = "2026-07-09";
+
+  function seededDb(): Database {
+    const db = openDb(":memory:");
+    setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5 });
+    logWeight(db, { weight_kg: 82, date: TODAY });
+    return db;
+  }
+
+  test("missing profile and missing weights give reasons", () => {
+    const db = openDb(":memory:");
+    expect(buildForecast(db, { today: TODAY }).reason).toContain("profil");
+    setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5 });
+    expect(buildForecast(db, { today: TODAY }).reason).toContain("viktloggar");
+  });
+
+  test("targets mix weights the day targets by observed day types", () => {
+    const db = seededDb();
+    for (let i = 0; i < 14; i++) {
+      db.run("INSERT OR IGNORE INTO days (date, day_type) VALUES (?, ?)", [
+        addDays(TODAY, -i),
+        i % 2 === 0 ? "vilodag" : "gymdag",
+      ]);
+    }
+    const f = buildForecast(db, { today: TODAY }).forecast!;
+    expect(f.assumptions.intake_source).toBe("targets");
+    expect(f.assumptions.intake_kcal).toBe(2200); // (7·2000 + 7·2400) / 14, seeded targets
+  });
+
+  test("targets mix falls back to vilodag under 7 logged days", () => {
+    const f = buildForecast(seededDb(), { today: TODAY }).forecast!;
+    expect(f.assumptions.intake_kcal).toBe(2000); // seeded vilodag target
+    expect(f.notes.join(" ")).toContain("vilodag");
+  });
+
+  test("recent averages logged kcal and falls back to targets when empty", () => {
+    const db = seededDb();
+    const item = (kcal: number) => [{ description: "x", macros: { kcal, protein: 100, fat: 50, carbs: 100 } }];
+    logMeal(db, { name: "A", date: addDays(TODAY, -1), items: item(1600) });
+    logMeal(db, { name: "B", date: addDays(TODAY, -2), items: item(2000) });
+    const f = buildForecast(db, { today: TODAY, intake_source: "recent" }).forecast!;
+    expect(f.assumptions.intake_source).toBe("recent");
+    expect(f.assumptions.intake_kcal).toBe(1800);
+
+    const empty = seededDb();
+    const g = buildForecast(empty, { today: TODAY, intake_source: "recent" }).forecast!;
+    expect(g.assumptions.intake_source).toBe("targets");
+    expect(g.notes.join(" ")).toContain("intagsdata");
+  });
+
+  test("explicit intake wins over any source", () => {
+    const f = buildForecast(seededDb(), { today: TODAY, intake_kcal: 1234, intake_source: "recent" }).forecast!;
+    expect(f.assumptions.intake_source).toBe("explicit");
+    expect(f.assumptions.intake_kcal).toBe(1234);
   });
 });

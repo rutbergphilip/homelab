@@ -10,7 +10,16 @@ resources:
   - secrets.sops.yaml
   - helmrelease.yaml
   - ingress.yaml
-  - oauth2-config.yaml
+
+generatorOptions:
+  # The HelmRelease references the ConfigMap by its literal name via
+  # blueprints.configMaps — a kustomize hash suffix would break the mount.
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: authentik-blueprints
+    files:
+      - blueprints/forward-auth.yaml
 
 commonLabels:
   app.kubernetes.io/name: authentik

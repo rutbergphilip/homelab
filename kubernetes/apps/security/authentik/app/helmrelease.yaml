@@ -119,6 +119,18 @@ spec:
     # Worker configuration
     worker:
       replicas: 1
+      # ak healthcheck (exec probe) regularly exceeds the chart-default 3s
+      # timeout under this worker's CPU limits; the liveness probe then kills
+      # a functionally healthy pod (CrashLoopBackOff). Helm deep-merges these
+      # over the chart defaults, so the exec command and other fields remain.
+      livenessProbe:
+        timeoutSeconds: 15
+        periodSeconds: 30
+      readinessProbe:
+        timeoutSeconds: 15
+        periodSeconds: 30
+      startupProbe:
+        timeoutSeconds: 15
       resources:
         requests:
           cpu: 50m

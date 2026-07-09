@@ -460,7 +460,10 @@ async function loadPrognos(chartHost, prognosHost, series, source) {
   for (const [key, label] of [["targets", "planmål"], ["recent", "senaste 28 d"]]) {
     const chip = el("button", `chip${key === source ? " accent" : ""}`, label);
     chip.addEventListener("click", () => {
-      if (key !== source) loadPrognos(chartHost, prognosHost, series, key);
+      if (key === source) return;
+      // in-flight guard: the whole toggle is rebuilt when loadPrognos resolves
+      for (const b of toggle.querySelectorAll("button")) b.disabled = true;
+      loadPrognos(chartHost, prognosHost, series, key);
     });
     toggle.append(chip);
   }

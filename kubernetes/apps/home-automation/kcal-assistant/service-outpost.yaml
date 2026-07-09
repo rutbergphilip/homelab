@@ -1,0 +1,15 @@
+# Lets the /outpost.goauthentik.io path be served ON kcal.rutberg.dev by
+# proxying to the Authentik embedded outpost (authentik-server, security ns).
+# ExternalName is a DNS alias, so it can cross namespaces where an Ingress
+# backend cannot. This keeps the whole forward-auth handshake (login redirect,
+# callback, session cookie) on kcal.rutberg.dev — no cross-subdomain cookie.
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentik-embedded-outpost
+spec:
+  type: ExternalName
+  externalName: authentik-server.security.svc.cluster.local
+  ports:
+    - name: http
+      port: 80

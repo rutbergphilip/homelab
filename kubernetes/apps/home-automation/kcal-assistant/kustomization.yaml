@@ -8,8 +8,10 @@ resources:
   - ./secret.sops.yaml
   - ./deployment.yaml
   - ./service.yaml
+  - ./service-outpost.yaml
   - ./ingress.yaml
   - ./ingress-ui.yaml
+  - ./ingress-outpost.yaml
   - ./networkpolicy.yaml
   - ./backup-cronjob.yaml
 

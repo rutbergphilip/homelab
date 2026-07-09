@@ -49,6 +49,22 @@ Release: bump `version` in `package.json`, bump the image tag in `deployment.yam
 
 The Deployment must keep `replicas: 1` and `strategy: Recreate` — SQLite on NFS tolerates exactly one writer process.
 
+## Web UI (`/ui`)
+
+Read-only database browser (KCAL·DB) at `https://kcal.rutberg.dev/ui`: dagar, måltider, produkter, recept, vikt/TDEE, regler. Editing stays in chat via MCP — the UI has zero mutation endpoints.
+
+**Security model (two independent layers):**
+1. **Cloudflare Access** (Zero Trust) gates the `/ui` path at the edge with real login. The `/mcp/<token>` path stays OUTSIDE the Access app so claude.ai keeps working.
+2. **Server-side JWT verification**: every `/ui*` request must carry `Cf-Access-Jwt-Assertion`, verified against the team's JWKS (RS256 pinned, issuer + AUD + email claim). LAN traffic that bypasses Cloudflare is refused. If `CF_ACCESS_*` env vars are unset, all `/ui*` requests get 503 — fail closed.
+
+**Cloudflare Access setup (one-time):**
+1. Cloudflare dashboard → Zero Trust (free plan) → note the team domain (`<team>.cloudflareaccess.com`).
+2. Access → Applications → Add self-hosted: domain `kcal.rutberg.dev`, path `ui`. Policy Allow: din e-post; login One-time PIN or Google; session ~1 week.
+3. Copy the application Audience (AUD) tag.
+4. Set env in `deployment.yaml`: `CF_ACCESS_TEAM_DOMAIN` (full host), `CF_ACCESS_AUD`, `CF_ACCESS_EMAIL` — plain values, not secrets (signature verification is the guard).
+
+Local dev: `UI_DEV_NO_AUTH=1 bun run src/index.ts` (refused when NODE_ENV=production).
+
 ## Rotate the token
 
 1. `openssl rand -hex 32`

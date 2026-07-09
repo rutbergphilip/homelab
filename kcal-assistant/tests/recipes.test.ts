@@ -188,3 +188,39 @@ describe("findRecipes / deleteRecipe", () => {
     expect(rows.n).toBe(0);
   });
 });
+
+describe("cooking times", () => {
+  function timeRecipe(extra: object) {
+    return saveRecipe(db, {
+      name: "Tidsrecept",
+      ingredients: [{ product_id: chickenId, grams: 100 }],
+      ...extra,
+    });
+  }
+
+  test("saves, partially updates and clears times", () => {
+    const r = timeRecipe({ active_minutes: 15, total_minutes: 45 });
+    expect(r.active_minutes).toBe(15);
+    expect(r.total_minutes).toBe(45);
+    const upd = saveRecipe(db, { id: r.id, name: r.name, total_minutes: 50 });
+    expect(upd.active_minutes).toBe(15);
+    expect(upd.total_minutes).toBe(50);
+    const cleared = saveRecipe(db, { id: r.id, name: r.name, active_minutes: null });
+    expect(cleared.active_minutes).toBeNull();
+    expect(cleared.total_minutes).toBe(50);
+  });
+
+  test("rejects invalid times, also after a partial merge", () => {
+    expect(() => timeRecipe({ active_minutes: -5 })).toThrow(/heltal/);
+    expect(() => timeRecipe({ total_minutes: 2.5 })).toThrow(/heltal/);
+    expect(() => timeRecipe({ active_minutes: 40, total_minutes: 30 })).toThrow(/total_minutes/);
+    const r = timeRecipe({ active_minutes: 20, total_minutes: 30 });
+    expect(() => saveRecipe(db, { id: r.id, name: r.name, total_minutes: 10 })).toThrow(/total_minutes/);
+  });
+
+  test("summaries include total_minutes", () => {
+    timeRecipe({ active_minutes: 10, total_minutes: 35 });
+    const summary = findRecipes(db, "Tidsrecept")[0]!;
+    expect(summary.total_minutes).toBe(35);
+  });
+});

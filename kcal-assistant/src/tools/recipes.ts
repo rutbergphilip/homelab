@@ -10,7 +10,7 @@ export function registerRecipeTools(server: McpServer, db: Database): void {
     "save_recipe",
     {
       description:
-        "Create a recipe, or update by id (PARTIAL: omitted fields keep their values; empty string clears text; explicit null clears servings or unlinks product_id; ingredients replace wholesale). Ingredients use the same format as log_meal and resolve LIVE at every read, so product corrections propagate into the recipe automatically. After computing a batch with compute_batch (save:true), link it here via product_id.",
+        "Create a recipe, or update by id (PARTIAL: omitted fields keep their values; empty string clears text; explicit null clears servings/times or unlinks product_id; ingredients replace wholesale). ALWAYS estimate active_minutes (hands-on) and total_minutes (start to done, incl oven/simmer time) from the ingredients and instructions when the user does not state them. Ingredients use the same format as log_meal and resolve LIVE at every read, so product corrections propagate into the recipe automatically. After computing a batch with compute_batch (save:true), link it here via product_id.",
       inputSchema: {
         id: z.number().int().optional(),
         name: z.string().min(1),
@@ -18,6 +18,10 @@ export function registerRecipeTools(server: McpServer, db: Database): void {
         notes: z.string().optional(),
         tags: z.string().optional().describe("Free text, e.g. 'mealprep,airfryer'"),
         servings: z.number().positive().nullable().optional().describe("Portions the recipe yields; null clears"),
+        active_minutes: z.number().int().positive().nullable().optional()
+          .describe("Hands-on-tid i minuter; null rensar"),
+        total_minutes: z.number().int().positive().nullable().optional()
+          .describe("Total tid start till klart, inkl ugn/koktid; null rensar"),
         product_id: z.number().int().nullable().optional().describe("Linked batch product; null unlinks"),
         ingredients: z.array(mealItemSchema).min(1).optional(),
       },

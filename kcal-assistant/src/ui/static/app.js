@@ -290,12 +290,11 @@ async function renderRecept() {
   }
   for (const r of data.recipes) {
     const row = el("button", "rowlink");
-    row.append(
-      el("span", "", r.name),
-      el("span", "grow"),
-      el("span", "dim", r.tags || ""),
-      el("span", "num", r.kcal_per_serving !== null ? `${sv(r.kcal_per_serving, 0)} kcal/port` : "—"),
-    );
+    row.append(el("span", "", r.name));
+    row.append(el("span", "grow"));
+    row.append(el("span", "dim", r.tags || ""));
+    if (r.total_minutes !== null) row.append(el("span", "dim", `~${sv(r.total_minutes, 0)} min`));
+    row.append(el("span", "num", r.kcal_per_serving !== null ? `${sv(r.kcal_per_serving, 0)} kcal/port` : "—"));
     row.addEventListener("click", () => {
       location.hash = `#/recept/${r.id}`;
     });
@@ -329,6 +328,11 @@ async function renderReceptDetalj(id) {
 
   const tiles = el("div", "tiles");
   if (r.servings) tiles.append(tile("Portioner", sv(r.servings), null));
+  if (r.total_minutes !== null) {
+    tiles.append(
+      tile("Tid", `${sv(r.total_minutes, 0)} min`, r.active_minutes !== null ? `${sv(r.active_minutes, 0)} min aktiv` : null),
+    );
+  }
   if (r.per_serving) tiles.append(tile("Per portion", `${sv(r.per_serving.kcal, 0)} kcal`, `P ${sv(r.per_serving.protein)} · F ${sv(r.per_serving.fat)} · K ${sv(r.per_serving.carbs)}`));
   view.append(tiles);
 

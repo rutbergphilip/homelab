@@ -23,7 +23,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: kcal-assistant
-          image: rutbergphilip/kcal-assistant:v0.5.0
+          image: rutbergphilip/kcal-assistant:v0.5.1
           imagePullPolicy: IfNotPresent
 
           ports:
@@ -39,6 +39,11 @@ spec:
               value: "3000"
             - name: DB_PATH
               value: "/app/data/kcal.db"
+            # /ui is gated by Authentik forward-auth; the server re-checks the
+            # forwarded identity. Setting this switches UI auth from Cloudflare
+            # Access to Authentik. Unset => UI fails closed (503).
+            - name: AUTHENTIK_ALLOWED_EMAIL
+              value: "admin@rutberg.dev"
             - name: MCP_TOKEN
               valueFrom:
                 secretKeyRef:

@@ -9,6 +9,7 @@ resources:
   - ./deployment.yaml
   - ./service.yaml
   - ./ingress.yaml
+  - ./ingress-ui.yaml
   - ./backup-cronjob.yaml
 
 configMapGenerator:

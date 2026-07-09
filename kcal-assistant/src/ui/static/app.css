@@ -379,8 +379,8 @@ td:first-child { text-align: left; color: var(--ink-2); padding-left: 2px; }
 .point-label { fill: var(--ink); font-family: var(--mono); font-size: 11px; font-weight: 700; }
 
 /* forecast (v0.6) */
-.forecast-line { stroke: var(--accent); stroke-width: 2; fill: none; opacity: .35; stroke-dasharray: 5 4; stroke-linejoin: round; }
-.forecast-band { fill: var(--accent); opacity: .08; }
+.forecast-line { stroke: var(--accent); stroke-width: 2; fill: none; opacity: .4; stroke-dasharray: 6 5; stroke-linejoin: round; }
+.forecast-band { fill: var(--accent); opacity: .07; }
 .goal-line { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
 .marker-line { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
 .forecast-picker { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap; }

@@ -1,0 +1,30 @@
+# Serves /outpost.goauthentik.io/* on dashboard.rutberg.dev (login redirect,
+# callback, auth endpoint) by proxying to the Authentik embedded outpost. NO
+# forward-auth here — this IS the auth handshake. upstream-vhost keeps
+# Host: dashboard.rutberg.dev so the outpost matches the homarr provider
+# (external_host https://dashboard.rutberg.dev).
+# Backend: the authentik-embedded-outpost ExternalName Service defined in
+# ../kcal-assistant/service-outpost.yaml (namespace-wide, shared by all
+# forward-auth apps in home-automation).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homarr-outpost
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/upstream-vhost: "dashboard.rutberg.dev"
+spec:
+  ingressClassName: external
+  rules:
+    - host: dashboard.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80

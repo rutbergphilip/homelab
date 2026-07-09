@@ -406,6 +406,18 @@ async function loadPrognos(chartHost, prognosHost, series, source) {
   try {
     fc = await api(`/ui/api/forecast?source=${source}`);
   } catch (e) {
+    if (prognosHost.childElementCount > 0) {
+      // toggle failed mid-session: keep the last good render, surface the
+      // error, and re-enable the chips the click guard disabled
+      let note = prognosHost.querySelector(".error-banner");
+      if (!note) {
+        note = el("div", "error-banner");
+        prognosHost.append(note);
+      }
+      note.textContent = "Kunde inte hämta prognosen — visar senaste lyckade.";
+      for (const b of prognosHost.querySelectorAll("button.chip")) b.disabled = false;
+      return;
+    }
     fc = { forecast: null, reason: "kunde inte hämtas" };
   }
   chartHost.replaceChildren();

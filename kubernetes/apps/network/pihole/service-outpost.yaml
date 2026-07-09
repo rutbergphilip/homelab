@@ -1,0 +1,14 @@
+# Lets the /outpost.goauthentik.io path be served ON pihole.rutberg.dev by
+# proxying to the Authentik embedded outpost (authentik-server, security ns).
+# ExternalName Services are namespace-scoped, so the network namespace needs
+# its own copy (home-automation has one in kcal-assistant/).
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentik-embedded-outpost
+spec:
+  type: ExternalName
+  externalName: authentik-server.security.svc.cluster.local
+  ports:
+    - name: http
+      port: 80

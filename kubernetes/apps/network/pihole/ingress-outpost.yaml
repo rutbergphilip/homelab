@@ -1,0 +1,32 @@
+# Serves /outpost.goauthentik.io/* on pihole.rutberg.dev (login redirect,
+# callback, auth endpoint) by proxying to the Authentik embedded outpost. NO
+# forward-auth here — this IS the auth handshake. upstream-vhost keeps
+# Host: pihole.rutberg.dev so the outpost matches the pihole provider.
+# The tls block reuses the pihole-tls secret; the cert-manager annotation
+# stays ONLY on the main ingress so a single Certificate owns the secret.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pihole-outpost
+  namespace: network
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/upstream-vhost: "pihole.rutberg.dev"
+spec:
+  ingressClassName: external
+  rules:
+    - host: pihole.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - pihole.rutberg.dev
+      secretName: pihole-tls

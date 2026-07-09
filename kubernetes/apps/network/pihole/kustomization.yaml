@@ -8,3 +8,5 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - ingress-outpost.yaml
+  - service-outpost.yaml

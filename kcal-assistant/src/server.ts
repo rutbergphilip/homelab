@@ -86,7 +86,8 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
           return;
         }
         if (opts.uiAuth.mode === "configured") {
-          const header = req.headers["cf-access-jwt-assertion"];
+          const raw = req.headers[opts.uiAuth.header];
+          const header = Array.isArray(raw) ? raw[0] : raw;
           const result = await opts.uiAuth.verify(typeof header === "string" ? header : undefined);
           if (!result.ok) {
             uiJson(res, result.status, { error: result.message });

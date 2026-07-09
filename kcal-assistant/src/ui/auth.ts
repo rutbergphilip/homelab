@@ -1,21 +1,27 @@
 import { jwtVerify, createRemoteJWKSet, errors as joseErrors, type JWTVerifyGetKey } from "jose";
 
-// Cloudflare Access sits at the edge, but the server trusts nothing: every
-// /ui request must carry a Cf-Access-Jwt-Assertion JWT that we verify
-// cryptographically. Header only — never the CF_Authorization cookie.
+// The /ui surface is gated by an identity provider at the ingress, but the
+// server trusts nothing: it re-checks the provider's forwarded identity on
+// every request. Two providers are supported:
+//   - Cloudflare Access: verify the Cf-Access-Jwt-Assertion JWT cryptographically.
+//   - Authentik forward-auth: verify the X-authentik-email header equals the
+//     allowed identity. Safe because (a) nginx replaces any client-supplied
+//     X-authentik-* with the outpost's value via auth-response-headers, and
+//     (b) a NetworkPolicy restricts the pod to the ingress controller, so the
+//     header can't be forged by bypassing nginx in-cluster.
 
 export type UiAuthResult = { ok: true } | { ok: false; status: 403 | 503; message: string };
 
-export interface UiAuthOptions {
+export type UiVerify = (headerValue: string | undefined) => Promise<UiAuthResult>;
+
+export interface CfAuthOptions {
   getKey: JWTVerifyGetKey;
   issuer: string;
   audience: string;
   email: string;
 }
 
-export type UiVerify = (headerValue: string | undefined) => Promise<UiAuthResult>;
-
-export function createUiAuth(opts: UiAuthOptions): UiVerify {
+export function createCfAuth(opts: CfAuthOptions): UiVerify {
   return async (headerValue) => {
     if (!headerValue) return { ok: false, status: 403, message: "saknar autentisering" };
     try {
@@ -31,9 +37,6 @@ export function createUiAuth(opts: UiAuthOptions): UiVerify {
       }
       return { ok: true };
     } catch (e) {
-      // Token problems (signature, claims, format) => 403. Anything else —
-      // e.g. the JWKS fetch failing — is an infrastructure problem => 503,
-      // still closed but distinguishable from a forged token.
       if (e instanceof joseErrors.JOSEError) {
         return { ok: false, status: 403, message: "ogiltig autentisering" };
       }
@@ -42,12 +45,27 @@ export function createUiAuth(opts: UiAuthOptions): UiVerify {
   };
 }
 
+// Retained name for the existing CF test-suite.
+export const createUiAuth = createCfAuth;
+
+export function createAuthentikAuth(allowedEmail: string): UiVerify {
+  const wanted = allowedEmail.toLowerCase();
+  return async (headerValue) => {
+    if (!headerValue) return { ok: false, status: 403, message: "saknar autentisering" };
+    if (headerValue.trim().toLowerCase() !== wanted) {
+      return { ok: false, status: 403, message: "fel identitet" };
+    }
+    return { ok: true };
+  };
+}
+
 export type UiAuthState =
-  | { mode: "configured"; verify: UiVerify }
+  | { mode: "configured"; header: string; verify: UiVerify }
   | { mode: "unconfigured" }
   | { mode: "dev-bypass" };
 
 export function resolveUiAuthState(input: {
+  authentikEmail?: string;
   teamDomain?: string;
   aud?: string;
   email?: string;
@@ -62,20 +80,32 @@ export function resolveUiAuthState(input: {
     console.warn("UI auth DISABLED (UI_DEV_NO_AUTH=1) — dev only");
     return { mode: "dev-bypass" };
   }
-  if (!input.teamDomain || !input.aud || !input.email) return { mode: "unconfigured" };
-  if (!input.teamDomain.endsWith(".cloudflareaccess.com")) {
-    throw new Error(
-      `CF_ACCESS_TEAM_DOMAIN must be the full <team>.cloudflareaccess.com host, got: ${input.teamDomain}`,
-    );
+  // Authentik forward-auth takes precedence when configured.
+  if (input.authentikEmail) {
+    return {
+      mode: "configured",
+      header: "x-authentik-email",
+      verify: createAuthentikAuth(input.authentikEmail),
+    };
   }
-  const issuer = `https://${input.teamDomain}`;
-  return {
-    mode: "configured",
-    verify: createUiAuth({
-      getKey: createRemoteJWKSet(new URL(`${issuer}/cdn-cgi/access/certs`)),
-      issuer,
-      audience: input.aud,
-      email: input.email,
-    }),
-  };
+  // Cloudflare Access (legacy path, kept for portability).
+  if (input.teamDomain && input.aud && input.email) {
+    if (!input.teamDomain.endsWith(".cloudflareaccess.com")) {
+      throw new Error(
+        `CF_ACCESS_TEAM_DOMAIN must be the full <team>.cloudflareaccess.com host, got: ${input.teamDomain}`,
+      );
+    }
+    const issuer = `https://${input.teamDomain}`;
+    return {
+      mode: "configured",
+      header: "cf-access-jwt-assertion",
+      verify: createCfAuth({
+        getKey: createRemoteJWKSet(new URL(`${issuer}/cdn-cgi/access/certs`)),
+        issuer,
+        audience: input.aud,
+        email: input.email,
+      }),
+    };
+  }
+  return { mode: "unconfigured" };
 }

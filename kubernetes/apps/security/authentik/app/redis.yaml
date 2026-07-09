@@ -76,7 +76,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path
+  storageClassName: local-path-provisioner
   resources:
     requests:
       storage: 2Gi

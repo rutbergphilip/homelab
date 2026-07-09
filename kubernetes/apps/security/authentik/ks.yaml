@@ -15,5 +15,7 @@ spec:
   prune: true
   wait: true
   dependsOn:
-    - name: cert-manager-issuers
+    - name: cert-manager-tls
+      namespace: cert-manager
     - name: external-ingress-nginx
+      namespace: network

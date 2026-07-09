@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: authentik
-      version: 2025.1.2
+      version: 2025.12.4
       sourceRef:
         kind: HelmRepository
         name: authentik
@@ -23,93 +23,57 @@ spec:
     remediation:
       retries: 3
   values:
-    # Authentik configuration
+    # Non-secret config only. Secrets are injected via global.env below.
+    # NOTE: this chart does NOT support valueFrom under authentik.* — it
+    # flattens the whole structure into literal env vars, so the old
+    # authentik.secret_key.valueFrom pattern produced garbage. Real secret
+    # refs MUST go through global.env (which supports valueFrom.secretKeyRef).
     authentik:
-      # Secret key for signing and encryption
-      secret_key:
-        valueFrom:
-          secretKeyRef:
-            name: authentik-secrets
-            key: secret-key
-      
-      # Error reporting and telemetry
       error_reporting:
         enabled: false
         send_pii: false
-      
-      # Bootstrap configuration
-      bootstrap:
-        password:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: bootstrap-token
-        email: "admin@rutberg.dev"
-        token:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: bootstrap-token
-
-      # PostgreSQL database configuration
       postgresql:
         host: "authentik-postgresql"
         port: 5432
         name: "authentik"
         user: "authentik"
-        password:
+      redis:
+        host: "authentik-redis"
+        port: 6379
+
+    global:
+      # Injected into server + worker; env entries override the chart-generated
+      # secret, so these carry the real values from authentik-secrets.
+      env:
+        - name: AUTHENTIK_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secrets
+              key: secret-key
+        - name: AUTHENTIK_POSTGRESQL__PASSWORD
           valueFrom:
             secretKeyRef:
               name: authentik-secrets
               key: postgres-password
-
-      # Redis configuration
-      redis:
-        host: "authentik-redis"
-        port: 6379
-        password:
+        - name: AUTHENTIK_REDIS__PASSWORD
           valueFrom:
             secretKeyRef:
               name: authentik-secrets
               key: redis-password
+        - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secrets
+              key: bootstrap-password
+        - name: AUTHENTIK_BOOTSTRAP_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secrets
+              key: bootstrap-token
+        - name: AUTHENTIK_BOOTSTRAP_EMAIL
+          value: "admin@rutberg.dev"
 
-      # Email configuration (optional)
-      email:
-        host:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: smtp-host
-        port:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: smtp-port
-        username:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: smtp-username
-        password:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: smtp-password
-        from:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: smtp-from
-        use_tls:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: smtp-use-tls
-        use_ssl:
-          valueFrom:
-            secretKeyRef:
-              name: authentik-secrets
-              key: smtp-use-ssl
+      # Email intentionally not configured (single-user; no SMTP creds).
 
     # Server configuration
     server:

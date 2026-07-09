@@ -53,15 +53,20 @@ The Deployment must keep `replicas: 1` and `strategy: Recreate` — SQLite on NF
 
 Read-only database browser (KCAL·DB) at `https://kcal.rutberg.dev/ui`: dagar, måltider, produkter, recept, vikt/TDEE, regler. Editing stays in chat via MCP — the UI has zero mutation endpoints.
 
-**Security model (two independent layers):**
-1. **Cloudflare Access** (Zero Trust) gates the `/ui` path at the edge with real login. The `/mcp/<token>` path stays OUTSIDE the Access app so claude.ai keeps working.
-2. **Server-side JWT verification**: every `/ui*` request must carry `Cf-Access-Jwt-Assertion`, verified against the team's JWKS (RS256 pinned, issuer + AUD + email claim). LAN traffic that bypasses Cloudflare is refused. If `CF_ACCESS_*` env vars are unset, all `/ui*` requests get 503 — fail closed.
+**Security model (defense in depth):** `/ui` is gated by self-hosted **Authentik**
+forward-auth (single-application pattern — the whole handshake runs on
+kcal.rutberg.dev so the session cookie and auth check share one host).
+`/outpost.goauthentik.io/*` is proxied to the Authentik embedded outpost via an
+ExternalName service; the `/ui` ingress carries the forward-auth annotations. The
+server re-verifies the forwarded `X-authentik-email == AUTHENTIK_ALLOWED_EMAIL`,
+and a CiliumNetworkPolicy limits the pod to the ingress controller + node so the
+header can't be forged in-cluster. `/mcp/<token>` and `/healthz` are on a separate
+open ingress and are NEVER gated (claude.ai can't do interactive login). Unset
+auth env → `/ui` fails closed (503). A legacy Cloudflare Access mode
+(`CF_ACCESS_*`, JWT verification) is still supported in code but not used.
 
-**Cloudflare Access setup (one-time):**
-1. Cloudflare dashboard → Zero Trust (free plan) → note the team domain (`<team>.cloudflareaccess.com`).
-2. Access → Applications → Add self-hosted: domain `kcal.rutberg.dev`, path `ui`. Policy Allow: din e-post; login One-time PIN or Google; session ~1 week.
-3. Copy the application Audience (AUD) tag.
-4. Set env in `deployment.yaml`: `CF_ACCESS_TEAM_DOMAIN` (full host), `CF_ACCESS_AUD`, `CF_ACCESS_EMAIL` — plain values, not secrets (signature verification is the guard).
+See `docs/kcal-and-sso-status.md` for the full Authentik setup and the recreate
+steps for the API-created provider/application/outpost config.
 
 Local dev: `UI_DEV_NO_AUTH=1 bun run src/index.ts` (refused when NODE_ENV=production).
 

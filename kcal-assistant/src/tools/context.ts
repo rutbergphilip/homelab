@@ -3,6 +3,7 @@ import type { Database } from "bun:sqlite";
 import { getDay, getWeek } from "../db/meals";
 import { getTrend } from "../db/weights";
 import { listPreferences, getTargets, type Preference } from "../db/preferences";
+import { getProfile } from "../db/profile";
 import { dateSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
 
@@ -24,9 +25,11 @@ export function registerContextTools(server: McpServer, db: Database): void {
     },
     wrap(({ date }) => {
       const trend = getTrend(db);
+      const profile = getProfile(db);
       return jsonResult({
         preferences: groupPreferences(listPreferences(db)),
         all_targets: getTargets(db),
+        ...(profile && { profile }),
         day: getDay(db, date),
         ...(trend.latest && {
           weight: {

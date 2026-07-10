@@ -1,4 +1,4 @@
-import { createServer, type Server, type ServerResponse } from "node:http";
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import type { Database } from "bun:sqlite";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -37,6 +37,32 @@ function uiHeaders(res: ServerResponse): void {
 function uiJson(res: ServerResponse, status: number, body: unknown): void {
   uiHeaders(res);
   res.writeHead(status, { "content-type": "application/json" }).end(JSON.stringify(body));
+}
+
+// Reads at most maxBytes of request body; null signals the cap was exceeded.
+// On overflow we resolve early but KEEP draining — destroying the socket
+// would kill the 413 response that shares it.
+function readBody(req: IncomingMessage, maxBytes: number): Promise<string | null> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    let overflow = false;
+    req.on("data", (chunk: Buffer) => {
+      if (overflow) return;
+      size += chunk.length;
+      if (size > maxBytes) {
+        overflow = true;
+        chunks.length = 0;
+        resolve(null);
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => {
+      if (!overflow) resolve(Buffer.concat(chunks).toString("utf8"));
+    });
+    req.on("error", reject);
+  });
 }
 
 export function createHttpServer(opts: { token: string; db: Database; uiAuth: UiAuthState }): Server {
@@ -94,9 +120,9 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
             return;
           }
         }
-        if (req.method !== "GET") {
+        if (req.method !== "GET" && !(req.method === "PUT" && pathname === "/ui/api/profile")) {
           uiHeaders(res);
-          res.writeHead(405, { allow: "GET" }).end();
+          res.writeHead(405, { allow: pathname === "/ui/api/profile" ? "GET, PUT" : "GET" }).end();
           return;
         }
         const staticRoute = STATIC_ROUTES[pathname];
@@ -107,14 +133,29 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
           return;
         }
         if (API_ROUTE.test(pathname)) {
-          const { status, body } = handleUiApi(opts.db, {
+          let body: unknown;
+          if (req.method === "PUT") {
+            const rawBody = await readBody(req, 16_384);
+            if (rawBody === null) {
+              uiJson(res, 413, { error: "för stor begäran" });
+              return;
+            }
+            try {
+              body = rawBody.length > 0 ? JSON.parse(rawBody) : undefined;
+            } catch {
+              uiJson(res, 400, { error: "ogiltig JSON" });
+              return;
+            }
+          }
+          const { status, body: responseBody } = handleUiApi(opts.db, {
             method: req.method ?? "GET",
             pathname,
             search: new URL(raw, "http://internal").searchParams,
             contentType: typeof req.headers["content-type"] === "string" ? req.headers["content-type"] : undefined,
             secFetchSite: typeof req.headers["sec-fetch-site"] === "string" ? req.headers["sec-fetch-site"] : undefined,
+            body,
           });
-          uiJson(res, status, body);
+          uiJson(res, status, responseBody);
           return;
         }
         uiJson(res, 404, { error: "finns inte" });

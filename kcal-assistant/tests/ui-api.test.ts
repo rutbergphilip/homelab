@@ -192,4 +192,67 @@ describe("profile api", () => {
     expect(res.status).toBe(200);
     expect((await res.json()).profile).toBeNull();
   });
+
+  const put = (body: unknown, headers: Record<string, string> = {}) =>
+    fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", "sec-fetch-site": "same-origin", ...headers },
+      body: JSON.stringify(body),
+    });
+
+  test("PUT without a same-origin signal is rejected", async () => {
+    const res = await fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ height_cm: 180 }),
+    });
+    expect(res.status).toBe(403);
+    expect((await put({ height_cm: 180 }, { "sec-fetch-site": "cross-site" })).status).toBe(403);
+  });
+
+  test("PUT with the wrong content type is rejected", async () => {
+    const res = await fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "text/plain", "sec-fetch-site": "same-origin" },
+      body: JSON.stringify({ height_cm: 180 }),
+    });
+    expect(res.status).toBe(403);
+  });
+
+  test("first PUT requires the physiological fields (Swedish 400)", async () => {
+    const res = await put({ goal_weight_kg: 80 });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain("birth_date");
+  });
+
+  test("PUT creates, partially updates and clears goals", async () => {
+    const created = await put({ birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5, goal_weight_kg: 80 });
+    expect(created.status).toBe(200);
+    expect((await created.json()).profile.goal_weight_kg).toBe(80);
+    const updated = await put({ activity_factor: 1.6 });
+    expect((await updated.json()).profile.activity_factor).toBe(1.6);
+    expect((await put({})).status).toBe(200); // empty partial update is a no-op
+    const cleared = await put({ goal_weight_kg: null });
+    expect((await cleared.json()).profile.goal_weight_kg).toBeNull();
+  });
+
+  test("PUT rejects unknown fields and wrong types with 400", async () => {
+    expect((await put({ hacker: true })).status).toBe(400);
+    expect((await put({ height_cm: "tall" })).status).toBe(400);
+    expect((await put({ sex: "yes" })).status).toBe(400);
+    expect((await put({ activity_factor: 9 })).status).toBe(400); // range via setProfile
+  });
+
+  test("malformed JSON 400, oversized 413, other methods 405", async () => {
+    const bad = await fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", "sec-fetch-site": "same-origin" },
+      body: "{nope",
+    });
+    expect(bad.status).toBe(400);
+    const big = await put({ birth_date: "x".repeat(20000) });
+    expect(big.status).toBe(413);
+    expect((await fetch(`${pbase}/ui/api/profile`, { method: "POST" })).status).toBe(405);
+    expect((await fetch(`${pbase}/ui/api/weights`, { method: "PUT" })).status).toBe(405);
+  });
 });

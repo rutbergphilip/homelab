@@ -4,6 +4,7 @@ import { getProfile } from "./profile";
 import { getTrend } from "./weights";
 import { getTargetsFor } from "./preferences";
 import { todayStockholm, addDays } from "../lib/dates";
+import { saveSnapshot } from "./snapshots";
 
 export type IntakeSource = "targets" | "recent";
 
@@ -117,5 +118,24 @@ export function buildForecast(
       "kalibrerad mot mätdata — den sparade prognosen påverkas mindre av ändrad aktivitetsfaktor",
     );
   }
+
+  // Canonical (no what-ifs, plan-based intake) forecasts are snapshotted for
+  // accuracy tracking — best-effort: a snapshot failure must never break the
+  // forecast (or a log_weight that triggered it).
+  const canonical =
+    opts.target_date === undefined &&
+    opts.goal_weight === undefined &&
+    opts.intake_kcal === undefined &&
+    opts.activity_factor === undefined &&
+    opts.goal_date === undefined &&
+    (opts.intake_source ?? "targets") === "targets";
+  if (canonical) {
+    try {
+      saveSnapshot(db, forecast, today);
+    } catch (e) {
+      console.error("snapshot:", e instanceof Error ? e.message : e);
+    }
+  }
+
   return { forecast };
 }

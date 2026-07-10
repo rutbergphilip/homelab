@@ -3,6 +3,9 @@ import type { Database } from "bun:sqlite";
 import { openDb } from "../src/db/index";
 import { saveSnapshot, listSnapshots } from "../src/db/snapshots";
 import { computeForecast, type ForecastProfile } from "../src/lib/forecast";
+import { buildForecast } from "../src/db/forecast";
+import { setProfile } from "../src/db/profile";
+import { logWeight } from "../src/db/weights";
 
 // Synthetic fixtures only — public repo.
 const PROFILE: ForecastProfile = {
@@ -42,5 +45,39 @@ describe("forecast snapshots", () => {
     const rows = listSnapshots(db);
     expect(rows).toHaveLength(1);
     expect(rows[0]!.intake_kcal).toBe(1600);
+  });
+});
+
+describe("canonical snapshot wiring", () => {
+  let db: Database;
+  beforeEach(() => {
+    db = openDb(":memory:");
+    setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5, goal_weight_kg: 80 });
+    logWeight(db, { weight_kg: 82, date: "2026-07-08" });
+  });
+
+  test("canonical buildForecast writes a snapshot", () => {
+    buildForecast(db, { today: "2026-07-09" });
+    expect(listSnapshots(db).map((s) => s.date)).toEqual(["2026-07-09"]);
+  });
+
+  test("preview calls never write", () => {
+    buildForecast(db, { today: "2026-07-09", intake_kcal: 1600 });
+    buildForecast(db, { today: "2026-07-09", intake_source: "recent" });
+    buildForecast(db, { today: "2026-07-09", activity_factor: 1.2 });
+    expect(listSnapshots(db)).toHaveLength(0);
+  });
+
+  test("snapshot failure never breaks the forecast", () => {
+    db.run("DROP TABLE forecast_snapshots");
+    const view = buildForecast(db, { today: "2026-07-09" });
+    expect(view.forecast).not.toBeNull();
+  });
+
+  test("no profile → no snapshot, no crash", () => {
+    const bare = openDb(":memory:");
+    logWeight(bare, { weight_kg: 82, date: "2026-07-08" });
+    expect(buildForecast(bare, { today: "2026-07-09" }).forecast).toBeNull();
+    expect(listSnapshots(bare)).toHaveLength(0);
   });
 });

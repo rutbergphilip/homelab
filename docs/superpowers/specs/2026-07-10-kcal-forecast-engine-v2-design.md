@@ -150,6 +150,9 @@ returns null when no bucket qualifies.
   - `accuracy: { per_age: [...] }`
   - `ghost: { snapshot_date, curve }` — the snapshot nearest 28 days ago
     (only when one ≥ 21 days old exists), for the UI overlay.
+    *Erratum (as built): `ghost` is served only on `/ui/api/forecast`; the MCP
+    `get_forecast` strips it deliberately (token economy — chat never needs a
+    second curve). `accuracy` flows through both.*
 - **Vikt page:** "Träffsäkerhet" section under the chart (per-age tiles:
   "28 d: ±0.4 kg, bias −0.2 kg" with a one-line explanation), hidden entirely
   until data exists. Ghost curve: faint dashed overlay drawn **only from its

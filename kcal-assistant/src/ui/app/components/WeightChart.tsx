@@ -4,8 +4,9 @@ import { sv, type Forecast, type ForecastPoint, type Weight } from "../api";
 
 const W = 640, H = 240, M = { top: 16, right: 52, bottom: 24, left: 10 };
 const DAY = 86_400_000;
+const NO_SCENARIOS: Array<{ slot: 0 | 1; curve: ForecastPoint[] }> = [];
 
-export function WeightChart({ series, forecast, ghost = null, scenarios = [] }: {
+export function WeightChart({ series, forecast, ghost = null, scenarios = NO_SCENARIOS }: {
   series: Weight[]; forecast: Forecast | null;
   ghost?: { snapshot_date: string; curve: ForecastPoint[] } | null;
   scenarios?: Array<{ slot: 0 | 1; curve: ForecastPoint[] }>;

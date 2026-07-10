@@ -24,11 +24,13 @@ const ACTIVITY_LEVELS: SelectOption[] = [
   { value: "1.9", label: "extremt aktiv (1,9)", description: "mycket hård träning och fysiskt arbete" },
 ];
 
-export function PrognosPanel({ profile, params, setParams, onSaved }: {
+export function PrognosPanel({ profile, params, setParams, onSaved, onPin, canPin }: {
   profile: Profile | null;
   params: PrognosParams;
   setParams: (fn: (prev: PrognosParams) => PrognosParams) => void;
   onSaved: () => void;
+  onPin: () => void;
+  canPin: boolean;
 }) {
   const hasProfile = profile !== null;
   const storedAf = profile ? String(profile.activity_factor) : "";
@@ -103,6 +105,9 @@ export function PrognosPanel({ profile, params, setParams, onSaved }: {
             {label}
           </button>
         ))}
+        <button className="chip" disabled={!canPin} onClick={onPin} title="fäst nuvarande förhandsvisning som jämförelse">
+          fäst scenario
+        </button>
       </div>
       <Collapsible.Root defaultOpen={!hasProfile}>
         <div className="card">

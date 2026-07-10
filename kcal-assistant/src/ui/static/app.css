@@ -515,6 +515,9 @@ button.chip:focus-visible { outline: 2px solid var(--accent-dim); outline-offset
 .scenario-line { fill: none; stroke-width: 1.5; }
 .scenario-line.s0 { stroke: #0072b2; }
 .scenario-line.s1 { stroke: #e69f00; }
+.scenario-chip .chip-x { background: none; border: none; cursor: pointer; margin-left: 4px; font-size: 12px; color: inherit; }
+.scenario-chip.s0 { border-color: #0072b2; }
+.scenario-chip.s1 { border-color: #e69f00; }
 
 /* collapsible profile (v0.8) */
 .collapsible-summary { display: block; width: 100%; text-align: left; font: inherit; font-family: var(--mono); font-size: 13px; color: var(--ink); background: none; border: none; padding: 10px 12px; cursor: pointer; }

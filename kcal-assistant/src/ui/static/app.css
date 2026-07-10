@@ -509,3 +509,7 @@ button.chip:focus-visible { outline: 2px solid var(--accent-dim); outline-offset
 .hover-tip-kg { fill: var(--ink); font-family: var(--mono); font-size: 11px; font-weight: 700; pointer-events: none; }
 .hover-tip-band { fill: var(--ink-3); font-family: var(--mono); font-size: 9px; pointer-events: none; }
 .chart-frame svg { touch-action: pan-y; }
+
+/* collapsible profile (v0.8) */
+.collapsible-summary { display: block; width: 100%; text-align: left; font: inherit; font-family: var(--mono); font-size: 13px; color: var(--ink); background: none; border: none; padding: 10px 12px; cursor: pointer; }
+.collapsible-summary:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 0; }

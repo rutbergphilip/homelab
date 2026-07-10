@@ -9,14 +9,17 @@ export function Dagar() {
   const [extra, setExtra] = useState<DaySummary[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [exhausted, setExhausted] = useState(false);
   if (first.error) return <ErrorNote message={first.error} />;
   if (!first.data) return null;
   const days = [...first.data.days, ...extra];
   const loadMore = async () => {
     if (loadingMore) return; // re-entrancy guard: a double-click must not fetch the same page twice
     setLoadingMore(true);
+    setErr(null);
     try {
       const page = await api<{ days: DaySummary[]; total: number }>(`/ui/api/days?limit=${LIMIT}&offset=${days.length}`);
+      if (page.days.length === 0) setExhausted(true); // stale total must not loop empty fetches
       setExtra((xs) => [...xs, ...page.days]);
     } catch (e) { setErr((e as Error).message); }
     setLoadingMore(false);
@@ -37,7 +40,7 @@ export function Dagar() {
         {first.data.total === 0 ? <EmptyState>Inga dagar loggade ännu.</EmptyState> : null}
       </div>
       {err ? <ErrorNote message={err} /> : null}
-      {days.length < first.data.total ? <button className="loadmore" disabled={loadingMore} onClick={loadMore}>Visa fler</button> : null}
+      {days.length < first.data.total && !exhausted ? <button className="loadmore" disabled={loadingMore} onClick={loadMore}>Visa fler</button> : null}
     </>
   );
 }

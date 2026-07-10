@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { Idag } from "./views/Idag";
 import { Dagar } from "./views/Dagar";
@@ -53,7 +53,7 @@ function App() {
         </span>
       </header>
       <main className="view" aria-live="polite">
-        <div key={hash}>{route.el}</div>
+        <Fragment key={hash}>{route.el}</Fragment>
       </main>
       <nav className="tabbar" aria-label="Vyer">
         {TABS.map(([tab, label]) => (

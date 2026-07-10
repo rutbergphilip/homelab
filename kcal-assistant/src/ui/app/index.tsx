@@ -6,6 +6,7 @@ import { DagDetalj } from "./views/DagDetalj";
 import { Produkter } from "./views/Produkter";
 import { Recept } from "./views/Recept";
 import { ReceptDetalj } from "./views/ReceptDetalj";
+import { Vikt } from "./views/Vikt";
 import { Regler } from "./views/Regler";
 
 const TABS = [
@@ -23,9 +24,6 @@ export function useHashRoute(): string {
   return hash;
 }
 
-// Placeholder views replaced task by task.
-const Placeholder = ({ name }: { name: string }) => <div className="empty">{name} portas …</div>;
-
 export interface Route { tab: string; el: ReactNode }
 
 export function resolveRoute(hash: string): Route {
@@ -36,7 +34,7 @@ export function resolveRoute(hash: string): Route {
   if (/^#\/produkter$/.test(hash)) return { tab: "produkter", el: <Produkter /> };
   if (/^#\/recept$/.test(hash)) return { tab: "recept", el: <Recept /> };
   if ((m = hash.match(/^#\/recept\/(\d+)$/))) return { tab: "recept", el: <ReceptDetalj id={m[1]!} /> };
-  if (/^#\/vikt$/.test(hash)) return { tab: "vikt", el: <Placeholder name="Vikt" /> };
+  if (/^#\/vikt$/.test(hash)) return { tab: "vikt", el: <Vikt /> };
   if (/^#\/regler$/.test(hash)) return { tab: "regler", el: <Regler /> };
   location.hash = "#/idag";
   return { tab: "idag", el: null };

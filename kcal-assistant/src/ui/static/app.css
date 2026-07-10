@@ -488,4 +488,4 @@ button.chip:focus-visible { outline: 2px solid var(--accent-dim); outline-offset
 .settings-row input, .settings-row select { font: inherit; font-family: var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--hair-2); border-radius: 2px; padding: 6px 8px; width: 100%; }
 .settings-row input:focus, .settings-row select:focus { outline: 2px solid var(--accent-dim); outline-offset: 0; }
 .settings-save { display: flex; align-items: center; gap: 10px; }
-.settings-save .loadmore { margin-top: 0; }
+.settings-save .loadmore { margin-top: 0; width: auto; }

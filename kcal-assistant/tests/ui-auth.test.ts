@@ -1,6 +1,11 @@
 import { describe, expect, test, beforeAll } from "bun:test";
 import { generateKeyPair, exportJWK, SignJWT, createLocalJWKSet } from "jose";
 import { createUiAuth, createAuthentikAuth, resolveUiAuthState } from "../src/ui/auth";
+import type { AddressInfo } from "node:net";
+import type { Server } from "node:http";
+import { openDb } from "../src/db/index";
+import { createHttpServer } from "../src/server";
+import type { UiAuthState } from "../src/ui/auth";
 
 const ISSUER = "https://test.cloudflareaccess.com";
 const AUD = "test-aud-tag";
@@ -146,5 +151,38 @@ describe("createAuthentikAuth", () => {
       expect(r.ok).toBe(false);
       if (!r.ok) expect(r.status).toBe(403);
     }
+  });
+});
+
+describe("write endpoint sits behind ui auth", () => {
+  async function start(uiAuth: UiAuthState): Promise<{ server: Server; base: string }> {
+    const server = createHttpServer({ token: "tok", db: openDb(":memory:"), uiAuth });
+    await new Promise<void>((r) => server.listen(0, r));
+    return { server, base: `http://127.0.0.1:${(server.address() as AddressInfo).port}` };
+  }
+
+  const putProfile = (base: string, headers: Record<string, string> = {}) =>
+    fetch(`${base}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", "sec-fetch-site": "same-origin", ...headers },
+      body: JSON.stringify({ birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5 }),
+    });
+
+  test("unconfigured auth fails closed for PUT (503)", async () => {
+    const { server, base } = await start({ mode: "unconfigured" });
+    expect((await putProfile(base)).status).toBe(503);
+    await new Promise((r) => server.close(r));
+  });
+
+  test("configured auth gates PUT: no header 403, valid header 200", async () => {
+    const { server, base } = await start({
+      mode: "configured",
+      header: "x-test-auth",
+      verify: async (v) =>
+        v === "hemlig" ? { ok: true } : { ok: false, status: 403, message: "förbjuden" },
+    });
+    expect((await putProfile(base)).status).toBe(403);
+    expect((await putProfile(base, { "x-test-auth": "hemlig" })).status).toBe(200);
+    await new Promise((r) => server.close(r));
   });
 });

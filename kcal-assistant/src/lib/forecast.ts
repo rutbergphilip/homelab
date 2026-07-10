@@ -32,6 +32,7 @@ export interface ForecastInput {
   target_date?: string;
   goal_weight_override?: number;
   horizon_days?: number;
+  calibration_activity_factor?: number; // activity factor the measured TDEE was observed under; defaults to profile.activity_factor
 }
 
 export interface ForecastPoint {
@@ -114,10 +115,14 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   if (stale) notes.push("senaste vägningen är över en vecka gammal");
 
   const formulaTdeeStart = bmr(input.profile, startKg, latest.date) * input.profile.activity_factor;
+  // Calibration is anchored to the activity factor the measured TDEE was
+  // observed under — otherwise an activity what-if cancels out of the offset.
+  const calibrationTdee =
+    bmr(input.profile, startKg, latest.date) * (input.calibration_activity_factor ?? input.profile.activity_factor);
   let offset = 0;
   let calibration: "mätdata" | "formel" = "formel";
   if (input.measured_tdee !== null) {
-    const raw = input.measured_tdee - formulaTdeeStart;
+    const raw = input.measured_tdee - calibrationTdee;
     offset = Math.max(-OFFSET_CLAMP, Math.min(OFFSET_CLAMP, raw));
     calibration = "mätdata";
     if (Math.abs(raw) > OFFSET_CLAMP) notes.push("kalibreringen begränsades till ±500 kcal");

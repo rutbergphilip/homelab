@@ -107,6 +107,19 @@ describe("computeForecast", () => {
     expect(f.notes.join(" ")).toContain("passerat");
   });
 
+  test("activity preview shifts the calibrated TDEE by BMR times the delta", () => {
+    // stored af 1.5 (formula 2730), measured 2500 → offset −230.
+    // Preview af 2.0: BMR 1820 × 2.0 = 3640; 3640 − 230 = 3410 = measured + BMR·Δaf.
+    const f = run({
+      profile: { ...PROFILE, activity_factor: 2.0 },
+      calibration_activity_factor: 1.5,
+      measured_tdee: 2500,
+    });
+    expect(f.assumptions.calibration).toBe("mätdata");
+    expect(f.assumptions.calibration_offset).toBe(-230);
+    expect(f.assumptions.tdee_start).toBe(3410);
+  });
+
   test("sanity floor stops the curve at 40 kg", () => {
     const f = run({
       weights: [W(TODAY, 41)],

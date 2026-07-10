@@ -101,6 +101,7 @@ export function buildForecast(
     today,
     target_date: opts.target_date,
     goal_weight_override: opts.goal_weight,
+    calibration_activity_factor: profile.activity_factor,
   });
   forecast.notes.unshift(...resolved.notes);
   return { forecast };

@@ -5,15 +5,23 @@
   "type": "module",
   "scripts": {
     "start": "bun run src/index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "build:ui": "NODE_ENV=production bun build src/ui/app/index.tsx --outfile src/ui/static/app.js --minify --define 'process.env.NODE_ENV=\"production\"'",
+    "dev:ui": "bun build src/ui/app/index.tsx --outfile src/ui/static/app.js --watch"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0",
+    "@radix-ui/react-collapsible": "^1.1.16",
+    "@radix-ui/react-select": "^2.3.3",
     "jose": "^6.2.3",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "zod": "^3.25.0"
   },
   "devDependencies": {
     "@types/bun": "^1.2.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "typescript": "^5.8.0"
   }
 }

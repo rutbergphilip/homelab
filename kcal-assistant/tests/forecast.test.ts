@@ -133,6 +133,28 @@ describe("computeForecast", () => {
     expect(f.curve.length).toBeLessThan(365);
     expect(f.notes.join(" ")).toContain("40 kg");
   });
+
+  test("eta_range brackets the point ETA", () => {
+    const f = run(); // goal 80, eta day 13, band 400
+    const r = f.goal!.eta_range;
+    expect(r.earliest).not.toBeNull();
+    expect(r.latest).not.toBeNull();
+    expect(r.earliest! < f.goal!.eta!).toBe(true); // ISO strings compare correctly
+    expect(f.goal!.eta! < r.latest!).toBe(true);
+  });
+
+  test("latest is null when the high curve misses the horizon", () => {
+    const f = run({ horizon_days: 14 }); // main hits day 13, low ~day 10, high ~day 19
+    expect(f.goal!.eta).not.toBeNull();
+    expect(f.goal!.eta_range.earliest).not.toBeNull();
+    expect(f.goal!.eta_range.latest).toBeNull();
+  });
+
+  test("moving away from the goal gives an all-null range", () => {
+    const f = run({ intake_kcal: 4000 }); // surplus, goal below start
+    expect(f.goal!.eta).toBeNull();
+    expect(f.goal!.eta_range).toEqual({ earliest: null, latest: null });
+  });
 });
 
 describe("buildForecast", () => {

@@ -58,7 +58,13 @@ export interface ForecastResult {
   curve: ForecastPoint[];
   weight_at_target: ForecastPoint | null;
   weight_at_goal_date: ForecastPoint | null;
-  goal: { weight_kg: number; eta: string | null; reached: boolean; reason?: string } | null;
+  goal: {
+    weight_kg: number;
+    eta: string | null;
+    eta_range: { earliest: string | null; latest: string | null };
+    reached: boolean;
+    reason?: string;
+  } | null;
   notes: string[];
 }
 
@@ -220,14 +226,25 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   if (goalWeight !== null && goalWeight !== undefined) {
     const delta = goalWeight - startKg;
     if (Math.abs(delta) < 0.05) {
-      goal = { weight_kg: goalWeight, eta: null, reached: true };
+      goal = { weight_kg: goalWeight, eta: null, eta_range: { earliest: null, latest: null }, reached: true };
     } else {
       const movingToward = delta < 0 ? losing : !losing;
       const hit = (kg: number): boolean => (delta < 0 ? kg <= goalWeight : kg >= goalWeight);
       const eta = movingToward ? (curve.find((p) => hit(p.kg))?.date ?? null) : null;
+      const etaOn = (pts: Array<{ date: string; kg: number }>): string | null =>
+        movingToward ? (pts.find((p) => hit(p.kg))?.date ?? null) : null;
+      const etaLow = etaOn(lowSim);
+      const etaHigh = etaOn(highSim);
+      const eta_range =
+        etaLow !== null && etaHigh !== null
+          ? etaLow <= etaHigh
+            ? { earliest: etaLow, latest: etaHigh }
+            : { earliest: etaHigh, latest: etaLow }
+          : { earliest: etaLow ?? etaHigh, latest: null };
       goal = {
         weight_kg: goalWeight,
         eta,
+        eta_range,
         reached: false,
         ...(eta === null && {
           reason: movingToward

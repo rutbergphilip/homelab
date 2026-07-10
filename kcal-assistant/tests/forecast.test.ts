@@ -75,10 +75,12 @@ describe("computeForecast", () => {
     expect(f.curve[10]!.high).toBeGreaterThan(f.curve[10]!.kg);
   });
 
-  test("start smooths weigh-ins within 7 days of the latest", () => {
+  test("start is the EWMA trend weight at the latest weigh-in", () => {
     const f = run({ weights: [W("2026-07-02", 82.4), W("2026-07-06", 82.0), W(TODAY, 81.6)] });
-    expect(f.start.weight_kg).toBe(82);
-    expect(f.start.weighins_smoothed).toBe(3);
+    // trend: 82.4 → +0.3439·(82−82.4)=82.26244 → +0.271·(81.6−82.26244)=82.08292
+    expect(f.start.weight_kg).toBe(82.08);
+    expect(f.start.date).toBe(TODAY);
+    expect("weighins_smoothed" in f.start).toBe(false);
   });
 
   test("a stale log starts the simulation at the weigh-in date", () => {

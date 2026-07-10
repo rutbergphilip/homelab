@@ -1,4 +1,5 @@
 import { toEpochDays, addDays } from "./dates";
+import { computeTrendWeight } from "./trend";
 
 // Forward weight simulation ("riktig formel"):
 //   BMR (Mifflin-St Jeor) is recomputed every simulated day on the simulated
@@ -43,7 +44,7 @@ export interface ForecastPoint {
 }
 
 export interface ForecastResult {
-  start: { date: string; weight_kg: number; weighins_smoothed: number; stale: boolean };
+  start: { date: string; weight_kg: number; stale: boolean };
   assumptions: {
     intake_kcal: number;
     intake_source: "targets" | "recent" | "explicit";
@@ -106,11 +107,10 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   const horizonDays = input.horizon_days ?? 365;
   const horizonEnd = addDays(input.today, horizonDays);
 
-  // Start = mean of weigh-ins within 7 days of the latest (noise smoothing);
-  // simulation starts at the latest weigh-in date so a stale log gets its
-  // elapsed days simulated too.
-  const recent = sorted.filter((w) => toEpochDays(latest.date) - toEpochDays(w.date) <= 7);
-  const startKg = recent.reduce((s, w) => s + w.weight_kg, 0) / recent.length;
+  // Start = EWMA trend weight at the latest weigh-in (lib/trend.ts); the
+  // simulation still starts at the latest weigh-in DATE so a stale log gets
+  // its elapsed days simulated too.
+  const startKg = computeTrendWeight(sorted).at(-1)!.trend_kg;
   const stale = toEpochDays(input.today) - toEpochDays(latest.date) > 7;
   if (stale) notes.push("senaste vägningen är över en vecka gammal");
 
@@ -195,7 +195,6 @@ export function computeForecast(input: ForecastInput): ForecastResult {
     start: {
       date: latest.date,
       weight_kg: round2(startKg),
-      weighins_smoothed: recent.length,
       stale,
     },
     assumptions: {

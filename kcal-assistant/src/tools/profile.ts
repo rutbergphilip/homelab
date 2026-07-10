@@ -28,7 +28,7 @@ export function registerProfileTools(server: McpServer, db: Database): void {
     "get_forecast",
     {
       description:
-        "Weight forecast from profile + weight log. Simulates day by day: Mifflin-St Jeor BMR on the moving weight × activity factor, calibrated against the measured backwards-TDEE when reliable. Returns predicted weight at target_date and at the profile's goal_date, the date the goal weight is reached (goal.eta), an uncertainty band (±150 kcal/dag), and weekly curve points. intake_source: 'targets' (default; day targets weighted by the recent day-type mix) or 'recent' (actual 28-day average); intake_kcal overrides both. Present the numbers as-is, never recompute.",
+        "Weight forecast from profile + weight log. Simulates day by day: Mifflin-St Jeor BMR on the moving weight × activity factor, calibrated against the measured backwards-TDEE when reliable. Returns predicted weight at target_date and at the profile's goal_date, the date the goal weight is reached (goal.eta), an uncertainty band (datadrivet ±band, se assumptions.band_kcal) with goal.eta_range, and weekly curve points. intake_source: 'targets' (default; day targets weighted by the recent day-type mix) or 'recent' (actual 28-day average); intake_kcal overrides both. Present the numbers as-is, never recompute.",
       inputSchema: {
         target_date: dateSchema.optional().describe("Datum att förutsäga vikten för"),
         goal_weight: z.number().positive().optional().describe("Överskuggar profilens målvikt"),
@@ -39,10 +39,13 @@ export function registerProfileTools(server: McpServer, db: Database): void {
     wrap((input) => {
       const view = buildForecast(db, input);
       if (!view.forecast) return jsonResult(view);
-      // Token-lean for the chat: weekly points instead of the daily curve.
+      // Token-lean for the chat: weekly points, and no ghost curve.
       const { curve, ...rest } = view.forecast;
       const weekly = curve.filter((_, i) => i % 7 === 0 || i === curve.length - 1);
-      return jsonResult({ forecast: { ...rest, curve: weekly } });
+      return jsonResult({
+        forecast: { ...rest, curve: weekly },
+        ...(view.accuracy && { accuracy: view.accuracy }),
+      });
     }),
   );
 }

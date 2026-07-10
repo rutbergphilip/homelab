@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { computeForecast, type ForecastProfile } from "../src/lib/forecast";
+import { computeForecast, computeBand, type ForecastProfile } from "../src/lib/forecast";
 import { addDays } from "../src/lib/dates";
 import type { Database } from "bun:sqlite";
 import { openDb } from "../src/db/index";
@@ -75,10 +75,12 @@ describe("computeForecast", () => {
     expect(f.curve[10]!.high).toBeGreaterThan(f.curve[10]!.kg);
   });
 
-  test("start smooths weigh-ins within 7 days of the latest", () => {
+  test("start is the EWMA trend weight at the latest weigh-in", () => {
     const f = run({ weights: [W("2026-07-02", 82.4), W("2026-07-06", 82.0), W(TODAY, 81.6)] });
-    expect(f.start.weight_kg).toBe(82);
-    expect(f.start.weighins_smoothed).toBe(3);
+    // trend: 82.4 → +0.3439·(82−82.4)=82.26244 → +0.271·(81.6−82.26244)=82.08292
+    expect(f.start.weight_kg).toBe(82.08);
+    expect(f.start.date).toBe(TODAY);
+    expect("weighins_smoothed" in f.start).toBe(false);
   });
 
   test("a stale log starts the simulation at the weigh-in date", () => {
@@ -130,6 +132,28 @@ describe("computeForecast", () => {
     expect(f.curve.at(-1)!.kg).toBeGreaterThanOrEqual(40);
     expect(f.curve.length).toBeLessThan(365);
     expect(f.notes.join(" ")).toContain("40 kg");
+  });
+
+  test("eta_range brackets the point ETA", () => {
+    const f = run(); // goal 80, eta day 13, band 400
+    const r = f.goal!.eta_range;
+    expect(r.earliest).not.toBeNull();
+    expect(r.latest).not.toBeNull();
+    expect(r.earliest! < f.goal!.eta!).toBe(true); // ISO strings compare correctly
+    expect(f.goal!.eta! < r.latest!).toBe(true);
+  });
+
+  test("latest is null when the high curve misses the horizon", () => {
+    const f = run({ horizon_days: 14 }); // main hits day 13, low ~day 10, high ~day 19
+    expect(f.goal!.eta).not.toBeNull();
+    expect(f.goal!.eta_range.earliest).not.toBeNull();
+    expect(f.goal!.eta_range.latest).toBeNull();
+  });
+
+  test("moving away from the goal gives an all-null range", () => {
+    const f = run({ intake_kcal: 4000 }); // surplus, goal below start
+    expect(f.goal!.eta).toBeNull();
+    expect(f.goal!.eta_range).toEqual({ earliest: null, latest: null });
   });
 });
 
@@ -237,5 +261,46 @@ describe("buildForecast", () => {
     expect(preview.notes.join(" ")).toContain("påverkas mindre av ändrad aktivitetsfaktor");
     const samAsStored = buildForecast(db, { today: TODAY, activity_factor: 1.5 }).forecast!;
     expect(samAsStored.notes.join(" ")).not.toContain("aktivitetsfaktor");
+  });
+});
+
+describe("computeBand", () => {
+  test("best case: mätdata + recent + tät vägning = 175", () => {
+    const b = computeBand({ calibration: "mätdata", intake_source: "recent", weighins_last_28d: 20 });
+    expect(b.kcal).toBe(175); // 100 + 50 + 25
+  });
+
+  test("mätdata + targets = 225", () => {
+    expect(computeBand({ calibration: "mätdata", intake_source: "targets", weighins_last_28d: 20 }).kcal).toBe(225);
+  });
+
+  test("formel + targets + glest = 425 clamps to 400 and explains why", () => {
+    const b = computeBand({ calibration: "formel", intake_source: "targets", weighins_last_28d: 3 });
+    expect(b.kcal).toBe(400);
+    expect(b.reasons.join(" ")).toContain("formelkalibrering");
+    expect(b.reasons.join(" ")).toContain("glesa vägningar");
+  });
+
+  test("explicit intake counts as plan adherence (+75)", () => {
+    expect(computeBand({ calibration: "formel", intake_source: "explicit", weighins_last_28d: 20 }).kcal).toBe(375);
+  });
+});
+
+describe("band integration", () => {
+  test("assumptions.band_kcal reflects the budget and a note explains it", () => {
+    const f = run(); // explicit + formel + 1 weigh-in → 100+200+75+50 = 425 → 400
+    expect(f.assumptions.band_kcal).toBe(400);
+    expect(f.notes.join(" ")).toContain("±400");
+  });
+
+  test("band width drives the envelope", () => {
+    const wide = run(); // band 400
+    // 10 weigh-ins 2026-06-21 … 2026-07-07 (step 2) + TODAY = 11 within 28 d, no duplicate dates.
+    const dense = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18].map((i) =>
+      W(addDays("2026-06-21", i), 82));
+    const narrow = run({ weights: [...dense, W(TODAY, 82)], measured_tdee: 2500 }); // band 100+50+75 = 225
+    expect(narrow.assumptions.band_kcal).toBe(225);
+    expect(wide.curve[30]!.high - wide.curve[30]!.low)
+      .toBeGreaterThan(narrow.curve[30]!.high - narrow.curve[30]!.low);
   });
 });

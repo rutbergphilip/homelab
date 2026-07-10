@@ -17,10 +17,10 @@ export function tickDates(t0: number, t1: number, n: number): number[] {
   return out;
 }
 
-export interface ActualPt { t: number; kg: number }
+export interface ActualPt { t: number; kg: number; trend: number }
 export interface ProjPt { t: number; kg: number; low: number; high: number }
 export type HoverHit =
-  | { kind: "actual"; t: number; kg: number }
+  | { kind: "actual"; t: number; kg: number; trend: number }
   | { kind: "prognos"; t: number; kg: number; low: number; high: number };
 
 // Nearest by |t - tx| across both series; actual wins ties (<=) so a hover on
@@ -30,7 +30,7 @@ export function nearestHit(tx: number, actual: ActualPt[], proj: ProjPt[]): Hove
   let bestD = Infinity;
   for (const p of actual) {
     const d = Math.abs(p.t - tx);
-    if (d <= bestD) { bestD = d; best = { kind: "actual", t: p.t, kg: p.kg }; }
+    if (d <= bestD) { bestD = d; best = { kind: "actual", t: p.t, kg: p.kg, trend: p.trend }; }
   }
   for (const p of proj) {
     const d = Math.abs(p.t - tx);

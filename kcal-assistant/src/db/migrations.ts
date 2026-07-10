@@ -149,6 +149,22 @@ const MIGRATIONS: string[] = [
     updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
   );
   `,
+  // 5: canonical forecast snapshots — one per day, weekly curve as JSON.
+  // Never pruned: the data is small and feeds accuracy tracking.
+  `
+  CREATE TABLE forecast_snapshots (
+    date               TEXT PRIMARY KEY,
+    created_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    start_date         TEXT NOT NULL,
+    start_kg           REAL NOT NULL,
+    intake_kcal        INTEGER NOT NULL,
+    intake_source      TEXT NOT NULL,
+    tdee_start         INTEGER NOT NULL,
+    calibration_offset INTEGER NOT NULL,
+    band_kcal          INTEGER NOT NULL,
+    curve_json         TEXT NOT NULL
+  );
+  `,
 ];
 
 export function migrate(db: Database): void {

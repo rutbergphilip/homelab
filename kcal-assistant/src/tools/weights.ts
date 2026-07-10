@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
 import { z } from "zod";
 import { logWeight, getTrend } from "../db/weights";
+import { buildForecast } from "../db/forecast";
 import { dateSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
 
@@ -17,7 +18,15 @@ export function registerWeightTools(server: McpServer, db: Database): void {
         note: z.string().optional().describe("E.g. 'efter flexhelg', 'kreatinladdning'"),
       },
     },
-    wrap((input) => jsonResult(logWeight(db, input))),
+    wrap((input) => {
+      const view = logWeight(db, input);
+      try {
+        buildForecast(db); // canonical → snapshot; best-effort by construction
+      } catch (e) {
+        console.error("snapshot after log_weight:", e instanceof Error ? e.message : e);
+      }
+      return jsonResult(view);
+    }),
   );
 
   server.registerTool(

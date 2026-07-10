@@ -1,12 +1,14 @@
 import { toEpochDays, addDays } from "./dates";
+import { computeTrendWeight } from "./trend";
 
 // Forward weight simulation ("riktig formel"):
 //   BMR (Mifflin-St Jeor) is recomputed every simulated day on the simulated
 //   weight, TDEE = BMR × activity factor + a constant calibration offset
 //   against the measured backwards-TDEE (lib/trend.ts) when that is reliable.
 //   Daily Euler step: w −= (TDEE(w) − intake) / 7700.
-// The curve therefore flattens naturally as weight drops. A ±150 kcal/day
-// re-run gives an honest low/high envelope instead of fake precision.
+// The curve therefore flattens naturally as weight drops. A ±band re-run
+// (data-driven error budget, computeBand) gives an honest low/high envelope
+// instead of fake precision.
 
 export interface ForecastProfile {
   birth_date: string;
@@ -43,7 +45,7 @@ export interface ForecastPoint {
 }
 
 export interface ForecastResult {
-  start: { date: string; weight_kg: number; weighins_smoothed: number; stale: boolean };
+  start: { date: string; weight_kg: number; stale: boolean };
   assumptions: {
     intake_kcal: number;
     intake_source: "targets" | "recent" | "explicit";
@@ -51,18 +53,60 @@ export interface ForecastResult {
     calibration: "mätdata" | "formel";
     calibration_offset: number;
     kcal_per_kg: number;
+    band_kcal: number;
   };
   curve: ForecastPoint[];
   weight_at_target: ForecastPoint | null;
   weight_at_goal_date: ForecastPoint | null;
-  goal: { weight_kg: number; eta: string | null; reached: boolean; reason?: string } | null;
+  goal: {
+    weight_kg: number;
+    eta: string | null;
+    eta_range: { earliest: string | null; latest: string | null };
+    reached: boolean;
+    reason?: string;
+  } | null;
   notes: string[];
 }
 
 const KCAL_PER_KG = 7700;
-const BAND_KCAL = 150;
 const OFFSET_CLAMP = 500;
 const FLOOR_KG = 40;
+
+// Error budget for the uncertainty band: named kcal contributions summed and
+// clamped. The single place a future empirical calibration (from
+// forecast_snapshots history) would slot in.
+const BAND_MIN = 125;
+const BAND_MAX = 400;
+
+export interface BandInput {
+  calibration: "mätdata" | "formel";
+  intake_source: "targets" | "recent" | "explicit";
+  weighins_last_28d: number;
+}
+
+export function computeBand(input: BandInput): { kcal: number; reasons: string[] } {
+  let kcal = 100;
+  const reasons: string[] = ["grundosäkerhet"];
+  if (input.calibration === "mätdata") {
+    kcal += 50;
+    reasons.push("mätdatakalibrerad");
+  } else {
+    kcal += 200;
+    reasons.push("formelkalibrering (ingen tillförlitlig mätdata)");
+  }
+  if (input.intake_source === "recent") {
+    kcal += 25;
+    reasons.push("intag från uppmätt beteende");
+  } else {
+    kcal += 75;
+    reasons.push("intag antar framtida följsamhet");
+  }
+  if (input.weighins_last_28d < 10) {
+    kcal += 50;
+    reasons.push("glesa vägningar (<10 på 28 d)");
+  }
+  return { kcal: Math.min(BAND_MAX, Math.max(BAND_MIN, kcal)), reasons };
+}
 
 const round2 = (x: number): number => Math.round(x * 100) / 100;
 
@@ -106,11 +150,10 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   const horizonDays = input.horizon_days ?? 365;
   const horizonEnd = addDays(input.today, horizonDays);
 
-  // Start = mean of weigh-ins within 7 days of the latest (noise smoothing);
-  // simulation starts at the latest weigh-in date so a stale log gets its
-  // elapsed days simulated too.
-  const recent = sorted.filter((w) => toEpochDays(latest.date) - toEpochDays(w.date) <= 7);
-  const startKg = recent.reduce((s, w) => s + w.weight_kg, 0) / recent.length;
+  // Start = EWMA trend weight at the latest weigh-in (lib/trend.ts); the
+  // simulation still starts at the latest weigh-in DATE so a stale log gets
+  // its elapsed days simulated too.
+  const startKg = computeTrendWeight(sorted).at(-1)!.trend_kg;
   const stale = toEpochDays(input.today) - toEpochDays(latest.date) > 7;
   if (stale) notes.push("senaste vägningen är över en vecka gammal");
 
@@ -129,9 +172,19 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   }
   const tdeeStart = formulaTdeeStart + offset;
 
+  const weighinsLast28 = sorted.filter(
+    (w) => toEpochDays(latest.date) - toEpochDays(w.date) <= 27,
+  ).length;
+  const band = computeBand({
+    calibration,
+    intake_source: input.intake_source,
+    weighins_last_28d: weighinsLast28,
+  });
+  notes.push(`osäkerhet ±${band.kcal} kcal/dag: ${band.reasons.join(", ")}`);
+
   const main = simulate(input.profile, latest.date, startKg, input.intake_kcal, offset, horizonEnd);
-  const lowSim = simulate(input.profile, latest.date, startKg, input.intake_kcal - BAND_KCAL, offset, horizonEnd);
-  const highSim = simulate(input.profile, latest.date, startKg, input.intake_kcal + BAND_KCAL, offset, horizonEnd);
+  const lowSim = simulate(input.profile, latest.date, startKg, input.intake_kcal - band.kcal, offset, horizonEnd);
+  const highSim = simulate(input.profile, latest.date, startKg, input.intake_kcal + band.kcal, offset, horizonEnd);
   if (main.at(-1)!.date !== horizonEnd) notes.push("kurvan stoppades vid 40 kg (orimliga antaganden)");
 
   const curve: ForecastPoint[] = main.map((p, i) => ({
@@ -173,14 +226,25 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   if (goalWeight !== null && goalWeight !== undefined) {
     const delta = goalWeight - startKg;
     if (Math.abs(delta) < 0.05) {
-      goal = { weight_kg: goalWeight, eta: null, reached: true };
+      goal = { weight_kg: goalWeight, eta: null, eta_range: { earliest: null, latest: null }, reached: true };
     } else {
       const movingToward = delta < 0 ? losing : !losing;
       const hit = (kg: number): boolean => (delta < 0 ? kg <= goalWeight : kg >= goalWeight);
       const eta = movingToward ? (curve.find((p) => hit(p.kg))?.date ?? null) : null;
+      const etaOn = (pts: Array<{ date: string; kg: number }>): string | null =>
+        movingToward ? (pts.find((p) => hit(p.kg))?.date ?? null) : null;
+      const etaLow = etaOn(lowSim);
+      const etaHigh = etaOn(highSim);
+      const eta_range =
+        etaLow !== null && etaHigh !== null
+          ? etaLow <= etaHigh
+            ? { earliest: etaLow, latest: etaHigh }
+            : { earliest: etaHigh, latest: etaLow }
+          : { earliest: etaLow ?? etaHigh, latest: null };
       goal = {
         weight_kg: goalWeight,
         eta,
+        eta_range,
         reached: false,
         ...(eta === null && {
           reason: movingToward
@@ -195,7 +259,6 @@ export function computeForecast(input: ForecastInput): ForecastResult {
     start: {
       date: latest.date,
       weight_kg: round2(startKg),
-      weighins_smoothed: recent.length,
       stale,
     },
     assumptions: {
@@ -205,6 +268,7 @@ export function computeForecast(input: ForecastInput): ForecastResult {
       calibration,
       calibration_offset: Math.round(offset),
       kcal_per_kg: KCAL_PER_KG,
+      band_kcal: band.kcal,
     },
     curve,
     weight_at_target: weightAtTarget,

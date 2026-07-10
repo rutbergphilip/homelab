@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { computeTrend } from "../src/lib/trend";
+import { computeTrend, computeTrendWeight } from "../src/lib/trend";
 import { toEpochDays, addDays } from "../src/lib/dates";
 
 // All fixtures use obviously synthetic weights (100 kg range) — public repo.
@@ -141,5 +141,48 @@ describe("computeTrend", () => {
       today: addDays(day(27), 10),
     });
     expect(result.stale).toBe(true);
+  });
+});
+
+describe("computeTrendWeight", () => {
+  test("single weigh-in: trend equals the weight", () => {
+    expect(computeTrendWeight([{ date: "2026-06-01", weight_kg: 100 }])).toEqual([
+      { date: "2026-06-01", weight_kg: 100, trend_kg: 100 },
+    ]);
+  });
+
+  test("1-day gap uses alpha 0.1", () => {
+    const out = computeTrendWeight([
+      { date: "2026-06-01", weight_kg: 100 },
+      { date: "2026-06-02", weight_kg: 99 },
+    ]);
+    expect(out[1]!.trend_kg).toBe(99.9); // 100 + 0.1·(99−100)
+  });
+
+  test("7-day gap uses alpha 1−0.9^7", () => {
+    const out = computeTrendWeight([
+      { date: "2026-06-01", weight_kg: 100 },
+      { date: "2026-06-08", weight_kg: 99 },
+    ]);
+    expect(out[1]!.trend_kg).toBe(99.48); // 100 − (1−0.4782969) = 99.4782969
+  });
+
+  test("trend lags a falling series (stays above raw)", () => {
+    const weights = [0, 1, 2, 3, 4].map((i) => ({
+      date: addDays("2026-06-01", i), weight_kg: 100 - i * 0.5,
+    }));
+    const out = computeTrendWeight(weights);
+    for (let i = 1; i < out.length; i++) {
+      expect(out[i]!.trend_kg).toBeGreaterThan(out[i]!.weight_kg);
+    }
+  });
+
+  test("unsorted input is sorted by date", () => {
+    const out = computeTrendWeight([
+      { date: "2026-06-02", weight_kg: 99 },
+      { date: "2026-06-01", weight_kg: 100 },
+    ]);
+    expect(out.map((p) => p.date)).toEqual(["2026-06-01", "2026-06-02"]);
+    expect(out[1]!.trend_kg).toBe(99.9);
   });
 });

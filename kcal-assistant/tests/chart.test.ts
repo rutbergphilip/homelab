@@ -36,11 +36,11 @@ describe("tickDates", () => {
 });
 
 describe("nearestHit", () => {
-  const actual = [{ t: 0, kg: 100 }, { t: 10, kg: 99 }];
+  const actual = [{ t: 0, kg: 100, trend: 100.3 }, { t: 10, kg: 99, trend: 99.1 }];
   const proj = [{ t: 20, kg: 98, low: 97, high: 99 }, { t: 30, kg: 97.5, low: 96, high: 99 }];
 
   test("picks nearest actual point", () => {
-    expect(nearestHit(2, actual, proj)).toEqual({ kind: "actual", t: 0, kg: 100 });
+    expect(nearestHit(2, actual, proj)).toEqual({ kind: "actual", t: 0, kg: 100, trend: 100.3 });
   });
 
   test("picks nearest projection point with band", () => {
@@ -48,7 +48,12 @@ describe("nearestHit", () => {
   });
 
   test("actual wins exact ties and empty input gives null", () => {
-    expect(nearestHit(15, actual, proj)).toEqual({ kind: "actual", t: 10, kg: 99 });
+    expect(nearestHit(15, actual, proj)).toEqual({ kind: "actual", t: 10, kg: 99, trend: 99.1 });
     expect(nearestHit(5, [], [])).toBeNull();
+  });
+
+  test("actual hit carries the trend value", () => {
+    const hit = nearestHit(1, [{ t: 1, kg: 100, trend: 100.2 }], []);
+    expect(hit).toEqual({ kind: "actual", t: 1, kg: 100, trend: 100.2 });
   });
 });

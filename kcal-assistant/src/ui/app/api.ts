@@ -64,7 +64,7 @@ export interface DayTargets { kcal: number; protein_min: number; fat_min: number
 export interface DayView { date: string; day_type: string; targets: DayTargets; meals: Meal[]; totals: Macros; remaining: Macros }
 export interface DaySummary { date: string; day_type: string; meal_count: number; totals: Macros }
 export interface WeightEntry { date: string; weight_kg: number }
-export interface TrendView { latest: WeightEntry | null; stale: boolean; reason?: string;
+export interface TrendView { latest: (WeightEntry & { trend_kg: number }) | null; stale: boolean; reason?: string;
   trend: { delta_kg: number; span_days: number; rate_kg_week: number; est_tdee: number | null; uncertain: boolean; intake_days: number } | null;
   weights: WeightEntry[] }
 export interface WeekView { days_logged: number; start_date: string; end_date: string; avg_logged: Macros | null; avg_target_kcal: number }
@@ -73,13 +73,15 @@ export interface Product { id: number; name: string; brand: string | null; per_1
 export interface RecipeSummary { id: number; name: string; tags: string | null; servings: number | null; kcal_per_serving: number | null; total_minutes: number | null; incomplete?: true }
 export interface RecipeIngredient { description: string; grams: number | null; quantity: number | null; kcal?: number; unresolved?: true; reason?: string }
 export interface RecipeView { id: number; name: string; instructions: string | null; notes: string | null; tags: string | null; servings: number | null; active_minutes: number | null; total_minutes: number | null; ingredients: RecipeIngredient[]; totals: Macros; totals_incomplete?: true; per_serving: Macros | null }
-export interface Weight { date: string; weight_kg: number; note: string | null }
+export interface Weight { date: string; weight_kg: number; trend_kg: number; note: string | null }
 export interface ForecastPoint { date: string; kg: number; low: number; high: number }
+export interface AccuracyBucket { days: number; n: number; mae_kg: number; bias_kg: number }
 export interface Forecast { start: { date: string; weight_kg: number; stale: boolean };
-  assumptions: { intake_kcal: number; intake_source: string; tdee_start: number; calibration: string };
+  assumptions: { intake_kcal: number; intake_source: string; tdee_start: number; calibration: string; band_kcal: number };
   curve: ForecastPoint[]; weight_at_target: ForecastPoint | null; weight_at_goal_date: ForecastPoint | null;
-  goal: { weight_kg: number; eta: string | null; reached: boolean; reason?: string } | null; notes: string[] }
-export interface ForecastView { forecast: Forecast | null; reason?: string }
+  goal: { weight_kg: number; eta: string | null; eta_range: { earliest: string | null; latest: string | null }; reached: boolean; reason?: string } | null; notes: string[] }
+export interface ForecastView { forecast: Forecast | null; reason?: string;
+  accuracy?: { per_age: AccuracyBucket[] }; ghost?: { snapshot_date: string; curve: ForecastPoint[] } }
 export interface Profile { birth_date: string; sex: "man" | "kvinna"; height_cm: number; activity_factor: number; goal_weight_kg: number | null; goal_date: string | null }
 export interface Preference { id: number; category: string; content: string }
 export interface OverviewView { day: DayView; trend: TrendView; week: WeekView; counts: { products: number; recipes: number } }

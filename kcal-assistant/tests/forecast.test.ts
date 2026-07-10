@@ -107,6 +107,19 @@ describe("computeForecast", () => {
     expect(f.notes.join(" ")).toContain("passerat");
   });
 
+  test("activity preview shifts the calibrated TDEE by BMR times the delta", () => {
+    // stored af 1.5 (formula 2730), measured 2500 → offset −230.
+    // Preview af 2.0: BMR 1820 × 2.0 = 3640; 3640 − 230 = 3410 = measured + BMR·Δaf.
+    const f = run({
+      profile: { ...PROFILE, activity_factor: 2.0 },
+      calibration_activity_factor: 1.5,
+      measured_tdee: 2500,
+    });
+    expect(f.assumptions.calibration).toBe("mätdata");
+    expect(f.assumptions.calibration_offset).toBe(-230);
+    expect(f.assumptions.tdee_start).toBe(3410);
+  });
+
   test("sanity floor stops the curve at 40 kg", () => {
     const f = run({
       weights: [W(TODAY, 41)],
@@ -175,5 +188,54 @@ describe("buildForecast", () => {
     const f = buildForecast(seededDb(), { today: TODAY, intake_kcal: 1234, intake_source: "recent" }).forecast!;
     expect(f.assumptions.intake_source).toBe("explicit");
     expect(f.assumptions.intake_kcal).toBe(1234);
+  });
+
+  test("activity and goal_date overrides shape the preview without touching the db", () => {
+    const db = seededDb();
+    setProfile(db, { goal_weight_kg: 80, goal_date: "2026-09-01" });
+    const base = buildForecast(db, { today: TODAY }).forecast!;
+    const preview = buildForecast(db, {
+      today: TODAY,
+      activity_factor: 2.0,
+      goal_date: "2026-08-01",
+    }).forecast!;
+    expect(preview.assumptions.tdee_start).toBeGreaterThan(base.assumptions.tdee_start);
+    expect(preview.weight_at_goal_date!.date).toBe("2026-08-01");
+    const after = buildForecast(db, { today: TODAY }).forecast!;
+    expect(after.assumptions.tdee_start).toBe(base.assumptions.tdee_start);
+    expect(after.weight_at_goal_date!.date).toBe("2026-09-01");
+  });
+
+  test("goal_date null override suppresses the stored goal date", () => {
+    const db = seededDb();
+    setProfile(db, { goal_date: "2026-09-01" });
+    const preview = buildForecast(db, { today: TODAY, goal_date: null }).forecast!;
+    expect(preview.weight_at_goal_date).toBeNull();
+  });
+
+  test("activity what-if under measured calibration carries the disclosure note", () => {
+    // Reliable trend needs >=2 weigh-ins per half-window and intake over
+    // >=50% of the delta span — synthetic 100-kg range values only.
+    const db = openDb(":memory:");
+    setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5 });
+    const entries: Array<[number, number]> = [
+      [-27, 101.0], [-24, 100.8], [-21, 100.6],
+      [-6, 100.1], [-3, 100.0], [0, 99.9],
+    ];
+    for (const [offset, kg] of entries) logWeight(db, { weight_kg: kg, date: addDays(TODAY, offset) });
+    for (let i = -24; i <= -3; i++) {
+      logMeal(db, {
+        name: "M",
+        date: addDays(TODAY, i),
+        items: [{ description: "x", macros: { kcal: 1500, protein: 100, fat: 50, carbs: 100 } }],
+      });
+    }
+    const base = buildForecast(db, { today: TODAY }).forecast!;
+    expect(base.assumptions.calibration).toBe("mätdata"); // fixture sanity
+    expect(base.notes.join(" ")).not.toContain("aktivitetsfaktor");
+    const preview = buildForecast(db, { today: TODAY, activity_factor: 2.0 }).forecast!;
+    expect(preview.notes.join(" ")).toContain("påverkas mindre av ändrad aktivitetsfaktor");
+    const samAsStored = buildForecast(db, { today: TODAY, activity_factor: 1.5 }).forecast!;
+    expect(samAsStored.notes.join(" ")).not.toContain("aktivitetsfaktor");
   });
 });

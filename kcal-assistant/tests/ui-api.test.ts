@@ -9,6 +9,7 @@ import { logMeal } from "../src/db/meals";
 import { logWeight } from "../src/db/weights";
 import { saveRecipe } from "../src/db/recipes";
 import { setProfile } from "../src/db/profile";
+import { addDays, todayStockholm } from "../src/lib/dates";
 
 const TOKEN = "test-token";
 let httpServer: Server;
@@ -168,5 +169,113 @@ describe("read-only UI API", () => {
 
   test("forecast rejects an unknown source", async () => {
     expect((await get("/ui/api/forecast?source=x")).status).toBe(400);
+  });
+
+  test("forecast override params shape the preview", async () => {
+    const base = (await (await get("/ui/api/forecast")).json()).forecast;
+    const boosted = (await (await get("/ui/api/forecast?activity=2.5")).json()).forecast;
+    expect(boosted.assumptions.tdee_start).toBeGreaterThan(base.assumptions.tdee_start);
+    const explicit = (await (await get("/ui/api/forecast?intake=1234")).json()).forecast;
+    expect(explicit.assumptions.intake_kcal).toBe(1234);
+    expect(explicit.assumptions.intake_source).toBe("explicit");
+    // relative date: the endpoint uses the real today, so an absolute date
+    // would rot once the calendar passes it
+    const gd = addDays(todayStockholm(), 100);
+    const goal = (await (await get(`/ui/api/forecast?goal=90&goal_date=${gd}`)).json()).forecast;
+    expect(goal.goal.weight_kg).toBe(90);
+    expect(goal.weight_at_goal_date.date).toBe(gd);
+  });
+
+  test("forecast override params are validated", async () => {
+    expect((await get("/ui/api/forecast?activity=9")).status).toBe(400);
+    expect((await get("/ui/api/forecast?intake=abc")).status).toBe(400);
+    expect((await get("/ui/api/forecast?goal=-5")).status).toBe(400);
+    expect((await get("/ui/api/forecast?goal_date=2026-13-99")).status).toBe(400);
+  });
+});
+
+describe("profile api", () => {
+  let srv: Server;
+  let pdb: Database;
+  let pbase: string;
+
+  beforeAll(async () => {
+    pdb = openDb(":memory:");
+    srv = createHttpServer({ token: "t2", db: pdb, uiAuth: { mode: "dev-bypass" } });
+    await new Promise<void>((r) => srv.listen(0, r));
+    pbase = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise((r) => srv.close(r));
+  });
+
+  test("GET returns null before any profile exists", async () => {
+    const res = await fetch(`${pbase}/ui/api/profile`);
+    expect(res.status).toBe(200);
+    expect((await res.json()).profile).toBeNull();
+  });
+
+  const put = (body: unknown, headers: Record<string, string> = {}) =>
+    fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", "sec-fetch-site": "same-origin", ...headers },
+      body: JSON.stringify(body),
+    });
+
+  test("PUT without a same-origin signal is rejected", async () => {
+    const res = await fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ height_cm: 180 }),
+    });
+    expect(res.status).toBe(403);
+    expect((await put({ height_cm: 180 }, { "sec-fetch-site": "cross-site" })).status).toBe(403);
+  });
+
+  test("PUT with the wrong content type is rejected", async () => {
+    const res = await fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "text/plain", "sec-fetch-site": "same-origin" },
+      body: JSON.stringify({ height_cm: 180 }),
+    });
+    expect(res.status).toBe(403);
+  });
+
+  test("first PUT requires the physiological fields (Swedish 400)", async () => {
+    const res = await put({ goal_weight_kg: 80 });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain("birth_date");
+  });
+
+  test("PUT creates, partially updates and clears goals", async () => {
+    const created = await put({ birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5, goal_weight_kg: 80 });
+    expect(created.status).toBe(200);
+    expect((await created.json()).profile.goal_weight_kg).toBe(80);
+    const updated = await put({ activity_factor: 1.6 });
+    expect((await updated.json()).profile.activity_factor).toBe(1.6);
+    expect((await put({})).status).toBe(200); // empty partial update is a no-op
+    const cleared = await put({ goal_weight_kg: null });
+    expect((await cleared.json()).profile.goal_weight_kg).toBeNull();
+  });
+
+  test("PUT rejects unknown fields and wrong types with 400", async () => {
+    expect((await put({ hacker: true })).status).toBe(400);
+    expect((await put({ height_cm: "tall" })).status).toBe(400);
+    expect((await put({ sex: "yes" })).status).toBe(400);
+    expect((await put({ activity_factor: 9 })).status).toBe(400); // range via setProfile
+  });
+
+  test("malformed JSON 400, oversized 413, other methods 405", async () => {
+    const bad = await fetch(`${pbase}/ui/api/profile`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", "sec-fetch-site": "same-origin" },
+      body: "{nope",
+    });
+    expect(bad.status).toBe(400);
+    const big = await put({ birth_date: "x".repeat(20000) });
+    expect(big.status).toBe(413);
+    expect((await fetch(`${pbase}/ui/api/profile`, { method: "POST" })).status).toBe(405);
+    expect((await fetch(`${pbase}/ui/api/weights`, { method: "PUT" })).status).toBe(405);
   });
 });

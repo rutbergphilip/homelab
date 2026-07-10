@@ -353,8 +353,26 @@ async function renderReceptDetalj(id) {
   }
 }
 
+function debounce(fn, ms) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
+}
+
+function forecastQuery(state) {
+  const params = new URLSearchParams({ source: state.source });
+  const o = state.overrides;
+  if (o.activity !== undefined && o.activity !== "") params.set("activity", o.activity);
+  if (o.intake !== undefined && o.intake !== "") params.set("intake", o.intake);
+  if (o.goal !== undefined && o.goal !== "") params.set("goal", o.goal);
+  if (o.goal_date !== undefined) params.set("goal_date", o.goal_date);
+  return params.toString();
+}
+
 async function renderVikt() {
-  const data = await api("/ui/api/weights");
+  const [data, profileRes] = await Promise.all([api("/ui/api/weights"), api("/ui/api/profile")]);
   view.append(el("h2", "", "Vikt"));
   if (data.weights.length === 0) {
     view.append(el("div", "empty", "Inga viktloggar ännu. Säg '82,1 idag' till assistenten."));
@@ -382,9 +400,12 @@ async function renderVikt() {
   view.append(tiles);
 
   view.append(el("h2", "", "Prognos"));
-  const prognosHost = el("div");
-  view.append(prognosHost);
-  await loadPrognos(chartHost, prognosHost, series, "targets");
+  const panelHost = el("div");
+  const resultHost = el("div");
+  view.append(panelHost, resultHost);
+  const state = { source: "targets", overrides: {} };
+  buildPrognosPanel(panelHost, chartHost, resultHost, series, state, profileRes.profile);
+  await loadPrognos(chartHost, resultHost, series, state);
 
   view.append(el("h2", "", "Alla vägningar"));
   const wrap = el("div", "tablewrap");
@@ -401,31 +422,152 @@ async function renderVikt() {
   view.append(wrap);
 }
 
-async function loadPrognos(chartHost, prognosHost, series, source) {
+function buildPrognosPanel(panelHost, chartHost, resultHost, series, state, profile) {
+  const panel = el("div", "settings-panel");
+  const hasProfile = profile !== null;
+
+  const preview = debounce(() => loadPrognos(chartHost, resultHost, series, state), 200);
+  const field = (labelText, inputEl) => {
+    const wrap = el("label", "field");
+    wrap.append(el("span", "label", labelText), inputEl);
+    return wrap;
+  };
+  const num = (value, min, max, step, onInput) => {
+    const input = el("input");
+    input.type = "number";
+    input.min = min;
+    input.max = max;
+    input.step = step;
+    if (value !== null && value !== undefined && value !== "") input.value = value;
+    if (onInput) input.addEventListener("input", () => onInput(input.value));
+    return input;
+  };
+
+  // What-if row: previews live; everything except intag persists via Spara
+  const activityInput = num(profile ? profile.activity_factor : "", 1.2, 2.5, 0.05, (v) => { state.overrides.activity = v; preview(); });
+  const intakeInput = num("", 500, 10000, 50, (v) => { state.overrides.intake = v; preview(); });
+  intakeInput.placeholder = "auto";
+  const goalInput = num(profile ? profile.goal_weight_kg : "", 1, 500, 0.5, (v) => { state.overrides.goal = v; preview(); });
+  const goalDateInput = el("input");
+  goalDateInput.type = "date";
+  if (profile && profile.goal_date) goalDateInput.value = profile.goal_date;
+  goalDateInput.addEventListener("input", () => { state.overrides.goal_date = goalDateInput.value; preview(); });
+
+  const row = el("div", "settings-row");
+  row.append(
+    field("Aktivitetsfaktor", activityInput),
+    field("Intag (what-if)", intakeInput),
+    field("Målvikt kg", goalInput),
+    field("Måldatum", goalDateInput),
+  );
+  panel.append(row);
+
+  // Intake source toggle — stable in the panel, previews immediately
+  const toggle = el("div", "chip-row");
+  const chips = [];
+  for (const [key, label] of [["targets", "planmål"], ["recent", "senaste 28 d"]]) {
+    const chip = el("button", `chip${key === state.source ? " accent" : ""}`, label);
+    chip.addEventListener("click", () => {
+      if (state.source === key) return;
+      state.source = key;
+      for (const c of chips) c.classList.toggle("accent", c === chip);
+      loadPrognos(chartHost, resultHost, series, state);
+    });
+    chips.push(chip);
+    toggle.append(chip);
+  }
+  panel.append(toggle);
+
+  // Set-once fields; doubles as the create form when no profile exists yet
+  const details = el("details", "card");
+  if (!hasProfile) details.open = true;
+  const summary = el("summary");
+  summary.append(el("span", "", hasProfile ? "Profil" : "Skapa profil"));
+  details.append(summary);
+  const body = el("div", "body settings-row");
+  const birthInput = el("input");
+  birthInput.type = "date";
+  if (profile && profile.birth_date) birthInput.value = profile.birth_date;
+  const sexSelect = el("select");
+  for (const s of ["man", "kvinna"]) {
+    const opt = el("option", "", s);
+    opt.value = s;
+    sexSelect.append(opt);
+  }
+  if (profile && profile.sex) sexSelect.value = profile.sex;
+  const heightInput = num(profile ? profile.height_cm : "", 50, 250, 1, null);
+  body.append(field("Födelsedatum", birthInput), field("Kön", sexSelect), field("Längd cm", heightInput));
+  details.append(body);
+  panel.append(details);
+
+  const saveRow = el("div", "settings-save");
+  const saveBtn = el("button", "loadmore", "Spara");
+  const status = el("span", "k-sub");
+  saveRow.append(saveBtn, status);
+  panel.append(saveRow);
+
+  saveBtn.addEventListener("click", async () => {
+    saveBtn.disabled = true;
+    status.textContent = "sparar …";
+    const fields = {};
+    if (birthInput.value) fields.birth_date = birthInput.value;
+    if (sexSelect.value) fields.sex = sexSelect.value;
+    if (heightInput.value) fields.height_cm = Number(heightInput.value);
+    if (activityInput.value) fields.activity_factor = Number(activityInput.value);
+    fields.goal_weight_kg = goalInput.value === "" ? null : Number(goalInput.value);
+    fields.goal_date = goalDateInput.value === "" ? null : goalDateInput.value;
+    try {
+      const res = await fetch("/ui/api/profile", {
+        method: "PUT",
+        headers: { "content-type": "application/json", accept: "application/json" },
+        body: JSON.stringify(fields),
+      });
+      const bodyJson = await res.json();
+      if (!res.ok) throw new Error(bodyJson.error || `HTTP ${res.status}`);
+      state.overrides = {};
+      navigate(); // full re-render from canonical data
+    } catch (e) {
+      status.textContent = `fel: ${e.message}`;
+      saveBtn.disabled = false;
+    }
+  });
+
+  panelHost.append(panel);
+}
+
+let prognosSeq = 0;
+
+async function loadPrognos(chartHost, resultHost, series, state) {
+  const seq = ++prognosSeq;
   let fc;
   try {
-    fc = await api(`/ui/api/forecast?source=${source}`);
+    fc = await api(`/ui/api/forecast?${forecastQuery(state)}`);
   } catch (e) {
-    if (prognosHost.childElementCount > 0) {
-      // toggle failed mid-session: keep the last good render, surface the
-      // error, and re-enable the chips the click guard disabled
-      let note = prognosHost.querySelector(".error-banner");
+    if (seq !== prognosSeq) return; // a newer request won
+    if (resultHost.childElementCount > 0) {
+      let note = resultHost.querySelector(".error-banner");
       if (!note) {
         note = el("div", "error-banner");
-        prognosHost.append(note);
+        resultHost.append(note);
       }
-      note.textContent = "Kunde inte hämta prognosen — visar senaste lyckade.";
-      for (const b of prognosHost.querySelectorAll("button.chip")) b.disabled = false;
+      note.textContent = `Kunde inte hämta prognosen (${e.message}) — visar senaste lyckade.`;
       return;
     }
     fc = { forecast: null, reason: "kunde inte hämtas" };
   }
+  if (seq !== prognosSeq) return; // a newer request won
   chartHost.replaceChildren();
   if (series.length >= 2 || fc.forecast) chartHost.append(weightChart(series, fc.forecast));
-  prognosHost.replaceChildren();
+  resultHost.replaceChildren();
+
+  if (Object.keys(state.overrides).length > 0) {
+    const chipRow = el("div", "chip-row");
+    chipRow.append(el("span", "chip accent", "förhandsvisning — ej sparad"));
+    resultHost.append(chipRow);
+  }
 
   if (!fc.forecast) {
-    prognosHost.append(el("div", "empty", `Ingen prognos: ${fc.reason}`));
+    resultHost.append(el("div", "empty", `Ingen prognos: ${fc.reason}`));
     return;
   }
   const f = fc.forecast;
@@ -449,7 +591,7 @@ async function loadPrognos(chartHost, prognosHost, series, source) {
       f.assumptions.intake_source === "targets" ? "planmål (dagstypsmix)" : f.assumptions.intake_source === "recent" ? "snitt senaste 28 d" : "angivet",
     ),
   );
-  prognosHost.append(tiles);
+  resultHost.append(tiles);
 
   // Real-time lookup: the daily curve is already here — no network per date.
   const byDate = new Map(f.curve.map((p) => [p.date, p]));
@@ -466,25 +608,11 @@ async function loadPrognos(chartHost, prognosHost, series, source) {
   };
   input.addEventListener("input", show);
   picker.append(el("span", "label", "Uppskattad vikt"), input, out);
-  prognosHost.append(picker);
+  resultHost.append(picker);
 
-  const toggle = el("div", "chip-row");
-  for (const [key, label] of [["targets", "planmål"], ["recent", "senaste 28 d"]]) {
-    const chip = el("button", `chip${key === source ? " accent" : ""}`, label);
-    chip.addEventListener("click", () => {
-      if (key === source) return;
-      // in-flight guard: the whole toggle is rebuilt when loadPrognos resolves
-      for (const b of toggle.querySelectorAll("button")) b.disabled = true;
-      loadPrognos(chartHost, prognosHost, series, key);
-    });
-    toggle.append(chip);
-  }
-  prognosHost.append(toggle);
-
-  if (f.notes.length) prognosHost.append(el("div", "note", f.notes.join(" · ")));
+  if (f.notes.length) resultHost.append(el("div", "note", f.notes.join(" · ")));
   show();
 }
-
 function weightChart(series, forecast) {
   const NS = "http://www.w3.org/2000/svg";
   const W = 640, H = 240, M = { top: 16, right: 52, bottom: 24, left: 10 };

@@ -62,10 +62,19 @@ export function buildForecast(
     intake_kcal?: number;
     intake_source?: IntakeSource;
     today?: string;
+    activity_factor?: number;
+    goal_date?: string | null;
   } = {},
 ): ForecastView {
   const profile = getProfile(db);
   if (!profile) return { forecast: null, reason: "ingen profil — sätt via set_profile i chatten" };
+
+  // Preview overrides: applied on top of the stored profile, never persisted.
+  const effectiveProfile = {
+    ...profile,
+    ...(opts.activity_factor !== undefined && { activity_factor: opts.activity_factor }),
+    ...(opts.goal_date !== undefined && { goal_date: opts.goal_date }),
+  };
 
   const weights = db
     .query<{ date: string; weight_kg: number }, []>(
@@ -84,7 +93,7 @@ export function buildForecast(
   const measured = trend.trend && !trend.trend.uncertain ? trend.trend.est_tdee : null;
 
   const forecast = computeForecast({
-    profile,
+    profile: effectiveProfile,
     weights,
     intake_kcal: resolved.kcal,
     intake_source: resolved.source,
@@ -92,7 +101,21 @@ export function buildForecast(
     today,
     target_date: opts.target_date,
     goal_weight_override: opts.goal_weight,
+    calibration_activity_factor: profile.activity_factor,
   });
   forecast.notes.unshift(...resolved.notes);
+  // Preview/persist disclosure: under measured calibration, the preview
+  // anchors the offset to the STORED activity factor — but after saving a
+  // new factor the canonical forecast re-anchors to it, absorbing most of
+  // the what-if effect. Say so instead of letting the chart "jump" on save.
+  if (
+    opts.activity_factor !== undefined &&
+    opts.activity_factor !== profile.activity_factor &&
+    measured !== null
+  ) {
+    forecast.notes.push(
+      "kalibrerad mot mätdata — den sparade prognosen påverkas mindre av ändrad aktivitetsfaktor",
+    );
+  }
   return { forecast };
 }

@@ -444,7 +444,45 @@ function buildPrognosPanel(panelHost, chartHost, resultHost, series, state, prof
   };
 
   // What-if row: previews live; everything except intag persists via Spara
-  const activityInput = num(profile ? profile.activity_factor : "", 1.2, 2.5, 0.05, (v) => { state.overrides.activity = v; preview(); });
+  const ACTIVITY_LEVELS = [
+    ["1.2", "stillasittande (1,2)", "kontorsjobb, lite eller ingen träning"],
+    ["1.375", "lätt aktiv (1,375)", "lätt träning 1–3 dagar i veckan"],
+    ["1.55", "måttligt aktiv (1,55)", "träning 3–5 dagar i veckan"],
+    ["1.725", "mycket aktiv (1,725)", "hård träning 6–7 dagar i veckan"],
+    ["1.9", "extremt aktiv (1,9)", "mycket hård träning och fysiskt arbete"],
+  ];
+  const activityInput = el("select");
+  const activityDesc = el("div", "k-sub");
+  const storedAf = profile ? String(profile.activity_factor) : "";
+  if (!hasProfile) {
+    const opt = el("option", "", "välj nivå …");
+    opt.value = "";
+    opt.disabled = true;
+    activityInput.append(opt);
+  } else if (!ACTIVITY_LEVELS.some(([v]) => v === storedAf)) {
+    // Saved factor isn't a preset (set via chatten): show the truth,
+    // non-reselectable once the user picks a named level.
+    const opt = el("option", "", `anpassad (${sv(profile.activity_factor)})`);
+    opt.value = storedAf;
+    opt.disabled = true;
+    activityInput.append(opt);
+  }
+  for (const [value, label] of ACTIVITY_LEVELS) {
+    const opt = el("option", "", label);
+    opt.value = value;
+    activityInput.append(opt);
+  }
+  activityInput.value = storedAf;
+  const showActivityDesc = () => {
+    const level = ACTIVITY_LEVELS.find(([v]) => v === activityInput.value);
+    activityDesc.textContent = level ? level[2] : hasProfile ? "eget värde satt via chatten" : "";
+  };
+  activityInput.addEventListener("change", () => {
+    state.overrides.activity = activityInput.value;
+    showActivityDesc();
+    preview();
+  });
+  showActivityDesc();
   const intakeInput = num("", 500, 10000, 50, (v) => { state.overrides.intake = v; preview(); });
   intakeInput.placeholder = "auto";
   const goalInput = num(profile ? profile.goal_weight_kg : "", 1, 500, 0.5, (v) => { state.overrides.goal = v; preview(); });
@@ -453,9 +491,11 @@ function buildPrognosPanel(panelHost, chartHost, resultHost, series, state, prof
   if (profile && profile.goal_date) goalDateInput.value = profile.goal_date;
   goalDateInput.addEventListener("input", () => { state.overrides.goal_date = goalDateInput.value; preview(); });
 
+  const activityField = field("Aktivitetsnivå", activityInput);
+  activityField.append(activityDesc);
   const row = el("div", "settings-row");
   row.append(
-    field("Aktivitetsfaktor", activityInput),
+    activityField,
     field("Intag (what-if)", intakeInput),
     field("Målvikt kg", goalInput),
     field("Måldatum", goalDateInput),

@@ -1,8 +1,9 @@
 import type { Database } from "bun:sqlite";
-import { computeTrend, type TrendResult, type WeightEntry } from "../lib/trend";
+import { computeTrend, computeTrendWeight, type TrendResult, type WeightEntry } from "../lib/trend";
 import { todayStockholm, isValidDate, toEpochDays } from "../lib/dates";
 
-export interface WeightTrendView extends TrendResult {
+export interface WeightTrendView extends Omit<TrendResult, "latest"> {
+  latest: (WeightEntry & { trend_kg: number }) | null;
   weights: WeightEntry[]; // weighings inside the window, ascending
 }
 
@@ -25,12 +26,14 @@ export function logWeight(
   return getTrend(db);
 }
 
-export function listWeights(db: Database): Array<WeightEntry & { note: string | null }> {
-  return db
+export function listWeights(db: Database): Array<WeightEntry & { note: string | null; trend_kg: number }> {
+  const rows = db
     .query<WeightEntry & { note: string | null }, []>(
       "SELECT date, weight_kg, note FROM weights ORDER BY date DESC",
     )
     .all();
+  const trendByDate = new Map(computeTrendWeight(rows).map((p) => [p.date, p.trend_kg]));
+  return rows.map((r) => ({ ...r, trend_kg: trendByDate.get(r.date)! }));
 }
 
 export function getTrend(db: Database, windowDays = 28): WeightTrendView {
@@ -52,5 +55,10 @@ export function getTrend(db: Database, windowDays = 28): WeightTrendView {
         (w) => toEpochDays(w.date) >= toEpochDays(result.latest!.date) - (windowDays - 1),
       )
     : [];
-  return { ...result, weights };
+  const trendByDate = new Map(computeTrendWeight(allWeights).map((p) => [p.date, p.trend_kg]));
+  return {
+    ...result,
+    latest: result.latest ? { ...result.latest, trend_kg: trendByDate.get(result.latest.date)! } : null,
+    weights,
+  };
 }

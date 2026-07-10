@@ -1,16 +1,20 @@
 import type { Database } from "bun:sqlite";
 import { computeForecast, type ForecastResult } from "../lib/forecast";
+import { computeTrendWeight } from "../lib/trend";
+import { computeForecastAccuracy, pickGhost, type AccuracyBucket } from "../lib/accuracy";
 import { getProfile } from "./profile";
 import { getTrend } from "./weights";
 import { getTargetsFor } from "./preferences";
 import { todayStockholm, addDays } from "../lib/dates";
-import { saveSnapshot } from "./snapshots";
+import { saveSnapshot, listSnapshots } from "./snapshots";
 
 export type IntakeSource = "targets" | "recent";
 
 export interface ForecastView {
   forecast: ForecastResult | null;
   reason?: string;
+  accuracy?: { per_age: AccuracyBucket[] };
+  ghost?: { snapshot_date: string; curve: ForecastResult["curve"] };
 }
 
 // Resolves the daily intake assumption:
@@ -137,5 +141,27 @@ export function buildForecast(
     }
   }
 
-  return { forecast };
+  // Accuracy + ghost ride on every response (previews too — same read cost),
+  // omitted entirely when no snapshot has aged enough — or, same best-effort
+  // contract as the save above, when the read itself fails.
+  return { forecast, ...readAccuracyAndGhost(db, weights, today) };
+}
+
+function readAccuracyAndGhost(
+  db: Database,
+  weights: Array<{ date: string; weight_kg: number }>,
+  today: string,
+): Pick<ForecastView, "accuracy" | "ghost"> {
+  try {
+    const snapshots = listSnapshots(db);
+    const accuracy = computeForecastAccuracy({ snapshots, trendWeights: computeTrendWeight(weights), today });
+    const ghostSnap = pickGhost(snapshots, today);
+    return {
+      ...(accuracy !== null && { accuracy }),
+      ...(ghostSnap !== null && { ghost: { snapshot_date: ghostSnap.date, curve: ghostSnap.curve } }),
+    };
+  } catch (e) {
+    console.error("snapshot:", e instanceof Error ? e.message : e);
+    return {};
+  }
 }

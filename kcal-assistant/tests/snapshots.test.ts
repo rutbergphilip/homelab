@@ -6,6 +6,7 @@ import { computeForecast, type ForecastProfile } from "../src/lib/forecast";
 import { buildForecast } from "../src/db/forecast";
 import { setProfile } from "../src/db/profile";
 import { logWeight } from "../src/db/weights";
+import { addDays } from "../src/lib/dates";
 
 // Synthetic fixtures only — public repo.
 const PROFILE: ForecastProfile = {
@@ -79,5 +80,28 @@ describe("canonical snapshot wiring", () => {
     logWeight(bare, { weight_kg: 82, date: "2026-07-08" });
     expect(buildForecast(bare, { today: "2026-07-09" }).forecast).toBeNull();
     expect(listSnapshots(bare)).toHaveLength(0);
+  });
+});
+
+describe("aged snapshots", () => {
+  test("surface accuracy and ghost in the view", () => {
+    const db = openDb(":memory:");
+    setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5, goal_weight_kg: 80 });
+    // Three backdated canonical snapshots, weights logged in date order.
+    for (const off of [-30, -29, -28]) {
+      const day = addDays("2026-07-09", off);
+      logWeight(db, { weight_kg: 82, date: day });
+      buildForecast(db, { today: day });
+    }
+    // Weigh-ins near each accuracy target (snap+7/14/28 within ±3 days).
+    for (const off of [-23, -16, -9, -2]) {
+      logWeight(db, { weight_kg: 82, date: addDays("2026-07-09", off) });
+    }
+    const view = buildForecast(db, { today: "2026-07-09" });
+    expect(view.forecast).not.toBeNull();
+    expect(view.accuracy).toBeDefined();
+    expect(view.accuracy!.per_age.find((b) => b.days === 7)!.n).toBe(3);
+    expect(view.ghost).toBeDefined();
+    expect(view.ghost!.snapshot_date).toBe(addDays("2026-07-09", -28)); // age 28 exactly
   });
 });

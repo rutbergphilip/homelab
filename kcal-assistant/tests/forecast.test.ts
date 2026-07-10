@@ -212,4 +212,30 @@ describe("buildForecast", () => {
     const preview = buildForecast(db, { today: TODAY, goal_date: null }).forecast!;
     expect(preview.weight_at_goal_date).toBeNull();
   });
+
+  test("activity what-if under measured calibration carries the disclosure note", () => {
+    // Reliable trend needs >=2 weigh-ins per half-window and intake over
+    // >=50% of the delta span — synthetic 100-kg range values only.
+    const db = openDb(":memory:");
+    setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5 });
+    const entries: Array<[number, number]> = [
+      [-27, 101.0], [-24, 100.8], [-21, 100.6],
+      [-6, 100.1], [-3, 100.0], [0, 99.9],
+    ];
+    for (const [offset, kg] of entries) logWeight(db, { weight_kg: kg, date: addDays(TODAY, offset) });
+    for (let i = -24; i <= -3; i++) {
+      logMeal(db, {
+        name: "M",
+        date: addDays(TODAY, i),
+        items: [{ description: "x", macros: { kcal: 1500, protein: 100, fat: 50, carbs: 100 } }],
+      });
+    }
+    const base = buildForecast(db, { today: TODAY }).forecast!;
+    expect(base.assumptions.calibration).toBe("mätdata"); // fixture sanity
+    expect(base.notes.join(" ")).not.toContain("aktivitetsfaktor");
+    const preview = buildForecast(db, { today: TODAY, activity_factor: 2.0 }).forecast!;
+    expect(preview.notes.join(" ")).toContain("påverkas mindre av ändrad aktivitetsfaktor");
+    const samAsStored = buildForecast(db, { today: TODAY, activity_factor: 1.5 }).forecast!;
+    expect(samAsStored.notes.join(" ")).not.toContain("aktivitetsfaktor");
+  });
 });

@@ -104,5 +104,18 @@ export function buildForecast(
     calibration_activity_factor: profile.activity_factor,
   });
   forecast.notes.unshift(...resolved.notes);
+  // Preview/persist disclosure: under measured calibration, the preview
+  // anchors the offset to the STORED activity factor — but after saving a
+  // new factor the canonical forecast re-anchors to it, absorbing most of
+  // the what-if effect. Say so instead of letting the chart "jump" on save.
+  if (
+    opts.activity_factor !== undefined &&
+    opts.activity_factor !== profile.activity_factor &&
+    measured !== null
+  ) {
+    forecast.notes.push(
+      "kalibrerad mot mätdata — den sparade prognosen påverkas mindre av ändrad aktivitetsfaktor",
+    );
+  }
   return { forecast };
 }

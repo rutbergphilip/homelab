@@ -6,7 +6,7 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "build:ui": "bun build src/ui/app/index.tsx --outfile src/ui/static/app.js --production --define 'process.env.NODE_ENV=\"production\"'",
+    "build:ui": "bun build src/ui/app/index.tsx --outfile src/ui/static/app.js --production --minify --define 'process.env.NODE_ENV=\"production\"'",
     "dev:ui": "bun build src/ui/app/index.tsx --outfile src/ui/static/app.js --watch"
   },
   "dependencies": {

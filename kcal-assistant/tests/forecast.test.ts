@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { computeForecast, type ForecastProfile } from "../src/lib/forecast";
+import { computeForecast, computeBand, type ForecastProfile } from "../src/lib/forecast";
 import { addDays } from "../src/lib/dates";
 import type { Database } from "bun:sqlite";
 import { openDb } from "../src/db/index";
@@ -239,5 +239,46 @@ describe("buildForecast", () => {
     expect(preview.notes.join(" ")).toContain("påverkas mindre av ändrad aktivitetsfaktor");
     const samAsStored = buildForecast(db, { today: TODAY, activity_factor: 1.5 }).forecast!;
     expect(samAsStored.notes.join(" ")).not.toContain("aktivitetsfaktor");
+  });
+});
+
+describe("computeBand", () => {
+  test("best case: mätdata + recent + tät vägning = 175", () => {
+    const b = computeBand({ calibration: "mätdata", intake_source: "recent", weighins_last_28d: 20 });
+    expect(b.kcal).toBe(175); // 100 + 50 + 25
+  });
+
+  test("mätdata + targets = 225", () => {
+    expect(computeBand({ calibration: "mätdata", intake_source: "targets", weighins_last_28d: 20 }).kcal).toBe(225);
+  });
+
+  test("formel + targets + glest = 425 clamps to 400 and explains why", () => {
+    const b = computeBand({ calibration: "formel", intake_source: "targets", weighins_last_28d: 3 });
+    expect(b.kcal).toBe(400);
+    expect(b.reasons.join(" ")).toContain("formelkalibrering");
+    expect(b.reasons.join(" ")).toContain("glesa vägningar");
+  });
+
+  test("explicit intake counts as plan adherence (+75)", () => {
+    expect(computeBand({ calibration: "formel", intake_source: "explicit", weighins_last_28d: 20 }).kcal).toBe(375);
+  });
+});
+
+describe("band integration", () => {
+  test("assumptions.band_kcal reflects the budget and a note explains it", () => {
+    const f = run(); // explicit + formel + 1 weigh-in → 100+200+75+50 = 425 → 400
+    expect(f.assumptions.band_kcal).toBe(400);
+    expect(f.notes.join(" ")).toContain("±400");
+  });
+
+  test("band width drives the envelope", () => {
+    const wide = run(); // band 400
+    // 10 weigh-ins 2026-06-21 … 2026-07-07 (step 2) + TODAY = 11 within 28 d, no duplicate dates.
+    const dense = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18].map((i) =>
+      W(addDays("2026-06-21", i), 82));
+    const narrow = run({ weights: [...dense, W(TODAY, 82)], measured_tdee: 2500 }); // band 100+50+75 = 225
+    expect(narrow.assumptions.band_kcal).toBe(225);
+    expect(wide.curve[30]!.high - wide.curve[30]!.low)
+      .toBeGreaterThan(narrow.curve[30]!.high - narrow.curve[30]!.low);
   });
 });

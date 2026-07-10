@@ -6,8 +6,9 @@ import { computeTrendWeight } from "./trend";
 //   weight, TDEE = BMR × activity factor + a constant calibration offset
 //   against the measured backwards-TDEE (lib/trend.ts) when that is reliable.
 //   Daily Euler step: w −= (TDEE(w) − intake) / 7700.
-// The curve therefore flattens naturally as weight drops. A ±150 kcal/day
-// re-run gives an honest low/high envelope instead of fake precision.
+// The curve therefore flattens naturally as weight drops. A ±band re-run
+// (data-driven error budget, computeBand) gives an honest low/high envelope
+// instead of fake precision.
 
 export interface ForecastProfile {
   birth_date: string;
@@ -52,6 +53,7 @@ export interface ForecastResult {
     calibration: "mätdata" | "formel";
     calibration_offset: number;
     kcal_per_kg: number;
+    band_kcal: number;
   };
   curve: ForecastPoint[];
   weight_at_target: ForecastPoint | null;
@@ -61,9 +63,44 @@ export interface ForecastResult {
 }
 
 const KCAL_PER_KG = 7700;
-const BAND_KCAL = 150;
 const OFFSET_CLAMP = 500;
 const FLOOR_KG = 40;
+
+// Error budget for the uncertainty band: named kcal contributions summed and
+// clamped. The single place a future empirical calibration (from
+// forecast_snapshots history) would slot in.
+const BAND_MIN = 125;
+const BAND_MAX = 400;
+
+export interface BandInput {
+  calibration: "mätdata" | "formel";
+  intake_source: "targets" | "recent" | "explicit";
+  weighins_last_28d: number;
+}
+
+export function computeBand(input: BandInput): { kcal: number; reasons: string[] } {
+  let kcal = 100;
+  const reasons: string[] = ["grundosäkerhet"];
+  if (input.calibration === "mätdata") {
+    kcal += 50;
+    reasons.push("mätdatakalibrerad");
+  } else {
+    kcal += 200;
+    reasons.push("formelkalibrering (ingen tillförlitlig mätdata)");
+  }
+  if (input.intake_source === "recent") {
+    kcal += 25;
+    reasons.push("intag från uppmätt beteende");
+  } else {
+    kcal += 75;
+    reasons.push("intag antar framtida följsamhet");
+  }
+  if (input.weighins_last_28d < 10) {
+    kcal += 50;
+    reasons.push("glesa vägningar (<10 på 28 d)");
+  }
+  return { kcal: Math.min(BAND_MAX, Math.max(BAND_MIN, kcal)), reasons };
+}
 
 const round2 = (x: number): number => Math.round(x * 100) / 100;
 
@@ -129,9 +166,19 @@ export function computeForecast(input: ForecastInput): ForecastResult {
   }
   const tdeeStart = formulaTdeeStart + offset;
 
+  const weighinsLast28 = sorted.filter(
+    (w) => toEpochDays(latest.date) - toEpochDays(w.date) <= 27,
+  ).length;
+  const band = computeBand({
+    calibration,
+    intake_source: input.intake_source,
+    weighins_last_28d: weighinsLast28,
+  });
+  notes.push(`osäkerhet ±${band.kcal} kcal/dag: ${band.reasons.join(", ")}`);
+
   const main = simulate(input.profile, latest.date, startKg, input.intake_kcal, offset, horizonEnd);
-  const lowSim = simulate(input.profile, latest.date, startKg, input.intake_kcal - BAND_KCAL, offset, horizonEnd);
-  const highSim = simulate(input.profile, latest.date, startKg, input.intake_kcal + BAND_KCAL, offset, horizonEnd);
+  const lowSim = simulate(input.profile, latest.date, startKg, input.intake_kcal - band.kcal, offset, horizonEnd);
+  const highSim = simulate(input.profile, latest.date, startKg, input.intake_kcal + band.kcal, offset, horizonEnd);
   if (main.at(-1)!.date !== horizonEnd) notes.push("kurvan stoppades vid 40 kg (orimliga antaganden)");
 
   const curve: ForecastPoint[] = main.map((p, i) => ({
@@ -204,6 +251,7 @@ export function computeForecast(input: ForecastInput): ForecastResult {
       calibration,
       calibration_offset: Math.round(offset),
       kcal_per_kg: KCAL_PER_KG,
+      band_kcal: band.kcal,
     },
     curve,
     weight_at_target: weightAtTarget,

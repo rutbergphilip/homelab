@@ -2,8 +2,12 @@
 
 Date: 2026-07-10
 Status: design approved in brainstorming with Philip; this document is the spec for the implementation plan.
-Scope: one release (one PR), migration 5, no new MCP tools and **no MCP input-schema
-or tool-description changes** (response payloads only grow → no new chat needed).
+Scope: one release (one PR), migration 5, no new MCP tools and **no MCP
+input-schema changes** (response payloads only grow → no new chat needed).
+One description string is corrected: `get_forecast` currently claims a fixed
+"±150 kcal/dag" band, which §2 makes false — the description switches to
+"datadrivet ±band, se assumptions.band_kcal". Stale descriptions in old chats
+are harmless; responses self-describe.
 Builds on v0.6.0 forecast (spec `2026-07-09-kcal-time-and-forecast-design.md`) and
 v0.7.0 what-if previews (spec `2026-07-10-kcal-ui-profile-editing-design.md`).
 

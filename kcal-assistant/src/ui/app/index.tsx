@@ -1,5 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import { Idag } from "./views/Idag";
+import { Dagar } from "./views/Dagar";
+import { DagDetalj } from "./views/DagDetalj";
 
 const TABS = [
   ["idag", "Idag"], ["dagar", "Dagar"], ["produkter", "Produkter"],
@@ -23,9 +26,9 @@ export interface Route { tab: string; el: ReactNode }
 
 export function resolveRoute(hash: string): Route {
   let m: RegExpMatchArray | null;
-  if (/^#\/idag$/.test(hash)) return { tab: "idag", el: <Placeholder name="Idag" /> };
-  if (/^#\/dagar$/.test(hash)) return { tab: "dagar", el: <Placeholder name="Dagar" /> };
-  if ((m = hash.match(/^#\/dagar\/(\d{4}-\d{2}-\d{2})$/))) return { tab: "dagar", el: <Placeholder name={`Dag ${m[1]}`} /> };
+  if (/^#\/idag$/.test(hash)) return { tab: "idag", el: <Idag /> };
+  if (/^#\/dagar$/.test(hash)) return { tab: "dagar", el: <Dagar /> };
+  if ((m = hash.match(/^#\/dagar\/(\d{4}-\d{2}-\d{2})$/))) return { tab: "dagar", el: <DagDetalj date={m[1]!} /> };
   if (/^#\/produkter$/.test(hash)) return { tab: "produkter", el: <Placeholder name="Produkter" /> };
   if (/^#\/recept$/.test(hash)) return { tab: "recept", el: <Placeholder name="Recept" /> };
   if ((m = hash.match(/^#\/recept\/(\d+)$/))) return { tab: "recept", el: <Placeholder name={`Recept ${m[1]}`} /> };

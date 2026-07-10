@@ -84,14 +84,33 @@ export function handleUiApi(db: Database, req: UiApiRequest): UiApiResponse {
       }
       case "forecast": {
         if (param !== undefined) return NOT_FOUND;
-        const raw = search.get("source");
-        if (raw !== null && raw !== "targets" && raw !== "recent") {
+        const rawSource = search.get("source");
+        if (rawSource !== null && rawSource !== "targets" && rawSource !== "recent") {
           return { status: 400, body: { error: "ogiltig källa" } };
         }
         // raw is typed string|null — literal comparisons don't narrow it,
         // so pick the union value explicitly.
-        const source: IntakeSource = raw === "recent" ? "recent" : "targets";
-        return { status: 200, body: buildForecast(db, { intake_source: source }) };
+        const source: IntakeSource = rawSource === "recent" ? "recent" : "targets";
+        const intake = numParam(search, "intake", 1, 20000);
+        if (intake === "invalid") return { status: 400, body: { error: "ogiltig intake" } };
+        const activity = numParam(search, "activity", 1.2, 2.5);
+        if (activity === "invalid") return { status: 400, body: { error: "ogiltig activity" } };
+        const goal = numParam(search, "goal", 1, 500);
+        if (goal === "invalid") return { status: 400, body: { error: "ogiltig goal" } };
+        const goalDateRaw = search.get("goal_date");
+        if (goalDateRaw !== null && goalDateRaw !== "" && !isValidDate(goalDateRaw)) {
+          return { status: 400, body: { error: "ogiltig goal_date" } };
+        }
+        return {
+          status: 200,
+          body: buildForecast(db, {
+            intake_source: source,
+            ...(intake !== undefined && { intake_kcal: intake }),
+            ...(activity !== undefined && { activity_factor: activity }),
+            ...(goal !== undefined && { goal_weight: goal }),
+            ...(goalDateRaw !== null && { goal_date: goalDateRaw === "" ? null : goalDateRaw }),
+          }),
+        };
       }
       case "profile": {
         if (param !== undefined) return NOT_FOUND;
@@ -176,4 +195,17 @@ function coerceProfileBody(body: Record<string, unknown>): { input: ProfileInput
     }
   }
   return { input };
+}
+
+function numParam(
+  search: URLSearchParams,
+  name: string,
+  min: number,
+  max: number,
+): number | undefined | "invalid" {
+  const raw = search.get(name);
+  if (raw === null || raw === "") return undefined;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < min || n > max) return "invalid";
+  return n;
 }

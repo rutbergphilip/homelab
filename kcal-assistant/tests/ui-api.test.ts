@@ -9,6 +9,7 @@ import { logMeal } from "../src/db/meals";
 import { logWeight } from "../src/db/weights";
 import { saveRecipe } from "../src/db/recipes";
 import { setProfile } from "../src/db/profile";
+import { addDays, todayStockholm } from "../src/lib/dates";
 
 const TOKEN = "test-token";
 let httpServer: Server;
@@ -168,6 +169,28 @@ describe("read-only UI API", () => {
 
   test("forecast rejects an unknown source", async () => {
     expect((await get("/ui/api/forecast?source=x")).status).toBe(400);
+  });
+
+  test("forecast override params shape the preview", async () => {
+    const base = (await (await get("/ui/api/forecast")).json()).forecast;
+    const boosted = (await (await get("/ui/api/forecast?activity=2.5")).json()).forecast;
+    expect(boosted.assumptions.tdee_start).toBeGreaterThan(base.assumptions.tdee_start);
+    const explicit = (await (await get("/ui/api/forecast?intake=1234")).json()).forecast;
+    expect(explicit.assumptions.intake_kcal).toBe(1234);
+    expect(explicit.assumptions.intake_source).toBe("explicit");
+    // relative date: the endpoint uses the real today, so an absolute date
+    // would rot once the calendar passes it
+    const gd = addDays(todayStockholm(), 100);
+    const goal = (await (await get(`/ui/api/forecast?goal=90&goal_date=${gd}`)).json()).forecast;
+    expect(goal.goal.weight_kg).toBe(90);
+    expect(goal.weight_at_goal_date.date).toBe(gd);
+  });
+
+  test("forecast override params are validated", async () => {
+    expect((await get("/ui/api/forecast?activity=9")).status).toBe(400);
+    expect((await get("/ui/api/forecast?intake=abc")).status).toBe(400);
+    expect((await get("/ui/api/forecast?goal=-5")).status).toBe(400);
+    expect((await get("/ui/api/forecast?goal_date=2026-13-99")).status).toBe(400);
   });
 });
 

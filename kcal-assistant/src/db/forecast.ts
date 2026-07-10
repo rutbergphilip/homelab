@@ -62,10 +62,19 @@ export function buildForecast(
     intake_kcal?: number;
     intake_source?: IntakeSource;
     today?: string;
+    activity_factor?: number;
+    goal_date?: string | null;
   } = {},
 ): ForecastView {
   const profile = getProfile(db);
   if (!profile) return { forecast: null, reason: "ingen profil — sätt via set_profile i chatten" };
+
+  // Preview overrides: applied on top of the stored profile, never persisted.
+  const effectiveProfile = {
+    ...profile,
+    ...(opts.activity_factor !== undefined && { activity_factor: opts.activity_factor }),
+    ...(opts.goal_date !== undefined && { goal_date: opts.goal_date }),
+  };
 
   const weights = db
     .query<{ date: string; weight_kg: number }, []>(
@@ -84,7 +93,7 @@ export function buildForecast(
   const measured = trend.trend && !trend.trend.uncertain ? trend.trend.est_tdee : null;
 
   const forecast = computeForecast({
-    profile,
+    profile: effectiveProfile,
     weights,
     intake_kcal: resolved.kcal,
     intake_source: resolved.source,

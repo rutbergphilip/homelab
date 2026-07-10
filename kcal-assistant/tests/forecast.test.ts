@@ -176,4 +176,27 @@ describe("buildForecast", () => {
     expect(f.assumptions.intake_source).toBe("explicit");
     expect(f.assumptions.intake_kcal).toBe(1234);
   });
+
+  test("activity and goal_date overrides shape the preview without touching the db", () => {
+    const db = seededDb();
+    setProfile(db, { goal_weight_kg: 80, goal_date: "2026-09-01" });
+    const base = buildForecast(db, { today: TODAY }).forecast!;
+    const preview = buildForecast(db, {
+      today: TODAY,
+      activity_factor: 2.0,
+      goal_date: "2026-08-01",
+    }).forecast!;
+    expect(preview.assumptions.tdee_start).toBeGreaterThan(base.assumptions.tdee_start);
+    expect(preview.weight_at_goal_date!.date).toBe("2026-08-01");
+    const after = buildForecast(db, { today: TODAY }).forecast!;
+    expect(after.assumptions.tdee_start).toBe(base.assumptions.tdee_start);
+    expect(after.weight_at_goal_date!.date).toBe("2026-09-01");
+  });
+
+  test("goal_date null override suppresses the stored goal date", () => {
+    const db = seededDb();
+    setProfile(db, { goal_date: "2026-09-01" });
+    const preview = buildForecast(db, { today: TODAY, goal_date: null }).forecast!;
+    expect(preview.weight_at_goal_date).toBeNull();
+  });
 });

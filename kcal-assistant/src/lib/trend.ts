@@ -103,3 +103,33 @@ export function computeTrend(input: {
     },
   };
 }
+
+// Hacker's Diet-style exponential smoothing for irregular weigh-ins:
+//   trend += α_eff · (weight − trend),  α_eff = 1 − 0.9^gap_days (α = 0.10/day).
+// The running trend is kept unrounded; only the output is rounded.
+const ALPHA_DAILY = 0.1;
+
+export interface TrendWeightPoint {
+  date: string;
+  weight_kg: number;
+  trend_kg: number;
+}
+
+export function computeTrendWeight(weights: WeightEntry[]): TrendWeightPoint[] {
+  const sorted = [...weights].sort((a, b) => (a.date < b.date ? -1 : 1));
+  const out: TrendWeightPoint[] = [];
+  let trend: number | null = null;
+  let prevEpoch = 0;
+  for (const w of sorted) {
+    const epoch = toEpochDays(w.date);
+    if (trend === null) {
+      trend = w.weight_kg;
+    } else {
+      const alphaEff = 1 - Math.pow(1 - ALPHA_DAILY, Math.max(1, epoch - prevEpoch));
+      trend += alphaEff * (w.weight_kg - trend);
+    }
+    prevEpoch = epoch;
+    out.push({ date: w.date, weight_kg: w.weight_kg, trend_kg: round2(trend) });
+  }
+  return out;
+}

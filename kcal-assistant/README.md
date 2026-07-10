@@ -70,6 +70,23 @@ steps for the API-created provider/application/outpost config.
 
 Local dev: `UI_DEV_NO_AUTH=1 bun run src/index.ts` (refused when NODE_ENV=production).
 
+## UI-utveckling
+
+The `/ui` frontend is a React app (`src/ui/app/`) bundled to a single
+`src/ui/static/app.js` by `bun build`. The production Docker image builds this
+bundle in a first stage (`bun run build:ui`) and copies the artifact into the
+runtime image, so `app.js` never has to be committed fresh for a deploy.
+
+```bash
+bun run dev:ui   # rebuild src/ui/static/app.js on every change (watch mode)
+
+# dev server with auth bypass + throwaway db (serves /ui without Authentik):
+UI_DEV_NO_AUTH=1 MCP_TOKEN=dev DB_PATH=/tmp/kcal-dev.sqlite bun run src/index.ts
+```
+
+Open `http://localhost:3000/ui`. Run `bun run dev:ui` in a second terminal while
+the server runs; refresh the browser to pick up the rebuilt bundle.
+
 ## Rotate the token
 
 1. `openssl rand -hex 32`

@@ -107,11 +107,13 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
           return;
         }
         if (API_ROUTE.test(pathname)) {
-          const { status, body } = handleUiApi(
-            opts.db,
+          const { status, body } = handleUiApi(opts.db, {
+            method: req.method ?? "GET",
             pathname,
-            new URL(raw, "http://internal").searchParams,
-          );
+            search: new URL(raw, "http://internal").searchParams,
+            contentType: typeof req.headers["content-type"] === "string" ? req.headers["content-type"] : undefined,
+            secFetchSite: typeof req.headers["sec-fetch-site"] === "string" ? req.headers["sec-fetch-site"] : undefined,
+          });
           uiJson(res, status, body);
           return;
         }

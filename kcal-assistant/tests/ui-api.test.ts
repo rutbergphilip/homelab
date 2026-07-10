@@ -170,3 +170,26 @@ describe("read-only UI API", () => {
     expect((await get("/ui/api/forecast?source=x")).status).toBe(400);
   });
 });
+
+describe("profile api", () => {
+  let srv: Server;
+  let pdb: Database;
+  let pbase: string;
+
+  beforeAll(async () => {
+    pdb = openDb(":memory:");
+    srv = createHttpServer({ token: "t2", db: pdb, uiAuth: { mode: "dev-bypass" } });
+    await new Promise<void>((r) => srv.listen(0, r));
+    pbase = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise((r) => srv.close(r));
+  });
+
+  test("GET returns null before any profile exists", async () => {
+    const res = await fetch(`${pbase}/ui/api/profile`);
+    expect(res.status).toBe(200);
+    expect((await res.json()).profile).toBeNull();
+  });
+});

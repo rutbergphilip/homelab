@@ -5,6 +5,7 @@ import { findRecipes, getRecipe } from "../db/recipes";
 import { getTrend, listWeights } from "../db/weights";
 import { listPreferences, getTargets } from "../db/preferences";
 import { buildForecast, type IntakeSource } from "../db/forecast";
+import { getProfile } from "../db/profile";
 import { isValidDate } from "../lib/dates";
 
 export interface UiApiResponse {
@@ -12,13 +13,25 @@ export interface UiApiResponse {
   body: unknown;
 }
 
+export interface UiApiRequest {
+  method: string;
+  pathname: string;
+  search: URLSearchParams;
+  contentType?: string;
+  secFetchSite?: string;
+  body?: unknown;
+}
+
 const NOT_FOUND: UiApiResponse = { status: 404, body: { error: "finns inte" } };
 
-// Read-only by construction: every handler calls only read functions.
-// Errors never echo internals — generic message, details go to the log.
-export function handleUiApi(db: Database, pathname: string, search: URLSearchParams): UiApiResponse {
+// Read-only by construction — with ONE exception: PUT /ui/api/profile
+// (CSRF-hardened, single user, shares setProfile's validation with the MCP
+// path). Every other handler calls only read functions. Errors never echo
+// internals — generic message, details go to the log.
+export function handleUiApi(db: Database, req: UiApiRequest): UiApiResponse {
   try {
-    const segments = pathname.split("/").filter(Boolean); // ["ui","api",resource,param?]
+    const { search } = req;
+    const segments = req.pathname.split("/").filter(Boolean); // ["ui","api",resource,param?]
     const resource = segments[2];
     const param = segments[3];
 
@@ -79,6 +92,11 @@ export function handleUiApi(db: Database, pathname: string, search: URLSearchPar
         // so pick the union value explicitly.
         const source: IntakeSource = raw === "recent" ? "recent" : "targets";
         return { status: 200, body: buildForecast(db, { intake_source: source }) };
+      }
+      case "profile": {
+        if (param !== undefined) return NOT_FOUND;
+        if (req.method === "GET") return { status: 200, body: { profile: getProfile(db) } };
+        return { status: 405, body: { error: "metod stöds inte" } };
       }
       case "preferences": {
         if (param !== undefined) return NOT_FOUND;

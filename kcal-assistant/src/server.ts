@@ -16,7 +16,7 @@ function safeEqual(a: string, b: string): boolean {
   return timingSafeEqual(bufA, bufB);
 }
 
-// Static assets: three hardcoded mappings — nothing filesystem-derived from
+// Static assets: four hardcoded mappings — nothing filesystem-derived from
 // the URL, so traversal is impossible by construction.
 const STATIC_ROUTES: Record<string, { file: URL; type: string }> = {
   "/ui": { file: new URL("./ui/static/index.html", import.meta.url), type: "text/html; charset=utf-8" },

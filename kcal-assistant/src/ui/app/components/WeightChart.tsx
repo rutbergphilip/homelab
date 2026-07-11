@@ -66,6 +66,12 @@ export function WeightChart({ series, forecast, ghost = null, scenarios = NO_SCE
     return best;
   };
 
+  const scenarioHits = hover
+    ? scenarios
+        .map((s) => ({ slot: s.slot, kg: kgAt(s.curve, hover.t) }))
+        .filter((s): s is { slot: 0 | 1; kg: number } => s.kg !== null)
+    : [];
+
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
     const svg = svgRef.current;
     if (!svg) return;
@@ -144,7 +150,7 @@ export function WeightChart({ series, forecast, ghost = null, scenarios = NO_SCE
             <line className="hover-crosshair" x1={X(hover.t)} x2={X(hover.t)} y1={M.top} y2={H - M.bottom} />
             <circle className="hover-dot" cx={X(hover.t)} cy={Y(hover.kg)} r={4.5} />
             <g transform={`translate(${tip.x},${tip.y})`}>
-              <rect className="hover-tip-bg" x={-58} y={-30} width={116} height={34 + scenarios.length * 10} rx={2} />
+              <rect className="hover-tip-bg" x={-58} y={-30} width={116} height={34 + scenarioHits.length * 10} rx={2} />
               <text className="hover-tip-date" x={0} y={-19} textAnchor="middle">{new Date(hover.t).toISOString().slice(0, 10)}</text>
               <text className="hover-tip-kg" x={0} y={-7} textAnchor="middle">
                 {hover.kind === "actual" ? `${sv(hover.kg)} kg` : `≈ ${sv(hover.kg)} kg`}
@@ -155,9 +161,9 @@ export function WeightChart({ series, forecast, ghost = null, scenarios = NO_SCE
               {hover.kind === "actual" ? (
                 <text className="hover-tip-band" x={0} y={2} textAnchor="middle">trend {sv(hover.trend)}</text>
               ) : null}
-              {scenarios.map((s, i) => (
+              {scenarioHits.map((s, i) => (
                 <text key={s.slot} className="hover-tip-band" x={0} y={13 + i * 10} textAnchor="middle">
-                  S{s.slot + 1} ≈ {sv(kgAt(s.curve, hover.t))} kg
+                  S{s.slot + 1} ≈ {sv(s.kg)} kg
                 </text>
               ))}
             </g>

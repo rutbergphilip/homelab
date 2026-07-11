@@ -1,39 +1,27 @@
 /* KCAL·DB — labbkvitto: precise mono numerals, hairline rules, dotted leaders.
-   Dark-first; light theme via prefers-color-scheme. Strict CSP: no inline. */
+   Theme via light-dark(): color-scheme picks the side. No data-theme attribute
+   = follow the OS; theme.js stamps an explicit choice before first paint.
+   Strict CSP: no inline. */
 
 :root {
-  --bg: #131110;
-  --surface: #1b1815;
-  --surface-2: #221e1a;
-  --ink: #ece5d8;
-  --ink-2: #a89f90;
-  --ink-3: #6f685c;
-  --hair: #2f2a23;
-  --hair-2: #453e33;
-  --accent: #e0b84b;
-  --accent-dim: #8a7330;
-  --ok: #3fa486;
-  --under: #c4534a;
+  color-scheme: dark light;
+  --bg: light-dark(#f4efe5, #131110);
+  --surface: light-dark(#fbf8f1, #1b1815);
+  --surface-2: light-dark(#efe9dc, #221e1a);
+  --ink: light-dark(#27221a, #ece5d8);
+  --ink-2: light-dark(#6b6455, #a89f90);
+  --ink-3: light-dark(#99917f, #6f685c);
+  --hair: light-dark(#ddd5c4, #2f2a23);
+  --hair-2: light-dark(#c4bba6, #453e33);
+  --accent: light-dark(#9a7414, #e0b84b);
+  --accent-dim: light-dark(#c7a94e, #8a7330);
+  --ok: light-dark(#1e7a60, #3fa486);
+  --under: light-dark(#ab3f36, #c4534a);
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f4efe5;
-    --surface: #fbf8f1;
-    --surface-2: #efe9dc;
-    --ink: #27221a;
-    --ink-2: #6b6455;
-    --ink-3: #99917f;
-    --hair: #ddd5c4;
-    --hair-2: #c4bba6;
-    --accent: #9a7414;
-    --accent-dim: #c7a94e;
-    --ok: #1e7a60;
-    --under: #ab3f36;
-  }
-}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -73,6 +61,19 @@ body {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.theme-toggle {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: none;
+  border: 1px solid var(--hair-2);
+  border-radius: 3px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent-dim); }
 
 /* ---------- layout ---------- */
 .view {

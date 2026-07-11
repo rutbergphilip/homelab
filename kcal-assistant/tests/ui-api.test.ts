@@ -100,6 +100,7 @@ describe("read-only UI API", () => {
     expect(res.headers.get("content-security-policy")).toBe("default-src 'self'; img-src 'self' data:");
     expect((await get("/ui/static/app.js")).headers.get("content-type")).toContain("javascript");
     expect((await get("/ui/static/app.css")).headers.get("content-type")).toContain("text/css");
+    expect((await get("/ui/static/theme.js")).headers.get("content-type")).toContain("javascript");
   });
 
   test("invalid date 400 with fixed message; unknown API path 404; unknown recipe 404", async () => {

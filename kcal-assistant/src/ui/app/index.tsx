@@ -40,6 +40,44 @@ export function resolveRoute(hash: string): Route {
   return { tab: "idag", el: null };
 }
 
+type Theme = "system" | "light" | "dark";
+const THEME_LABEL: Record<Theme, string> = { system: "system", light: "ljust", dark: "mörkt" };
+const THEME_NEXT: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
+
+function loadTheme(): Theme {
+  try {
+    const t = localStorage.getItem("kcal.theme");
+    return t === "light" || t === "dark" ? t : "system";
+  } catch {
+    return "system";
+  }
+}
+
+function applyTheme(t: Theme): void {
+  if (t === "system") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+  try {
+    if (t === "system") localStorage.removeItem("kcal.theme");
+    else localStorage.setItem("kcal.theme", t);
+  } catch {
+    // private mode etc — the attribute still applied, only persistence is lost
+  }
+}
+
+function ThemeToggle() {
+  const [theme, setTheme] = useState<Theme>(loadTheme);
+  const cycle = () => {
+    const next = THEME_NEXT[theme];
+    applyTheme(next);
+    setTheme(next);
+  };
+  return (
+    <button className="theme-toggle" aria-label="växla tema" onClick={cycle}>
+      tema: {THEME_LABEL[theme]}
+    </button>
+  );
+}
+
 function App() {
   const hash = useHashRoute();
   const route = resolveRoute(hash);
@@ -51,6 +89,7 @@ function App() {
         <span className="masthead-meta">
           {new Date().toLocaleDateString("sv-SE", { weekday: "short", day: "numeric", month: "short" })}
         </span>
+        <ThemeToggle />
       </header>
       <main className="view" aria-live="polite">
         <Fragment key={hash}>{route.el}</Fragment>

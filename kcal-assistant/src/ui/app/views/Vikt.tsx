@@ -11,12 +11,19 @@ export function Vikt() {
 
 const STORAGE_KEY = "kcal.scenarios";
 
+const OVERRIDE_KEYS = ["activity", "intake", "goal", "goal_date"] as const;
+
 function loadPinned(): PrognosParams[] {
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
     if (!Array.isArray(raw)) return [];
     return raw.filter((p): p is PrognosParams =>
-      p && (p.source === "targets" || p.source === "recent") && typeof p.overrides === "object" && p.overrides !== null,
+      p !== null && typeof p === "object" &&
+      (p.source === "targets" || p.source === "recent") &&
+      typeof p.overrides === "object" && p.overrides !== null &&
+      Object.entries(p.overrides).every(
+        ([k, v]) => (OVERRIDE_KEYS as readonly string[]).includes(k) && (v === undefined || typeof v === "string"),
+      ),
     ).slice(0, 2);
   } catch {
     return [];

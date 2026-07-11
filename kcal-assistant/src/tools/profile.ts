@@ -3,6 +3,7 @@ import type { Database } from "bun:sqlite";
 import { z } from "zod";
 import { setProfile } from "../db/profile";
 import { buildForecast } from "../db/forecast";
+import { weeklyCurve } from "../lib/forecast";
 import { dateSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
 
@@ -41,7 +42,7 @@ export function registerProfileTools(server: McpServer, db: Database): void {
       if (!view.forecast) return jsonResult(view);
       // Token-lean for the chat: weekly points, and no ghost curve.
       const { curve, ...rest } = view.forecast;
-      const weekly = curve.filter((_, i) => i % 7 === 0 || i === curve.length - 1);
+      const weekly = weeklyCurve(curve);
       return jsonResult({
         forecast: { ...rest, curve: weekly },
         ...(view.accuracy && { accuracy: view.accuracy }),

@@ -304,3 +304,16 @@ describe("band integration", () => {
       .toBeGreaterThan(narrow.curve[30]!.high - narrow.curve[30]!.low);
   });
 });
+
+import { weeklyCurve } from "../src/lib/forecast";
+
+describe("weeklyCurve", () => {
+  test("keeps every 7th point and always the last", () => {
+    const days = Array.from({ length: 16 }, (_, i) => i); // 0..15
+    expect(weeklyCurve(days)).toEqual([0, 7, 14, 15]);
+  });
+  test("single point and empty pass through", () => {
+    expect(weeklyCurve([42])).toEqual([42]);
+    expect(weeklyCurve([])).toEqual([]);
+  });
+});

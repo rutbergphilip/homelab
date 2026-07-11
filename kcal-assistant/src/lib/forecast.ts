@@ -110,6 +110,12 @@ export function computeBand(input: BandInput): { kcal: number; reasons: string[]
 
 const round2 = (x: number): number => Math.round(x * 100) / 100;
 
+// Weekly curve sampling shared by snapshot storage and the MCP get_forecast
+// response (token economy): every 7th point plus always the endpoint.
+export function weeklyCurve<T>(curve: T[]): T[] {
+  return curve.filter((_, i) => i % 7 === 0 || i === curve.length - 1);
+}
+
 function ageAt(birthDate: string, date: string): number {
   return Math.floor((toEpochDays(date) - toEpochDays(birthDate)) / 365.25);
 }

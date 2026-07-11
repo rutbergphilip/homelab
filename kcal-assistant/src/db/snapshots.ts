@@ -1,5 +1,5 @@
 import type { Database } from "bun:sqlite";
-import type { ForecastPoint, ForecastResult } from "../lib/forecast";
+import { weeklyCurve, type ForecastPoint, type ForecastResult } from "../lib/forecast";
 
 export interface SnapshotRow {
   date: string;
@@ -12,10 +12,6 @@ export interface SnapshotRow {
   band_kcal: number;
   curve: ForecastPoint[];
 }
-
-// Weekly sampling mirrors get_forecast's token-lean curve.
-const weekly = (curve: ForecastPoint[]): ForecastPoint[] =>
-  curve.filter((_, i) => i % 7 === 0 || i === curve.length - 1);
 
 export function saveSnapshot(db: Database, forecast: ForecastResult, today: string): void {
   db.run(
@@ -33,7 +29,7 @@ export function saveSnapshot(db: Database, forecast: ForecastResult, today: stri
       today, forecast.start.date, forecast.start.weight_kg,
       forecast.assumptions.intake_kcal, forecast.assumptions.intake_source,
       forecast.assumptions.tdee_start, forecast.assumptions.calibration_offset,
-      forecast.assumptions.band_kcal, JSON.stringify(weekly(forecast.curve)),
+      forecast.assumptions.band_kcal, JSON.stringify(weeklyCurve(forecast.curve)),
     ],
   );
 }

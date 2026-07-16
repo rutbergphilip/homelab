@@ -11,6 +11,9 @@ import {
 } from './theme-controller.js';
 import { settlePage } from './swipe.js';
 import type { HubConfig } from './hub-config.js';
+import './widgets/hub-clock.js';
+import './widgets/hub-status-chip.js';
+import './widgets/hub-room-tile.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal'];
 

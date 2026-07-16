@@ -24,4 +24,5 @@ talosconfig
 .venv/
 .DS_Store
 Thumbs.db
-optiplex-gpu.yaml.superpowers/
+optiplex-gpu.yaml
+.superpowers/

@@ -105,3 +105,5 @@ Once created in the Hue app, they'll sync into Home Assistant as new `scene.*` e
 Step 1 dump (`curl … | jq -r '.[] | select(.entity_id|startswith("scene."))…'`) to get their
 `entity_id`s, then fill in `hub-config.mjs`'s `scenes:` array (see below — currently an empty
 placeholder with a comment).
+
+> **RESOLVED 2026-07-16:** the dangling references were fixed the other way — `light.hue_white_luster_1`/`_1_2` were renamed back to `light.koksfonstret`/`light.sovrumsfonstret` in HA's entity registry (Philip-approved). The hub config's original ids are correct; do NOT apply the swap below.

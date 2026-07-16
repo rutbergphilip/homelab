@@ -4,6 +4,7 @@ import type { Database } from "bun:sqlite";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { buildMcpServer } from "./mcp";
 import { handleUiApi } from "./ui/api";
+import { buildInternalSummary } from "./ui/internal";
 import type { UiAuthState } from "./ui/auth";
 
 function safeEqual(a: string, b: string): boolean {
@@ -103,6 +104,19 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
         });
         await mcp.connect(transport);
         await transport.handleRequest(req, res);
+        return;
+      }
+
+      // Read-only, unauthenticated: network-layer protected in-cluster by a
+      // CiliumNetworkPolicy (Task 13), polled by the wall-hub kcal card.
+      if (pathname === "/internal/summary") {
+        if (req.method !== "GET") {
+          res.writeHead(405, { allow: "GET" }).end();
+          return;
+        }
+        res
+          .writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+          .end(JSON.stringify(buildInternalSummary(opts.db)));
         return;
       }
 

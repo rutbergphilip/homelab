@@ -62,6 +62,30 @@ describe("http routing", () => {
   });
 });
 
+describe("/internal/summary", () => {
+  test("GET returns 200 with status ok, even with UI auth unconfigured", async () => {
+    const res = await fetch(`${baseUrl}/internal/summary`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("application/json");
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    const body = await res.json();
+    expect(body.status).toBe("ok");
+  });
+
+  test("POST is rejected with 405 and Allow: GET", async () => {
+    const res = await fetch(`${baseUrl}/internal/summary`, { method: "POST" });
+    expect(res.status).toBe(405);
+    expect(res.headers.get("allow")).toBe("GET");
+  });
+
+  test("/ui routes still require auth (fail closed) unaffected by the internal route", async () => {
+    const res = await fetch(`${baseUrl}/ui`);
+    expect(res.status).toBe(503);
+    const api = await fetch(`${baseUrl}/ui/api/overview`);
+    expect(api.status).toBe(503);
+  });
+});
+
 describe("mcp over streamable http", () => {
   test("lists all 24 tools", async () => {
     const client = await connect();

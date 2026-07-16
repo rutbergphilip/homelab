@@ -4,7 +4,10 @@
 #     arrive via nginx), and
 #   - host + remote-node entities (kubelet liveness/readiness probes come from
 #     the node; without this the probes would fail and the pod — which serves
-#     /mcp — would be killed).
+#     /mcp — would be killed), and
+#   - the home-assistant pod, L7-limited to GET /internal/summary (wall-hub
+#     dashboard REST sensors) — /ui and /mcp stay unreachable from it, so the
+#     X-authentik-email forgery protection is preserved.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -22,3 +25,15 @@ spec:
     - fromEntities:
         - host
         - remote-node
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: home-automation
+            app: home-assistant
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+          rules:
+            http:
+              - method: "GET"
+                path: "/internal/summary"

@@ -276,7 +276,7 @@ export class HubLightsPage extends GlassBaseElement {
         padding-top: 2px;
       }
       .scene-chip {
-        min-height: 40px;
+        min-height: 48px;
         padding: 0 14px;
         border-radius: var(--hub-radius-pill);
         border: 1px solid var(--hub-chip-border);
@@ -308,6 +308,10 @@ export class HubLightsPage extends GlassBaseElement {
     if (this._flashTimer !== undefined) clearTimeout(this._flashTimer);
     this._armTimer = undefined;
     this._flashTimer = undefined;
+    // Never leave the all-off guard armed across a disconnect — otherwise the
+    // next single tap would fire light.turn_off all with no confirmation.
+    this._armed = false;
+    this._flash = false;
   }
 
   // ── Whole-home "Allt släckt" — arm then fire ──────────────

@@ -422,7 +422,7 @@ function t(t,e,i,s){var a,r=arguments.length,o=r<3?e:null===s?s=Object.getOwnPro
             <div class="slider-glow" style="left: calc(${i}% - 12px)"></div>
           `:X`
             <div class="off-overlay" @click=${()=>this.callService("light","turn_on",{brightness_pct:100},this._config.entity)}>
-              Tryck for att tanda
+              Tryck för att tända
             </div>
           `}
         </div>
@@ -1174,6 +1174,7 @@ function t(t,e,i,s){var a,r=arguments.length,o=r<3?e:null===s?s=Object.getOwnPro
     --hub-font-body: 'Inter', -apple-system, sans-serif;
     --hub-radius: 18px;
     --hub-radius-lg: 20px;
+    --hub-radius-sm: 12px;
     --hub-radius-pill: 99px;
     --hub-gap: 12px;
     --hub-page-pad: clamp(20px, 3vw, 40px);
@@ -1717,7 +1718,7 @@ function t(t,e,i,s){var a,r=arguments.length,o=r<3?e:null===s?s=Object.getOwnPro
         flex: 1;
         min-width: 0;
       }
-    `],t([gt({attribute:!1})],Xt.prototype,"config",void 0),t([bt()],Xt.prototype,"_now",void 0),customElements.define("hub-home-page",Xt);const Vt=new Set(["unavailable","unknown"]);function Gt(t){return!!t&&!Vt.has(t.state)}class qt extends vt{constructor(){super(...arguments),this._armed=!1,this._flash=!1,this._onAllOff=()=>{if(!this._armed)return this._armed=!0,void 0!==this._armTimer&&clearTimeout(this._armTimer),void(this._armTimer=window.setTimeout(()=>{this._armed=!1,this._armTimer=void 0},3e3));void 0!==this._armTimer&&clearTimeout(this._armTimer),this._armTimer=void 0,this._armed=!1,this._flash=!0,this.callService("light","turn_off",void 0,"all"),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)}}disconnectedCallback(){super.disconnectedCallback(),this._clearTimers()}_clearTimers(){void 0!==this._armTimer&&clearTimeout(this._armTimer),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._armTimer=void 0,this._flashTimer=void 0}_activateScene(t){this.callService("scene","turn_on",void 0,t)}_lightRow(t){return Gt(this.hass.states[t.entity])?X`
+    `],t([gt({attribute:!1})],Xt.prototype,"config",void 0),t([bt()],Xt.prototype,"_now",void 0),customElements.define("hub-home-page",Xt);const Vt=new Set(["unavailable","unknown"]);function Gt(t){return!!t&&!Vt.has(t.state)}class qt extends vt{constructor(){super(...arguments),this._armed=!1,this._flash=!1,this._onAllOff=()=>{if(!this._armed)return this._armed=!0,void 0!==this._armTimer&&clearTimeout(this._armTimer),void(this._armTimer=window.setTimeout(()=>{this._armed=!1,this._armTimer=void 0},3e3));void 0!==this._armTimer&&clearTimeout(this._armTimer),this._armTimer=void 0,this._armed=!1,this._flash=!0,this.callService("light","turn_off",void 0,"all"),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)}}disconnectedCallback(){super.disconnectedCallback(),this._clearTimers()}_clearTimers(){void 0!==this._armTimer&&clearTimeout(this._armTimer),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._armTimer=void 0,this._flashTimer=void 0,this._armed=!1,this._flash=!1}_activateScene(t){this.callService("scene","turn_on",void 0,t)}_lightRow(t){return Gt(this.hass.states[t.entity])?X`
       <glass-light-slider
         .hass=${this.hass}
         ._config=${{type:"glass-light-slider",entity:t.entity,name:t.name}}
@@ -1987,7 +1988,7 @@ function t(t,e,i,s){var a,r=arguments.length,o=r<3?e:null===s?s=Object.getOwnPro
         padding-top: 2px;
       }
       .scene-chip {
-        min-height: 40px;
+        min-height: 48px;
         padding: 0 14px;
         border-radius: var(--hub-radius-pill);
         border: 1px solid var(--hub-chip-border);

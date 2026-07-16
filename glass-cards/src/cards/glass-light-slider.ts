@@ -176,7 +176,7 @@ export class GlassLightSlider extends GlassBaseElement {
             <div class="slider-glow" style="left: calc(${brightness}% - 12px)"></div>
           ` : html`
             <div class="off-overlay" @click=${() => this.callService('light', 'turn_on', { brightness_pct: 100 }, this._config.entity!)}>
-              Tryck for att tanda
+              Tryck för att tända
             </div>
           `}
         </div>

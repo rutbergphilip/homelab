@@ -66,6 +66,7 @@ export const hubTokens = css`
     --hub-font-body: 'Inter', -apple-system, sans-serif;
     --hub-radius: 18px;
     --hub-radius-lg: 20px;
+    --hub-radius-sm: 12px;
     --hub-radius-pill: 99px;
     --hub-gap: 12px;
     --hub-page-pad: clamp(20px, 3vw, 40px);

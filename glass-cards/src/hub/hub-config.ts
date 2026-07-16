@@ -1,10 +1,12 @@
 import type { LovelaceCardConfig } from '../types.js';
 
 export interface HubRoomLight { entity: string; name: string; }
+export interface HubRoomScene { entity: string; name: string; }
 export interface HubRoom {
   id: string; name: string; icon: string;
   main_entity: string;              // toggled by room tile long-press
   lights: HubRoomLight[];
+  scenes?: HubRoomScene[];          // per-room Hue scenes (Hall/Office/Badrum only)
 }
 export interface HubConfig extends LovelaceCardConfig {
   pages?: string[];

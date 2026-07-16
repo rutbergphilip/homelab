@@ -12,6 +12,7 @@ import {
 import { settlePage, isDrag } from './swipe.js';
 import type { HubConfig, HubRoom } from './hub-config.js';
 import './pages/hub-home-page.js';
+import './pages/hub-lights-page.js';
 import './widgets/hub-room-popup.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal'];
@@ -353,7 +354,12 @@ export class GlassHub extends GlassBaseElement {
                     .hass=${this.hass}
                     .config=${this._cfg}
                   ></hub-home-page>`
-                : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
+                : id === 'ljus'
+                  ? html`<hub-lights-page
+                      .hass=${this.hass}
+                      .config=${this._cfg}
+                    ></hub-lights-page>`
+                  : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
             </section>
           `,
         )}

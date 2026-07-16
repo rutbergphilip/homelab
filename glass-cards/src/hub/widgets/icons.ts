@@ -42,6 +42,10 @@ export const icons: Record<string, TemplateResult> = {
   moon: wrap(svg`
     <path d="M20 14.5A8 8 0 0 1 9.5 4 6.5 6.5 0 1 0 20 14.5z"></path>
   `),
+  power: wrap(svg`
+    <path d="M12 3v8.5"></path>
+    <path d="M6.7 6.9a8 8 0 1 0 10.6 0"></path>
+  `),
   play: wrap(svg`
     <path d="M7 4.5v15l13-7.5-13-7.5z"></path>
   `),

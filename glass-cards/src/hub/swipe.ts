@@ -7,6 +7,13 @@ export function isDrag(dxPx: number, threshold = DRAG_THRESHOLD_PX): boolean {
   return Math.abs(dxPx) > threshold;
 }
 
+// Axis-lock: a gesture is a horizontal deck swipe only when horizontal travel
+// strictly beats vertical. Ties (and vertical-dominant) mean "let the page
+// scroll" — the deck must never hijack a vertical scroll.
+export function isHorizontalDrag(dx: number, dy: number): boolean {
+  return Math.abs(dx) > Math.abs(dy);
+}
+
 export function settlePage(
   offsetPx: number, viewportW: number, velocityPxMs: number,
   current: number, pageCount: number

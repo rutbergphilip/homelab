@@ -9,7 +9,7 @@ import {
   type ThemeOverride,
   type HubTheme,
 } from './theme-controller.js';
-import { settlePage, isDrag } from './swipe.js';
+import { settlePage, isDrag, isHorizontalDrag } from './swipe.js';
 import type { HubConfig, HubRoom } from './hub-config.js';
 import './pages/hub-home-page.js';
 import './pages/hub-lights-page.js';
@@ -32,6 +32,11 @@ function pageTitle(id: string): string {
 
 const THEME_CYCLE: ThemeOverride[] = ['auto', 'dag', 'natt'];
 
+// Active page index kept at module scope so it survives a re-mount of the
+// element (e.g. Home Assistant rebuilding the card). Only interactive
+// navigation and the idle timer change it; a theme change must never reset it.
+let lastActivePage = 0;
+
 export class GlassHub extends GlassBaseElement {
   @property({ reflect: true, attribute: 'data-theme' }) theme: HubTheme = 'natt';
 
@@ -44,8 +49,9 @@ export class GlassHub extends GlassBaseElement {
 
   // pointer / swipe tracking
   private _pointerActive = false;   // pointer is down, gesture undecided
-  private _dragging = false;        // gesture crossed the drag threshold
+  private _dragging = false;        // gesture locked to a horizontal deck swipe
   private _startX = 0;
+  private _startY = 0;
   private _lastX = 0;
   private _lastT = 0;
   private _velocity = 0;
@@ -74,7 +80,10 @@ export class GlassHub extends GlassBaseElement {
       .page {
         flex: 0 0 calc(100% / var(--page-count));
         height: 100%;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         position: relative;
       }
 
@@ -171,6 +180,7 @@ export class GlassHub extends GlassBaseElement {
     super.connectedCallback();
     ensureFonts();
     this._applyTheme();
+    this._page = lastActivePage;   // survive a re-mount without snapping to Hem
     this._resetIdle();
     this.addEventListener('pointerdown', this._onAnyInteraction);
     this.addEventListener('hub-room-open', this._onRoomOpen as EventListener);
@@ -210,6 +220,7 @@ export class GlassHub extends GlassBaseElement {
     const idx = this._pages.indexOf(id);
     if (idx >= 0) {
       this._page = idx;
+      lastActivePage = idx;
       this._dragX = 0;
     }
   }
@@ -249,13 +260,16 @@ export class GlassHub extends GlassBaseElement {
   }
 
   // ── Swipe ────────────────────────────────────────────────
-  // Pointer capture is deferred until the gesture crosses the drag threshold.
-  // Capturing at pointerdown would retarget the resulting click to the strip,
-  // swallowing taps meant for child tiles/buttons.
+  // The gesture stays undecided until it crosses the drag slop. Two things are
+  // deferred to that moment: (1) pointer capture — capturing at pointerdown
+  // would retarget the resulting click to the strip and swallow taps on child
+  // tiles/buttons; (2) the axis decision — a vertical-dominant gesture is a
+  // scroll, so we bail without capturing and let the page scroll natively.
   private _onPointerDown = (e: PointerEvent): void => {
     this._pointerActive = true;
     this._dragging = false;
     this._startX = e.clientX;
+    this._startY = e.clientY;
     this._lastX = e.clientX;
     this._lastT = e.timeStamp;
     this._velocity = 0;
@@ -265,11 +279,18 @@ export class GlassHub extends GlassBaseElement {
   private _onPointerMove = (e: PointerEvent): void => {
     if (!this._pointerActive) return;
     const dx = e.clientX - this._startX;
+    const dy = e.clientY - this._startY;
 
     if (!this._dragging) {
-      if (!isDrag(dx)) return;      // still within tap slop — leave children alone
-      // promote to a drag: now grab the pointer so it keeps flowing if it
-      // leaves the strip, and measure velocity from here.
+      if (!isDrag(dx) && !isDrag(dy)) return;   // still within tap slop
+      if (!isHorizontalDrag(dx, dy)) {
+        // vertical-dominant → this is a scroll; stop tracking and never
+        // capture, so the page scrolls natively for the rest of the gesture.
+        this._pointerActive = false;
+        return;
+      }
+      // horizontal swipe: take over. Capture so it keeps flowing if it leaves
+      // the strip, and re-base velocity from here.
       this._dragging = true;
       (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
       this._lastX = e.clientX;
@@ -299,6 +320,7 @@ export class GlassHub extends GlassBaseElement {
         this._page,
         this._pages.length,
       );
+      lastActivePage = this._page;
     }
     this._dragX = 0;
     this._velocity = 0;

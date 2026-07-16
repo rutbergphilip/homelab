@@ -1,5 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { settlePage, isDrag, DRAG_THRESHOLD_PX } from '../src/hub/swipe';
+import { settlePage, isDrag, isHorizontalDrag, DRAG_THRESHOLD_PX } from '../src/hub/swipe';
+
+describe('isHorizontalDrag', () => {
+  it('horizontal-dominant is a deck swipe', () => {
+    expect(isHorizontalDrag(20, 5)).toBe(true);
+    expect(isHorizontalDrag(-20, 5)).toBe(true);
+  });
+  it('vertical-dominant is a scroll, not a swipe', () => {
+    expect(isHorizontalDrag(5, 20)).toBe(false);
+    expect(isHorizontalDrag(5, -20)).toBe(false);
+  });
+  it('a tie is treated as scroll (vertical wins)', () => expect(isHorizontalDrag(10, 10)).toBe(false));
+  it('pure-axis gestures resolve correctly', () => {
+    expect(isHorizontalDrag(15, 0)).toBe(true);
+    expect(isHorizontalDrag(0, 15)).toBe(false);
+  });
+});
 
 describe('isDrag', () => {
   it('below threshold is a tap (both directions)', () => {

@@ -32,38 +32,38 @@ export class GlassLightSlider extends GlassBaseElement {
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--hub-icon-chip-bg, rgba(255, 255, 255, 0.06));
         transition: all var(--glass-transition);
       }
       .on .light-icon {
-        background: rgba(79, 195, 247, 0.12);
-        box-shadow: 0 0 12px rgba(79, 195, 247, 0.15);
+        background: var(--hub-amber-border, rgba(79, 195, 247, 0.12));
+        box-shadow: var(--hub-amber-glow, 0 0 12px rgba(79, 195, 247, 0.15));
       }
       .light-icon ha-icon {
         --mdc-icon-size: 20px;
-        color: var(--glass-text-dim);
+        color: var(--hub-text-dim, var(--glass-text-dim));
         transition: color var(--glass-transition);
       }
-      .on .light-icon ha-icon { color: var(--glass-accent); }
+      .on .light-icon ha-icon { color: var(--hub-amber, var(--glass-accent)); }
       .light-name {
         font-size: 14px;
         font-weight: 500;
-        color: var(--glass-text-primary);
+        color: var(--hub-text, var(--glass-text-primary));
       }
       .brightness-value {
         font-size: 14px;
         font-weight: 600;
-        color: var(--glass-text-dim);
+        color: var(--hub-text-muted, var(--glass-text-dim));
         font-variant-numeric: tabular-nums;
         min-width: 36px;
         text-align: right;
       }
-      .on .brightness-value { color: var(--glass-accent); }
+      .on .brightness-value { color: var(--hub-amber, var(--glass-accent)); }
       .slider-track {
         position: relative;
         height: 36px;
         border-radius: 18px;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--hub-track, rgba(255, 255, 255, 0.06));
         overflow: hidden;
         cursor: pointer;
         touch-action: none;
@@ -74,7 +74,11 @@ export class GlassLightSlider extends GlassBaseElement {
         left: 0;
         height: 100%;
         border-radius: 18px;
-        background: linear-gradient(90deg, var(--glass-accent), var(--glass-accent-light, #B3E5FC));
+        background: linear-gradient(
+          90deg,
+          var(--hub-amber, var(--glass-accent)),
+          var(--hub-amber-muted, var(--glass-accent-light, #B3E5FC))
+        );
         transition: width 0.15s ease;
         pointer-events: none;
       }
@@ -85,7 +89,7 @@ export class GlassLightSlider extends GlassBaseElement {
         bottom: -4px;
         width: 24px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(79, 195, 247, 0.4), transparent);
+        background: radial-gradient(circle, var(--hub-amber, rgba(79, 195, 247, 0.4)), transparent);
         filter: blur(6px);
         pointer-events: none;
         transition: opacity var(--glass-transition);
@@ -99,7 +103,7 @@ export class GlassLightSlider extends GlassBaseElement {
         align-items: center;
         justify-content: center;
         font-size: 13px;
-        color: var(--glass-text-dim);
+        color: var(--hub-text-dim, var(--glass-text-dim));
         cursor: pointer;
       }
     `,

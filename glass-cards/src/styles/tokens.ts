@@ -36,6 +36,7 @@ export const hubTokens = css`
     --hub-icon-chip-bg: #1d1d23; --hub-icon-chip-color: #5E5E68;
     --hub-track: #1E2B31;
     --hub-shadow: none;
+    --hub-scrim: rgba(0, 0, 0, 0.4);
   }
   :host([data-theme='dag']) {
     --hub-surface: #F3F0E9;
@@ -58,6 +59,7 @@ export const hubTokens = css`
     --hub-icon-chip-bg: #F1EDE3; --hub-icon-chip-color: #B4AC99;
     --hub-track: #EDE9DE;
     --hub-shadow: 0 1px 6px rgba(60,50,30,.05);
+    --hub-scrim: rgba(40, 35, 25, 0.25);
   }
   :host {
     --hub-font-display: 'Outfit', sans-serif;

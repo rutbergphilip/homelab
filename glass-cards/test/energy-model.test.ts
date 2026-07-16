@@ -60,9 +60,11 @@ describe('buildEnergyModel — level thresholds', () => {
   });
 
   it('classifies a near-average hour as normal', () => {
-    const m = buildEnergyModel(attrs, state, new Date('2026-07-16T07:00:00.000+02:00'));
-    // today[7].total 1.4756 → 147.56, ratio ≈ 1.20 ... actually check a mid one
-    expect(['låg', 'normal', 'hög']).toContain(m.level);
+    const m = buildEnergyModel(attrs, state, new Date('2026-07-16T18:00:00.000+02:00'));
+    // today[18].total 1.2596 → 125.96 öre; today average ≈ 123.11 → ratio ≈ 1.023,
+    // squarely inside the 0.85–1.15 band.
+    expect(m.now!.ore).toBeCloseTo(125.96, 2);
+    expect(m.level).toBe('normal');
   });
 });
 

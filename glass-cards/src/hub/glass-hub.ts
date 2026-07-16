@@ -9,7 +9,7 @@ import {
   type ThemeOverride,
   type HubTheme,
 } from './theme-controller.js';
-import { settlePage } from './swipe.js';
+import { settlePage, isDrag } from './swipe.js';
 import type { HubConfig, HubRoom } from './hub-config.js';
 import './pages/hub-home-page.js';
 import './widgets/hub-room-popup.js';
@@ -41,7 +41,8 @@ export class GlassHub extends GlassBaseElement {
   private _idleTimer?: number;
 
   // pointer / swipe tracking
-  private _dragging = false;
+  private _pointerActive = false;   // pointer is down, gesture undecided
+  private _dragging = false;        // gesture crossed the drag threshold
   private _startX = 0;
   private _lastX = 0;
   private _lastT = 0;
@@ -246,36 +247,57 @@ export class GlassHub extends GlassBaseElement {
   }
 
   // ── Swipe ────────────────────────────────────────────────
+  // Pointer capture is deferred until the gesture crosses the drag threshold.
+  // Capturing at pointerdown would retarget the resulting click to the strip,
+  // swallowing taps meant for child tiles/buttons.
   private _onPointerDown = (e: PointerEvent): void => {
-    this._dragging = true;
+    this._pointerActive = true;
+    this._dragging = false;
     this._startX = e.clientX;
     this._lastX = e.clientX;
     this._lastT = e.timeStamp;
     this._velocity = 0;
     this._dragX = 0;
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
   private _onPointerMove = (e: PointerEvent): void => {
-    if (!this._dragging) return;
+    if (!this._pointerActive) return;
+    const dx = e.clientX - this._startX;
+
+    if (!this._dragging) {
+      if (!isDrag(dx)) return;      // still within tap slop — leave children alone
+      // promote to a drag: now grab the pointer so it keeps flowing if it
+      // leaves the strip, and measure velocity from here.
+      this._dragging = true;
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      this._lastX = e.clientX;
+      this._lastT = e.timeStamp;
+    }
+
     const dt = e.timeStamp - this._lastT;
     if (dt > 0) this._velocity = (e.clientX - this._lastX) / dt;
     this._lastX = e.clientX;
     this._lastT = e.timeStamp;
-    this._dragX = e.clientX - this._startX;
+    this._dragX = dx;
   };
 
   private _onPointerUp = (e: PointerEvent): void => {
-    if (!this._dragging) return;
+    if (!this._pointerActive) return;
+    const wasDragging = this._dragging;
+    this._pointerActive = false;
     this._dragging = false;
-    const viewportW = this.clientWidth || window.innerWidth;
-    this._page = settlePage(
-      this._dragX,
-      viewportW,
-      this._velocity,
-      this._page,
-      this._pages.length,
-    );
+
+    if (wasDragging) {
+      (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+      const viewportW = this.clientWidth || window.innerWidth;
+      this._page = settlePage(
+        this._dragX,
+        viewportW,
+        this._velocity,
+        this._page,
+        this._pages.length,
+      );
+    }
     this._dragX = 0;
     this._velocity = 0;
   };

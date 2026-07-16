@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import { icons } from './icons.js';
+import { isDrag } from '../swipe.js';
 import type { HubRoom } from '../hub-config.js';
 
 const LONG_PRESS_MS = 500;
@@ -12,6 +13,8 @@ export class HubRoomTile extends GlassBaseElement {
 
   private _pressTimer?: number;
   private _longPressed = false;
+  private _downX = 0;
+  private _downY = 0;
 
   static styles = [
     hubTokens,
@@ -102,12 +105,23 @@ export class HubRoomTile extends GlassBaseElement {
     return pct !== null ? `${lampText} · ${pct} %` : lampText;
   }
 
-  private _onPointerDown = (): void => {
+  private _onPointerDown = (e: PointerEvent): void => {
     this._longPressed = false;
+    this._downX = e.clientX;
+    this._downY = e.clientY;
     this._pressTimer = window.setTimeout(() => {
       this._longPressed = true;
       this.toggle(this.room.main_entity);
     }, LONG_PRESS_MS);
+  };
+
+  // A gesture that moves past the drag slop is a swipe, not a long-press —
+  // cancel the timer before glass-hub captures the pointer.
+  private _onPointerMove = (e: PointerEvent): void => {
+    if (this._pressTimer === undefined) return;
+    if (isDrag(e.clientX - this._downX) || isDrag(e.clientY - this._downY)) {
+      this._cancelPress();
+    }
   };
 
   private _cancelPress = (): void => {
@@ -139,6 +153,7 @@ export class HubRoomTile extends GlassBaseElement {
       <div
         class="tile ${active ? 'active' : ''}"
         @pointerdown=${this._onPointerDown}
+        @pointermove=${this._onPointerMove}
         @pointerup=${this._cancelPress}
         @pointercancel=${this._cancelPress}
         @pointerleave=${this._cancelPress}

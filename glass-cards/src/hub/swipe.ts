@@ -1,3 +1,12 @@
+// A pointer gesture only becomes a drag (and grabs pointer capture) once it
+// moves past this slop. Below it, the gesture is a tap/long-press and child
+// elements keep their own pointer + click events.
+export const DRAG_THRESHOLD_PX = 8;
+
+export function isDrag(dxPx: number, threshold = DRAG_THRESHOLD_PX): boolean {
+  return Math.abs(dxPx) > threshold;
+}
+
 export function settlePage(
   offsetPx: number, viewportW: number, velocityPxMs: number,
   current: number, pageCount: number

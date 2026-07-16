@@ -1,5 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { settlePage } from '../src/hub/swipe';
+import { settlePage, isDrag, DRAG_THRESHOLD_PX } from '../src/hub/swipe';
+
+describe('isDrag', () => {
+  it('below threshold is a tap (both directions)', () => {
+    expect(isDrag(5)).toBe(false);
+    expect(isDrag(-5)).toBe(false);
+  });
+  it('exactly at threshold is still a tap', () => expect(isDrag(DRAG_THRESHOLD_PX)).toBe(false));
+  it('past threshold is a drag (both directions)', () => {
+    expect(isDrag(9)).toBe(true);
+    expect(isDrag(-9)).toBe(true);
+  });
+  it('honors a custom threshold', () => {
+    expect(isDrag(15, 20)).toBe(false);
+    expect(isDrag(25, 20)).toBe(true);
+  });
+});
 
 describe('settlePage', () => {
   const W = 1000;

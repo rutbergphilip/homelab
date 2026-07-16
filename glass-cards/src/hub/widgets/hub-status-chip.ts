@@ -61,7 +61,7 @@ export class HubStatusChip extends LitElement {
       }
       .chip.active.tone-coral {
         background: var(--hub-coral-bg);
-        border-color: var(--hub-coral-bg);
+        border-color: var(--hub-coral-border);
         color: var(--hub-coral);
       }
       .chip.active.tone-neutral {

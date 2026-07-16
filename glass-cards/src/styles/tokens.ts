@@ -31,8 +31,9 @@ export const hubTokens = css`
     --hub-green: #8EDCA8;       --hub-green-bg: rgba(110,220,160,.08); --hub-green-border: rgba(110,220,160,.18);
     --hub-lavender: #B99CF2;    --hub-lavender-text: #CDBBF0; --hub-lavender-muted: #7A6E92;
     --hub-lavender-bg: #141217; --hub-lavender-border: #262130;
-    --hub-coral: #F2968C;       --hub-coral-bg: rgba(240,110,100,.12);
+    --hub-coral: #F2968C;       --hub-coral-bg: rgba(240,110,100,.12); --hub-coral-border: rgba(240,110,100,.25);
     --hub-chip-bg: #151519;     --hub-chip-border: #232329;
+    --hub-icon-chip-bg: #1d1d23; --hub-icon-chip-color: #5E5E68;
     --hub-track: #1E2B31;
     --hub-shadow: none;
   }
@@ -52,8 +53,9 @@ export const hubTokens = css`
     --hub-green: #3E7A4C;       --hub-green-bg: #E9F2E7;    --hub-green-border: #D2E4CE;
     --hub-lavender: #8B6DC7;    --hub-lavender-text: #6B4FA8; --hub-lavender-muted: #8D877A;
     --hub-lavender-bg: #FFFFFF; --hub-lavender-border: #E4DDF0;
-    --hub-coral: #C65445;       --hub-coral-bg: #FBE7E3;
+    --hub-coral: #C65445;       --hub-coral-bg: #FBE7E3; --hub-coral-border: #F0CFC8;
     --hub-chip-bg: #FFFFFF;     --hub-chip-border: #E8E3D8;
+    --hub-icon-chip-bg: #F1EDE3; --hub-icon-chip-color: #B4AC99;
     --hub-track: #EDE9DE;
     --hub-shadow: 0 1px 6px rgba(60,50,30,.05);
   }

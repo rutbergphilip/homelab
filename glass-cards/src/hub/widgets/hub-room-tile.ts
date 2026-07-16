@@ -49,8 +49,8 @@ export class HubRoomTile extends GlassBaseElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--hub-chip-bg);
-        color: var(--hub-text-dim);
+        background: var(--hub-icon-chip-bg);
+        color: var(--hub-icon-chip-color);
       }
       .icon-chip svg {
         width: 16px;
@@ -79,6 +79,11 @@ export class HubRoomTile extends GlassBaseElement {
       }
     `,
   ];
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._cancelPress();
+  }
 
   private get _lightsOn(): number {
     return this.room.lights.filter((l) => this.isOn(l.entity)).length;

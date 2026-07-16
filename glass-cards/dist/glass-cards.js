@@ -1135,8 +1135,9 @@ function t(t,e,i,s){var a,n=arguments.length,r=n<3?e:null===s?s=Object.getOwnPro
     --hub-green: #8EDCA8;       --hub-green-bg: rgba(110,220,160,.08); --hub-green-border: rgba(110,220,160,.18);
     --hub-lavender: #B99CF2;    --hub-lavender-text: #CDBBF0; --hub-lavender-muted: #7A6E92;
     --hub-lavender-bg: #141217; --hub-lavender-border: #262130;
-    --hub-coral: #F2968C;       --hub-coral-bg: rgba(240,110,100,.12);
+    --hub-coral: #F2968C;       --hub-coral-bg: rgba(240,110,100,.12); --hub-coral-border: rgba(240,110,100,.25);
     --hub-chip-bg: #151519;     --hub-chip-border: #232329;
+    --hub-icon-chip-bg: #1d1d23; --hub-icon-chip-color: #5E5E68;
     --hub-track: #1E2B31;
     --hub-shadow: none;
   }
@@ -1156,8 +1157,9 @@ function t(t,e,i,s){var a,n=arguments.length,r=n<3?e:null===s?s=Object.getOwnPro
     --hub-green: #3E7A4C;       --hub-green-bg: #E9F2E7;    --hub-green-border: #D2E4CE;
     --hub-lavender: #8B6DC7;    --hub-lavender-text: #6B4FA8; --hub-lavender-muted: #8D877A;
     --hub-lavender-bg: #FFFFFF; --hub-lavender-border: #E4DDF0;
-    --hub-coral: #C65445;       --hub-coral-bg: #FBE7E3;
+    --hub-coral: #C65445;       --hub-coral-bg: #FBE7E3; --hub-coral-border: #F0CFC8;
     --hub-chip-bg: #FFFFFF;     --hub-chip-border: #E8E3D8;
+    --hub-icon-chip-bg: #F1EDE3; --hub-icon-chip-color: #B4AC99;
     --hub-track: #EDE9DE;
     --hub-shadow: 0 1px 6px rgba(60,50,30,.05);
   }
@@ -1306,7 +1308,7 @@ function t(t,e,i,s){var a,n=arguments.length,r=n<3?e:null===s?s=Object.getOwnPro
       }
       .chip.active.tone-coral {
         background: var(--hub-coral-bg);
-        border-color: var(--hub-coral-bg);
+        border-color: var(--hub-coral-border);
         color: var(--hub-coral);
       }
       .chip.active.tone-neutral {
@@ -1314,7 +1316,7 @@ function t(t,e,i,s){var a,n=arguments.length,r=n<3?e:null===s?s=Object.getOwnPro
         border-color: var(--hub-chip-border);
         color: var(--hub-text-muted);
       }
-    `],t([ut({attribute:!1})],Dt.prototype,"icon",void 0),t([ut({attribute:!1})],Dt.prototype,"label",void 0),t([ut({attribute:!1})],Dt.prototype,"tone",void 0),t([ut({type:Boolean})],Dt.prototype,"active",void 0),customElements.define("hub-status-chip",Dt);class Ut extends mt{constructor(){super(...arguments),this._longPressed=!1,this._onPointerDown=()=>{this._longPressed=!1,this._pressTimer=window.setTimeout(()=>{this._longPressed=!0,this.toggle(this.room.main_entity)},500)},this._cancelPress=()=>{void 0!==this._pressTimer&&(clearTimeout(this._pressTimer),this._pressTimer=void 0)},this._onClick=()=>{this._longPressed?this._longPressed=!1:this.dispatchEvent(new CustomEvent("hub-room-open",{detail:{roomId:this.room.id},bubbles:!0,composed:!0}))}}get _lightsOn(){return this.room.lights.filter(t=>this.isOn(t.entity)).length}get _brightnessPct(){const t=this.getEntityAttribute(this.room.main_entity,"brightness");return"number"==typeof t?Math.round(t/255*100):null}get _subtitle(){const t=this._lightsOn;if(0===t)return"Släckt";const e=1===t?"1 lampa":`${t} lampor`,i=this._brightnessPct;return null!==i?`${e} · ${i} %`:e}render(){if(!this.hass||!this.room)return V``;const t=this._lightsOn>0,e=Ot[this.room.icon];return V`
+    `],t([ut({attribute:!1})],Dt.prototype,"icon",void 0),t([ut({attribute:!1})],Dt.prototype,"label",void 0),t([ut({attribute:!1})],Dt.prototype,"tone",void 0),t([ut({type:Boolean})],Dt.prototype,"active",void 0),customElements.define("hub-status-chip",Dt);class Ut extends mt{constructor(){super(...arguments),this._longPressed=!1,this._onPointerDown=()=>{this._longPressed=!1,this._pressTimer=window.setTimeout(()=>{this._longPressed=!0,this.toggle(this.room.main_entity)},500)},this._cancelPress=()=>{void 0!==this._pressTimer&&(clearTimeout(this._pressTimer),this._pressTimer=void 0)},this._onClick=()=>{this._longPressed?this._longPressed=!1:this.dispatchEvent(new CustomEvent("hub-room-open",{detail:{roomId:this.room.id},bubbles:!0,composed:!0}))}}disconnectedCallback(){super.disconnectedCallback(),this._cancelPress()}get _lightsOn(){return this.room.lights.filter(t=>this.isOn(t.entity)).length}get _brightnessPct(){const t=this.getEntityAttribute(this.room.main_entity,"brightness");return"number"==typeof t?Math.round(t/255*100):null}get _subtitle(){const t=this._lightsOn;if(0===t)return"Släckt";const e=1===t?"1 lampa":`${t} lampor`,i=this._brightnessPct;return null!==i?`${e} · ${i} %`:e}render(){if(!this.hass||!this.room)return V``;const t=this._lightsOn>0,e=Ot[this.room.icon];return V`
       <div
         class="tile ${t?"active":""}"
         @pointerdown=${this._onPointerDown}
@@ -1363,8 +1365,8 @@ function t(t,e,i,s){var a,n=arguments.length,r=n<3?e:null===s?s=Object.getOwnPro
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--hub-chip-bg);
-        color: var(--hub-text-dim);
+        background: var(--hub-icon-chip-bg);
+        color: var(--hub-icon-chip-color);
       }
       .icon-chip svg {
         width: 16px;

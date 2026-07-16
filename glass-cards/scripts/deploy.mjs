@@ -2,12 +2,17 @@
 /**
  * Deploy glass-cards to Home Assistant via WebSocket API
  * 1. Register glass-cards.js as a Lovelace resource
- * 2. Create the glass-home dashboard
+ * 2. Create/update a Lovelace dashboard
+ *
+ * Usage:
+ *   node scripts/deploy.mjs        Deploy the glass-home dashboard (legacy)
+ *   node scripts/deploy.mjs hub    Deploy the hub dashboard
  */
 
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { hubDashboard } from './hub-config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -15,9 +20,6 @@ const HA_URL = 'https://home.rutberg.dev';
 const HA_WS_URL = 'wss://home.rutberg.dev/api/websocket';
 const TOKEN = readFileSync(resolve(__dirname, '../../.claude/ha-token'), 'utf-8').trim();
 const DASHBOARD_YAML = readFileSync(resolve(__dirname, '../../.claude/ha-glass-dashboard.yaml'), 'utf-8');
-
-// Parse YAML manually (simple subset needed)
-import { createRequire } from 'module';
 
 let msgId = 1;
 
@@ -41,7 +43,7 @@ function sendMsg(ws, msg) {
   });
 }
 
-async function deploy() {
+async function connectAndAuth() {
   console.log('Connecting to Home Assistant WebSocket...');
 
   const ws = new WebSocket(HA_WS_URL);
@@ -78,7 +80,10 @@ async function deploy() {
     });
   });
 
-  // Step 1: Register resource
+  return ws;
+}
+
+async function registerResource(ws) {
   console.log('\n--- Registering Lovelace resource ---');
 
   // List existing resources first
@@ -129,7 +134,9 @@ async function deploy() {
     });
     console.log('Resource created');
   }
+}
 
+async function deployGlassHome(ws) {
   // Step 2: Create/update dashboard
   console.log('\n--- Deploying dashboard ---');
 
@@ -172,6 +179,61 @@ async function deploy() {
 
   console.log('\n✅ Deployment complete!');
   console.log(`Visit: ${HA_URL}/glass-home/0`);
+}
+
+async function deployHub(ws) {
+  console.log('\n--- Deploying dashboard ---');
+
+  // List existing dashboards
+  const dashRes = await sendMsg(ws, {
+    type: 'lovelace/dashboards/list'
+  });
+  const dashboards = dashRes.result || [];
+  console.log(`Found ${dashboards.length} existing dashboards`);
+
+  const hubDash = dashboards.find(d => d.url_path === hubDashboard.url_path);
+
+  if (!hubDash) {
+    console.log('Creating hub dashboard...');
+    await sendMsg(ws, {
+      type: 'lovelace/dashboards/create',
+      url_path: hubDashboard.url_path,
+      title: hubDashboard.title,
+      icon: hubDashboard.icon,
+      require_admin: false,
+      mode: 'storage'
+    });
+    console.log('Dashboard created');
+  } else {
+    console.log('Dashboard already exists');
+  }
+
+  // Set dashboard config
+  console.log('Setting dashboard configuration...');
+
+  await sendMsg(ws, {
+    type: 'lovelace/config/save',
+    url_path: hubDashboard.url_path,
+    config: hubDashboard.config
+  });
+  console.log('Dashboard config saved');
+
+  console.log('\n✅ Deployment complete!');
+  console.log(`Visit: ${HA_URL}/${hubDashboard.url_path}/main`);
+}
+
+async function deploy() {
+  const target = process.argv[2] === 'hub' ? 'hub' : 'glass-home';
+
+  const ws = await connectAndAuth();
+
+  await registerResource(ws);
+
+  if (target === 'hub') {
+    await deployHub(ws);
+  } else {
+    await deployGlassHome(ws);
+  }
 
   ws.close();
   process.exit(0);

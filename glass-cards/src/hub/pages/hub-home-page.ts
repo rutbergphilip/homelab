@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import { inDepartureWindow } from '../widgets/departure-window.js';
+import { buildEnergyModel } from '../energy-model.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
 import type { HubConfig } from '../hub-config.js';
 import '../widgets/hub-clock.js';
@@ -120,15 +121,26 @@ export class HubHomePage extends GlassBaseElement {
       active: (count ?? 0) > 0,
     });
 
-    // Price — green when wired (Task 10); quiet placeholder until then.
+    // Price — öre from the Tibber sensor (SEK/kWh × 100); the level word and
+    // tone come from the hourly series once that sensor is live.
     const priceEnt = cfg.price_entity ? this.getEntity(cfg.price_entity) : undefined;
-    const price =
-      priceEnt && !Number.isNaN(Number(priceEnt.state)) ? Math.round(Number(priceEnt.state)) : null;
+    const priceOre =
+      priceEnt && !Number.isNaN(Number(priceEnt.state))
+        ? Math.round(Number(priceEnt.state) * 100)
+        : null;
+    const seriesEnt = cfg.price_series_entity
+      ? this.getEntity(cfg.price_series_entity)
+      : undefined;
+    const model = seriesEnt
+      ? buildEnergyModel(seriesEnt.attributes as Record<string, unknown>, seriesEnt.state, this._now)
+      : null;
+    const level = model?.now ? model.level : 'normal';
+    const word = level === 'låg' ? ' · lågt' : level === 'hög' ? ' · högt' : '';
     chips.push({
       icon: 'bolt',
-      label: price === null ? '— öre' : `${price} öre`,
-      tone: 'green',
-      active: price !== null,
+      label: priceOre === null ? '— öre' : `${priceOre} öre${word}`,
+      tone: level === 'låg' ? 'green' : level === 'hög' ? 'coral' : 'neutral',
+      active: priceOre !== null,
     });
 
     // Vacuum — only surfaced when it's not resting on the dock.

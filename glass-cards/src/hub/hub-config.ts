@@ -14,7 +14,8 @@ export interface HubConfig extends LovelaceCardConfig {
   person_entity?: string;
   lights_count_entity?: string;
   vacuum_entity?: string;
-  price_entity?: string;            // Tibber, wired in Task 9
+  price_entity?: string;            // Tibber (official integration) — current price + level
+  price_series_entity?: string;     // Tibber GraphQL REST sensor — today/tomorrow hourly arrays
   co2_entity?: string;
   fossil_entity?: string;
   departures?: { next_entity: string; list_entity: string; window?: { start: string; end: string } };

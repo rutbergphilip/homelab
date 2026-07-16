@@ -84,4 +84,12 @@ export const icons: Record<string, TemplateResult> = {
     <path d="M7 12v2M11 12v2M15 12v2M19 12v2"></path>
     <path d="M7 17v2M11 17v2M15 17v2"></path>
   `),
+  leaf: wrap(svg`
+    <path d="M4 20c0-8 6-14 16-15C19 13 13 20 5 20a4 4 0 0 1-1 0z"></path>
+    <path d="M4 20c3-5 7-8 12-9.5"></path>
+  `),
+  clock: wrap(svg`
+    <circle cx="12" cy="12" r="8.5"></circle>
+    <path d="M12 7.5V12l3 2"></path>
+  `),
 };

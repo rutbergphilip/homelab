@@ -12,6 +12,7 @@ export const hubDashboard = {
         person_entity: 'person.philip_rutberg',
         lights_count_entity: 'sensor.lights_on_count',
         vacuum_entity: 'vacuum.roborock_s8',
+        price_entity: 'sensor.bryggan_elpris',
         co2_entity: 'sensor.electricity_maps_co2_intensitet',
         fossil_entity: 'sensor.electricity_maps_procent_fossila_branslen_i_elnatet',
         departures: { next_entity: 'sensor.avgangar_next_departure', list_entity: 'sensor.avgangar_departures' },

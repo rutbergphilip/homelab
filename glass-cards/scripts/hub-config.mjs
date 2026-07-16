@@ -39,6 +39,14 @@ export const hubDashboard = {
           { id: 'badrum', name: 'Badrum', icon: 'shower', main_entity: 'light.badrum',
             lights: [ { entity: 'light.badrum', name: 'Taklampa' }, { entity: 'light.spotlight_top', name: 'Spotlight' } ] },
         ],
+        // No whole-home Hue scenes exist yet for Kvällsläge / Film (see docs/hue-audit.md).
+        // Philip needs to create both in the Hue app (so they also sync to HomeKit), then this
+        // array should be filled in as:
+        //   scenes: [
+        //     { entity: 'scene.<confirmed-id>', name: 'Kvällsläge', icon: 'moon' },
+        //     { entity: 'scene.<confirmed-id>', name: 'Film', icon: 'play' },
+        //   ],
+        scenes: [],
       }],
     }],
   },

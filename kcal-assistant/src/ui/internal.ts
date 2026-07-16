@@ -1,7 +1,8 @@
 import type { Database } from "bun:sqlite";
 import { readDay } from "../db/meals";
-import { getTrend } from "../db/weights";
+import { getTrend, listWeights } from "../db/weights";
 import { buildForecast } from "../db/forecast";
+import { getProfile } from "../db/profile";
 
 export interface InternalSummaryMeal {
   name: string;
@@ -48,17 +49,32 @@ export function buildInternalSummary(db: Database): InternalSummary {
   try {
     const goal = buildForecast(db, { intake_source: "targets" }).forecast?.goal;
     if (goal) {
+      // on_track respects an explicit goal_date deadline: an ETA past the
+      // deadline is not "on track" even though the goal is still reachable.
+      const goalDate = getProfile(db)?.goal_date ?? null;
+      const onTrack = goal.reached
+        ? true
+        : goal.eta === null
+          ? false
+          : goalDate === null
+            ? true
+            : goal.eta <= goalDate;
       forecast = {
         goal_kg: goal.weight_kg,
         eta: goal.eta,
         eta_early: goal.eta_range.earliest,
         eta_late: goal.eta_range.latest,
-        on_track: goal.reached || goal.eta !== null,
+        on_track: onTrack,
       };
     }
   } catch (e) {
     console.error("internal summary forecast:", e instanceof Error ? e.message : e);
   }
+
+  // weight_trend follows the product's own trend concept (the Vikt page
+  // draws the EWMA line; raw weigh-ins are only dots) — trend_kg per date,
+  // falling back to the raw value for a date the trend map somehow misses.
+  const trendByDate = new Map(listWeights(db).map((w) => [w.date, w.trend_kg]));
 
   return {
     status: "ok",
@@ -69,7 +85,7 @@ export function buildInternalSummary(db: Database): InternalSummary {
     protein_target_g: r1(day.targets.protein_min),
     meals: day.meals.map((m) => ({ name: m.name, kcal: Math.round(m.kcal) })),
     current_kg: trend.latest ? r1(trend.latest.weight_kg) : 0,
-    weight_trend: trend.weights.map((w) => ({ date: w.date, kg: r1(w.weight_kg) })),
+    weight_trend: trend.weights.map((w) => ({ date: w.date, kg: r1(trendByDate.get(w.date) ?? w.weight_kg) })),
     forecast,
   };
 }

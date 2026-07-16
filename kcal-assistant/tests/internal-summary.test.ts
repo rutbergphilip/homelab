@@ -3,7 +3,7 @@ import type { Database } from "bun:sqlite";
 import { openDb } from "../src/db/index";
 import { saveProduct } from "../src/db/products";
 import { logMeal } from "../src/db/meals";
-import { logWeight } from "../src/db/weights";
+import { logWeight, listWeights } from "../src/db/weights";
 import { setProfile } from "../src/db/profile";
 import { buildInternalSummary } from "../src/ui/internal";
 import { addDays, todayStockholm } from "../src/lib/dates";
@@ -77,5 +77,92 @@ describe("buildInternalSummary", () => {
     setProfile(db, { birth_date: "2000-01-15", sex: "man", height_cm: 180, activity_factor: 1.5, goal_weight_kg: null });
     const s = buildInternalSummary(db);
     expect(s.forecast).toBeNull();
+  });
+
+  it("weight_trend uses the EWMA-smoothed trend_kg, not the raw weight_kg", () => {
+    const db = seededDb();
+    const s = buildInternalSummary(db);
+    // The 14-day gap between weigh-ins (82.1 -> 81.4) makes trend_kg diverge
+    // from the raw log on the latest point — the fixture is deliberately
+    // chosen so raw and trend disagree, pinning that smoothing is applied.
+    const trendByDate = new Map(listWeights(db).map((w) => [w.date, Math.round(w.trend_kg * 10) / 10]));
+    for (const point of s.weight_trend) {
+      expect(point.kg).toBe(trendByDate.get(point.date)!);
+    }
+    const rawByDate = new Map([
+      [addDays(todayStockholm(), -14), 82.1],
+      [todayStockholm(), 81.4],
+    ]);
+    const diverges = s.weight_trend.some((p) => p.kg !== rawByDate.get(p.date));
+    expect(diverges).toBe(true);
+    // current_kg stays raw (unchanged by this fix) — sanity-check it still
+    // matches the last logged weight, not the smoothed trend.
+    expect(s.current_kg).toBe(81.4);
+  });
+
+  describe("on_track", () => {
+    function dbWithProfile(goalWeightKg: number, goalDate: string | null = null): Database {
+      const db = seededDb();
+      setProfile(db, {
+        birth_date: "2000-01-15",
+        sex: "man",
+        height_cm: 180,
+        activity_factor: 1.5,
+        goal_weight_kg: goalWeightKg,
+        goal_date: goalDate,
+      });
+      return db;
+    }
+
+    it("goal already reached → true", () => {
+      const probe = seededDb();
+      const latestTrendKg = listWeights(probe)[0]!.trend_kg; // listWeights: DESC by date, [0] = today
+      const db = dbWithProfile(latestTrendKg);
+      const s = buildInternalSummary(db);
+      expect(s.forecast!.on_track).toBe(true);
+    });
+
+    it("no reachable eta within the horizon → false", () => {
+      const probe = seededDb();
+      const latestTrendKg = listWeights(probe)[0]!.trend_kg;
+      // On a default vilodag target (2000 kcal, well under this profile's
+      // TDEE) the simulated trajectory loses weight — a goal ABOVE current
+      // weight is moved away from, so eta stays null.
+      const db = dbWithProfile(latestTrendKg + 20);
+      const s = buildInternalSummary(db);
+      expect(s.forecast!.eta).toBeNull();
+      expect(s.forecast!.on_track).toBe(false);
+    });
+
+    it("no goal_date set, eta reachable → true", () => {
+      const probe = seededDb();
+      const latestTrendKg = listWeights(probe)[0]!.trend_kg;
+      const db = dbWithProfile(latestTrendKg - 5);
+      const s = buildInternalSummary(db);
+      expect(s.forecast!.eta).not.toBeNull();
+      expect(s.forecast!.on_track).toBe(true);
+    });
+
+    it("goal_date set, eta on or before the deadline → true", () => {
+      const probe = seededDb();
+      const latestTrendKg = listWeights(probe)[0]!.trend_kg;
+      const farGoalDate = addDays(todayStockholm(), 300);
+      const db = dbWithProfile(latestTrendKg - 5, farGoalDate);
+      const s = buildInternalSummary(db);
+      expect(s.forecast!.eta).not.toBeNull();
+      expect(s.forecast!.eta! <= farGoalDate).toBe(true);
+      expect(s.forecast!.on_track).toBe(true);
+    });
+
+    it("goal_date set, eta after the deadline → false", () => {
+      const probe = seededDb();
+      const latestTrendKg = listWeights(probe)[0]!.trend_kg;
+      const soonGoalDate = addDays(todayStockholm(), 5);
+      const db = dbWithProfile(latestTrendKg - 5, soonGoalDate);
+      const s = buildInternalSummary(db);
+      expect(s.forecast!.eta).not.toBeNull();
+      expect(s.forecast!.eta! > soonGoalDate).toBe(true);
+      expect(s.forecast!.on_track).toBe(false);
+    });
   });
 });

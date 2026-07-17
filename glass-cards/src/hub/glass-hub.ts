@@ -10,6 +10,7 @@ import {
   type HubTheme,
 } from './theme-controller.js';
 import { settlePage, isDrag, isHorizontalDrag } from './swipe.js';
+import { icons } from './widgets/icons.js';
 import type { HubConfig, HubRoom } from './hub-config.js';
 import './pages/hub-home-page.js';
 import './pages/hub-lights-page.js';
@@ -133,6 +134,29 @@ export class GlassHub extends GlassBaseElement {
         font-weight: 500;
         font-size: 20px;
       }
+
+      .kiosk-toggle {
+        position: absolute;
+        top: 16px;
+        right: 72px;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--hub-text-dim);
+        cursor: pointer;
+        z-index: 20;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .kiosk-toggle svg {
+        width: 24px;
+        height: 24px;
+      }
     `,
   ];
 
@@ -214,6 +238,25 @@ export class GlassHub extends GlassBaseElement {
     this._override = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
     setStoredOverride(this._override);
     this._applyTheme();
+  }
+
+  // ── Kiosk toggle ─────────────────────────────────────────
+  // The kiosk-mode plugin and the drawer shim both read the ?kiosk param at
+  // load, so flipping it means rewriting the URL and reloading. Any other
+  // query params are preserved (none are expected in normal use).
+  private get _kiosk(): boolean {
+    return new URLSearchParams(location.search).has('kiosk');
+  }
+
+  private _toggleKiosk(): void {
+    const params = new URLSearchParams(location.search);
+    if (params.has('kiosk')) {
+      params.delete('kiosk');
+    } else {
+      params.set('kiosk', 'true');
+    }
+    const qs = params.toString();
+    location.assign(location.pathname + (qs ? `?${qs}` : ''));
   }
 
   // ── Idle return ──────────────────────────────────────────
@@ -408,6 +451,14 @@ export class GlassHub extends GlassBaseElement {
           `,
         )}
       </div>
+
+      <button
+        class="kiosk-toggle"
+        aria-label=${this._kiosk ? 'Avsluta helskärm' : 'Helskärmsläge'}
+        @click=${this._toggleKiosk}
+      >
+        ${this._kiosk ? icons.compress : icons.expand}
+      </button>
 
       <button
         class="theme-toggle"

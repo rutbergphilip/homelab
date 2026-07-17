@@ -116,4 +116,16 @@ export const icons: Record<string, TemplateResult> = {
     <circle cx="12" cy="12" r="8.5"></circle>
     <path d="M12 7.5V12l3 2"></path>
   `),
+  expand: wrap(svg`
+    <path d="M8 4H5a1 1 0 0 0-1 1v3"></path>
+    <path d="M16 4h3a1 1 0 0 1 1 1v3"></path>
+    <path d="M8 20H5a1 1 0 0 1-1-1v-3"></path>
+    <path d="M16 20h3a1 1 0 0 0 1-1v-3"></path>
+  `),
+  compress: wrap(svg`
+    <path d="M4 8h3a1 1 0 0 0 1-1V4"></path>
+    <path d="M20 8h-3a1 1 0 0 1-1-1V4"></path>
+    <path d="M4 16h3a1 1 0 0 1 1 1v3"></path>
+    <path d="M20 16h-3a1 1 0 0 1-1 1v3"></path>
+  `),
 };

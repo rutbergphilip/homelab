@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { pickPlayer, mediaProgress } from '../src/hub/widgets/hub-now-playing';
-import { kcalPct } from '../src/hub/widgets/hub-kcal-ring';
+import { kcalPct, proteinSubtitle } from '../src/hub/widgets/hub-kcal-ring';
 import type { HassEntity } from '../src/types';
 
 const mk = (state: string, attributes: Record<string, unknown> = {}): HassEntity => ({
@@ -74,5 +74,20 @@ describe('kcalPct', () => {
 
   it('clamps to 100 over target', () => {
     expect(kcalPct(3000, 2200)).toBe(100);
+  });
+});
+
+describe('proteinSubtitle', () => {
+  it('reads the real protein_g attribute, rounded', () => {
+    expect(proteinSubtitle({ protein_g: 58.1, protein_target_g: 150 })).toBe('58 g protein');
+  });
+
+  it('is empty when protein_g is absent', () => {
+    expect(proteinSubtitle({ kcal_target: 1600 })).toBe('');
+  });
+
+  it('does not read the old (non-existent) `protein` attribute name', () => {
+    // Guards the fixed bug: the sensor never exposes `protein`, only `protein_g`.
+    expect(proteinSubtitle({ protein: 58 })).toBe('');
   });
 });

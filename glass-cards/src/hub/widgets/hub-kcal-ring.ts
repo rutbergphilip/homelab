@@ -11,6 +11,16 @@ export function kcalPct(value: number, target: number): number {
   return Math.max(0, Math.min(100, (value / target) * 100));
 }
 
+/**
+ * Mini-card subtitle from sensor.kcal_idag's real `protein_g` attribute, e.g.
+ * "58 g protein". Empty when the attribute is absent — the forecast/"i fas ✓"
+ * status lives on a different sensor and belongs to the Kcal page, not here.
+ */
+export function proteinSubtitle(attrs: Record<string, unknown>): string {
+  const protein = attrs.protein_g;
+  return typeof protein === 'number' ? `${Math.round(protein)} g protein` : '';
+}
+
 export class HubKcalRing extends GlassBaseElement {
   @property({ attribute: false }) todayEntity?: string;
 
@@ -114,14 +124,7 @@ export class HubKcalRing extends GlassBaseElement {
       typeof e!.attributes.kcal_target === 'number' ? (e!.attributes.kcal_target as number) : 0;
     const pct = kcalPct(value, target);
 
-    const parts: string[] = [];
-    const protein = e!.attributes.protein;
-    if (typeof protein === 'number') parts.push(`${Math.round(protein)} g protein`);
-    const status = e!.attributes.status;
-    if (typeof status === 'string' && status) {
-      parts.push(status.includes('✓') ? status : `${status} ✓`);
-    }
-    const subtitle = parts.join(' · ');
+    const subtitle = proteinSubtitle(e!.attributes);
 
     return html`
       <div class="kc" @click=${this._goto}>

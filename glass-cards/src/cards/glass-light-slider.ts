@@ -25,6 +25,24 @@ export class GlassLightSlider extends GlassBaseElement {
         align-items: center;
         gap: 10px;
       }
+      .light-icon-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 48px;
+        min-height: 48px;
+        margin: -6px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .light-icon-btn:focus-visible {
+        outline: 2px solid var(--hub-amber, var(--glass-accent));
+        outline-offset: 2px;
+        border-radius: 14px;
+      }
       .light-icon {
         display: flex;
         align-items: center;
@@ -33,18 +51,20 @@ export class GlassLightSlider extends GlassBaseElement {
         height: 36px;
         border-radius: 10px;
         background: var(--hub-icon-chip-bg, rgba(255, 255, 255, 0.06));
-        transition: all var(--glass-transition);
+        transition: background var(--glass-transition), box-shadow var(--glass-transition),
+          transform 0.15s ease;
       }
+      .light-icon-btn:active .light-icon { transform: scale(0.9); }
       .on .light-icon {
-        background: var(--hub-amber-border, rgba(79, 195, 247, 0.12));
+        background: var(--hub-amber, var(--glass-accent));
         box-shadow: var(--hub-amber-glow, 0 0 12px rgba(79, 195, 247, 0.15));
       }
       .light-icon ha-icon {
         --mdc-icon-size: 20px;
-        color: var(--hub-text-dim, var(--glass-text-dim));
+        color: var(--hub-icon-chip-color, var(--glass-text-dim));
         transition: color var(--glass-transition);
       }
-      .on .light-icon ha-icon { color: var(--hub-amber, var(--glass-accent)); }
+      .on .light-icon ha-icon { color: var(--hub-surface, #ffffff); }
       .light-name {
         font-size: 14px;
         font-weight: 500;
@@ -114,6 +134,16 @@ export class GlassLightSlider extends GlassBaseElement {
     if (config.entity) this.setTrackedEntities([config.entity]);
   }
 
+  private _stopEvent = (e: Event): void => {
+    e.stopPropagation();
+  };
+
+  private _toggleLight = (e: Event): void => {
+    e.stopPropagation();
+    if (!this._config?.entity) return;
+    this.toggle(this._config.entity);
+  };
+
   private _handleSliderInteraction(e: MouseEvent | TouchEvent): void {
     if (!this._config.entity) return;
     const entity = this.getEntity(this._config.entity);
@@ -163,9 +193,20 @@ export class GlassLightSlider extends GlassBaseElement {
       <div class="glass slider-card ${isOn ? 'on' : 'off'}">
         <div class="slider-header">
           <div class="slider-left">
-            <div class="light-icon">
-              <ha-icon .icon=${icon}></ha-icon>
-            </div>
+            <button
+              class="light-icon-btn"
+              role="button"
+              aria-pressed=${isOn ? 'true' : 'false'}
+              aria-label=${isOn ? `Släck ${name}` : `Tänd ${name}`}
+              @pointerdown=${this._stopEvent}
+              @mousedown=${this._stopEvent}
+              @touchstart=${this._stopEvent}
+              @click=${this._toggleLight}
+            >
+              <span class="light-icon">
+                <ha-icon .icon=${icon}></ha-icon>
+              </span>
+            </button>
             <span class="light-name">${name}</span>
           </div>
           <span class="brightness-value">${isOn ? `${brightness}%` : 'Av'}</span>

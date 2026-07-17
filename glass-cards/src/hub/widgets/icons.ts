@@ -53,6 +53,19 @@ export const icons: Record<string, TemplateResult> = {
     <rect x="7" y="5" width="3.5" height="14" rx="1"></rect>
     <rect x="13.5" y="5" width="3.5" height="14" rx="1"></rect>
   `),
+  prev: wrap(svg`
+    <path d="M18.5 5.5v13L9 12l9.5-6.5z"></path>
+    <path d="M6 5v14"></path>
+  `),
+  next: wrap(svg`
+    <path d="M5.5 5.5v13L15 12 5.5 5.5z"></path>
+    <path d="M18 5v14"></path>
+  `),
+  speaker: wrap(svg`
+    <rect x="6" y="3" width="12" height="18" rx="3"></rect>
+    <circle cx="12" cy="14" r="3.2"></circle>
+    <circle cx="12" cy="6.5" r="0.9" fill="currentColor" stroke="none"></circle>
+  `),
   sofa: wrap(svg`
     <path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"></path>
     <rect x="3" y="11" width="18" height="6" rx="2"></rect>

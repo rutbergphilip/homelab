@@ -17,10 +17,13 @@ export const hubDashboard = {
         co2_entity: 'sensor.electricity_maps_co2_intensitet',
         fossil_entity: 'sensor.electricity_maps_procent_fossila_branslen_i_elnatet',
         departures: { next_entity: 'sensor.avgangar_next_departure', list_entity: 'sensor.avgangar_departures' },
+        // Kök + Sovrum are bonded to the Arc as surround speakers, so they never
+        // appear as independent players in HA. If they're ever unbonded, add them
+        // back here — the Media page's tabs/grouping UI reactivates automatically:
+        //   { entity: 'media_player.kitchen', name: 'Kök' },
+        //   { entity: 'media_player.bedroom', name: 'Sovrum' },
         media_players: [
           { entity: 'media_player.arc_sub', name: 'Vardagsrum (Arc)' },
-          { entity: 'media_player.kitchen', name: 'Kök' },
-          { entity: 'media_player.bedroom', name: 'Sovrum' },
         ],
         kcal: { today_entity: 'sensor.kcal_idag', forecast_entity: 'sensor.kcal_viktprognos' },
         rooms: [

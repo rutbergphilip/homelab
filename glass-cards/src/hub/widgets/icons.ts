@@ -30,6 +30,14 @@ export const icons: Record<string, TemplateResult> = {
     <circle cx="9" cy="17.5" r="0.9" fill="currentColor" stroke="none"></circle>
     <circle cx="15" cy="17.5" r="0.9" fill="currentColor" stroke="none"></circle>
   `),
+  bus: wrap(svg`
+    <rect x="4" y="4" width="16" height="13" rx="2.5"></rect>
+    <path d="M4 12h16"></path>
+    <path d="M4 8.5h16"></path>
+    <path d="M7 20l-1 2M17 20l1 2"></path>
+    <circle cx="8" cy="14.5" r="0.9" fill="currentColor" stroke="none"></circle>
+    <circle cx="16" cy="14.5" r="0.9" fill="currentColor" stroke="none"></circle>
+  `),
   note: wrap(svg`
     <circle cx="7" cy="18" r="2.3"></circle>
     <circle cx="16" cy="16" r="2.3"></circle>

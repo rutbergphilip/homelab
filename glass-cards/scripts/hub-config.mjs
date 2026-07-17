@@ -17,6 +17,10 @@ export const hubDashboard = {
         co2_entity: 'sensor.electricity_maps_co2_intensitet',
         fossil_entity: 'sensor.electricity_maps_procent_fossila_branslen_i_elnatet',
         departures: { next_entity: 'sensor.avgangar_next_departure', list_entity: 'sensor.avgangar_departures' },
+        transit: {
+          pendeltag: { next_entity: 'sensor.avgangar_next_departure', count_entity: 'sensor.avgangar_departures' },
+          bus: { entity: 'sensor.sl_kullstaplan', line: '861', exclude_destination: 'nynäs', label: 'Buss 861 → Slakthuset' },
+        },
         // Kök + Sovrum are bonded to the Arc as surround speakers, so they never
         // appear as independent players in HA. If they're ever unbonded, add them
         // back here — the Media page's tabs/grouping UI reactivates automatically:

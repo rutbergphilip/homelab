@@ -11,6 +11,7 @@ import '../widgets/hub-status-chip.js';
 import '../widgets/hub-room-tile.js';
 import '../widgets/hub-now-playing.js';
 import '../widgets/hub-kcal-ring.js';
+import '../widgets/hub-transit-card.js';
 
 interface ChipDescriptor {
   icon: string;
@@ -75,6 +76,9 @@ export class HubHomePage extends GlassBaseElement {
         .rooms {
           grid-template-columns: repeat(2, 1fr);
         }
+      }
+      .transit {
+        flex-shrink: 0;
       }
       .bottom {
         display: flex;
@@ -208,6 +212,8 @@ export class HubHomePage extends GlassBaseElement {
             (r) => html`<hub-room-tile .hass=${this.hass} .room=${r}></hub-room-tile>`,
           )}
         </div>
+
+        <hub-transit-card class="transit" .hass=${this.hass} .config=${cfg}></hub-transit-card>
 
         <div class="bottom">
           <hub-now-playing

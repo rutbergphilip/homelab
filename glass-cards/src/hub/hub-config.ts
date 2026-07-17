@@ -19,6 +19,10 @@ export interface HubConfig extends LovelaceCardConfig {
   co2_entity?: string;
   fossil_entity?: string;
   departures?: { next_entity: string; list_entity: string; window?: { start: string; end: string } };
+  transit?: {
+    pendeltag?: { next_entity: string; count_entity: string };
+    bus?: { entity: string; line: string; exclude_destination: string; label: string };
+  };
   rooms: HubRoom[];
   media_players: { entity: string; name: string }[];
   kcal?: { today_entity: string; forecast_entity: string };

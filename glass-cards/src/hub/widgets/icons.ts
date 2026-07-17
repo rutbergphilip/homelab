@@ -44,7 +44,7 @@ export const icons: Record<string, TemplateResult> = {
     <path d="M9.3 18V5.5L18.3 4v11.5"></path>
   `),
   ring: wrap(svg`
-    <path d="M8.6 4.8A8 8 0 1 1 15.4 4.8"></path>
+    <path d="M14.7 4.5A8 8 0 0 1 12 20 8 8 0 0 1 9.3 4.5"></path>
   `),
   sun: wrap(svg`
     <circle cx="12" cy="12" r="4"></circle>

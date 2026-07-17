@@ -22,6 +22,7 @@ export const hubDashboard = {
           { entity: 'media_player.kitchen', name: 'Kök' },
           { entity: 'media_player.bedroom', name: 'Sovrum' },
         ],
+        kcal: { today_entity: 'sensor.kcal_idag', forecast_entity: 'sensor.kcal_viktprognos' },
         rooms: [
           { id: 'vardagsrum', name: 'Vardagsrum', icon: 'sofa', main_entity: 'light.vardagsrum',
             lights: [ { entity: 'light.vardagsrum', name: 'Taklampa' }, { entity: 'light.tv', name: 'TV-lampa' } ] },

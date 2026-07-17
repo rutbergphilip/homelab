@@ -1,0 +1,49 @@
+import { describe, it, expect } from 'vitest';
+import { formatShortDate, forecastLine } from '../src/hub/pages/hub-kcal-page';
+
+describe('formatShortDate', () => {
+  it('formats an ISO date as Swedish short, without a trailing dot', () => {
+    expect(formatShortDate('2026-09-29')).toBe('29 sep');
+    expect(formatShortDate('2026-11-02')).toBe('2 nov');
+  });
+
+  it('keeps months that have no abbreviation dot intact', () => {
+    expect(formatShortDate('2026-05-04')).toBe('4 maj');
+  });
+
+  it('is timezone-stable at the date boundary', () => {
+    // Parsed as UTC + formatted as UTC → never drifts to the previous day.
+    expect(formatShortDate('2026-01-01')).toBe('1 jan');
+  });
+
+  it('returns empty for missing or invalid input', () => {
+    expect(formatShortDate('')).toBe('');
+    expect(formatShortDate('not-a-date')).toBe('');
+  });
+});
+
+describe('forecastLine', () => {
+  it('builds the full goal + ETA + range line', () => {
+    expect(
+      forecastLine({
+        goal_kg: 71,
+        eta: '2026-09-29',
+        eta_early: '2026-09-11',
+        eta_late: '2026-11-02',
+        on_track: true,
+      }),
+    ).toBe('Mål 71 kg · ETA 29 sep (11 sep–2 nov)');
+  });
+
+  it('drops the range when the early/late bounds are missing', () => {
+    expect(forecastLine({ goal_kg: 71, eta: '2026-09-29' })).toBe('Mål 71 kg · ETA 29 sep');
+  });
+
+  it('shows only the goal when there is no ETA', () => {
+    expect(forecastLine({ goal_kg: 78 })).toBe('Mål 78 kg');
+  });
+
+  it('returns empty when there is nothing to say', () => {
+    expect(forecastLine({})).toBe('');
+  });
+});

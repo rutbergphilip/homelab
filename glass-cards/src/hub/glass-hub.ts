@@ -15,6 +15,7 @@ import './pages/hub-home-page.js';
 import './pages/hub-lights-page.js';
 import './pages/hub-energy-page.js';
 import './pages/hub-media-page.js';
+import './pages/hub-kcal-page.js';
 import './widgets/hub-room-popup.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal'];
@@ -393,7 +394,12 @@ export class GlassHub extends GlassBaseElement {
                           .hass=${this.hass}
                           .config=${this._cfg}
                         ></hub-media-page>`
-                      : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
+                      : id === 'kcal'
+                        ? html`<hub-kcal-page
+                            .hass=${this.hass}
+                            .config=${this._cfg}
+                          ></hub-kcal-page>`
+                        : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
             </section>
           `,
         )}

@@ -48,6 +48,7 @@ export class GlassHub extends GlassBaseElement {
 
   private _override: ThemeOverride = getStoredOverride();
   private _idleTimer?: number;
+  private _kioskTimer?: number;
 
   // pointer / swipe tracking
   private _pointerActive = false;   // pointer is down, gesture undecided
@@ -184,6 +185,7 @@ export class GlassHub extends GlassBaseElement {
     this._applyTheme();
     this._page = lastActivePage;   // survive a re-mount without snapping to Hem
     this._resetIdle();
+    this._startKioskDrawerShim();
     this.addEventListener('pointerdown', this._onAnyInteraction);
     this.addEventListener('hub-room-open', this._onRoomOpen as EventListener);
     this.addEventListener('hub-goto-page', this._onGotoPage as EventListener);
@@ -193,6 +195,10 @@ export class GlassHub extends GlassBaseElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._clearIdle();
+    if (this._kioskTimer !== undefined) {
+      clearInterval(this._kioskTimer);
+      this._kioskTimer = undefined;
+    }
     this.removeEventListener('pointerdown', this._onAnyInteraction);
     this.removeEventListener('hub-room-open', this._onRoomOpen as EventListener);
     this.removeEventListener('hub-goto-page', this._onGotoPage as EventListener);
@@ -259,6 +265,35 @@ export class GlassHub extends GlassBaseElement {
       clearTimeout(this._idleTimer);
       this._idleTimer = undefined;
     }
+  }
+
+  // ── Kiosk drawer-width compat shim ───────────────────────
+  // With ?kiosk=true the kiosk-mode plugin hides HA's header/sidebar, but
+  // ha-drawer (HA 2025.12) still RESERVES the sidebar width — --mdc-drawer-width
+  // stays calc(256px + 0px), so hui-root starts at x=256 and a 256px gutter
+  // shows on the left. Zero the width ourselves. Strictly gated on the kiosk
+  // query param so normal browsing keeps its sidebar layout. The drawer may not
+  // exist on first tick, so retry briefly until it applies.
+  private _startKioskDrawerShim(): void {
+    if (!new URLSearchParams(location.search).has('kiosk')) return;
+    const start = Date.now();
+    const apply = (): boolean => {
+      const main = document
+        .querySelector('home-assistant')
+        ?.shadowRoot?.querySelector('home-assistant-main') as HTMLElement | null;
+      if (!main) return false;
+      main.style.setProperty('--mdc-drawer-width', '0px');
+      const drawer = main.shadowRoot?.querySelector('ha-drawer') as HTMLElement | null;
+      drawer?.style.setProperty('--mdc-drawer-width', '0px');
+      return true;
+    };
+    if (apply()) return;
+    this._kioskTimer = window.setInterval(() => {
+      if (apply() || Date.now() - start > 5000) {
+        clearInterval(this._kioskTimer);
+        this._kioskTimer = undefined;
+      }
+    }, 250);
   }
 
   // ── Swipe ────────────────────────────────────────────────

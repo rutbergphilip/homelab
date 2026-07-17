@@ -33,13 +33,17 @@ export class HubHomePage extends GlassBaseElement {
   static styles = [
     hubTokens,
     css`
+      /* Host is a flex column that fills the page section but may grow past it:
+         when the wall is too short for everything, the section (its own
+         overflow-y:auto) scrolls instead of anything overlapping. */
       :host {
-        display: block;
-        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
       }
       .page {
+        flex: 1;
         box-sizing: border-box;
-        height: 100%;
         display: flex;
         flex-direction: column;
         gap: 14px;
@@ -60,22 +64,19 @@ export class HubHomePage extends GlassBaseElement {
         max-width: 56%;
         padding-right: 56px; /* clear the corner theme toggle */
       }
+      /* The grid grows into spare height but its flex-basis is the true content
+         size and it never shrinks below min-content — so a shrunk band can never
+         be painted over. Rows are minmax(min-content, 1fr): fill slack, never
+         collapse below a tile. */
       .rooms {
-        flex: 1;
-        min-height: 0;
+        flex: 1 1 auto;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        grid-auto-rows: 1fr;
+        grid-auto-rows: minmax(min-content, 1fr);
         gap: var(--hub-gap);
       }
-      @media (max-width: 1400px) {
-        .rooms {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
 
-      /* Two glanceable bands below the rooms. Both are content-capped so the
-         room grid keeps the slack and the page never scrolls. */
+      /* Two glanceable bands below the rooms, fixed-height and non-shrinking. */
       .info,
       .bottom {
         display: flex;
@@ -84,10 +85,10 @@ export class HubHomePage extends GlassBaseElement {
         flex-shrink: 0;
       }
       .info {
-        height: clamp(118px, 15.5vh, 150px);
+        height: clamp(116px, 15vh, 148px);
       }
       .bottom {
-        height: clamp(96px, 12.5vh, 128px);
+        height: clamp(94px, 12vh, 124px);
       }
       .info .energy {
         flex: 3;
@@ -106,11 +107,24 @@ export class HubHomePage extends GlassBaseElement {
         min-width: 0;
       }
 
-      /* Narrower walls: even the flex ratios out so neither band's second card
-         gets squeezed below legibility, and give the bars a touch more height. */
-      @media (max-width: 1280px) {
+      /* 2-col regime (≤1400): the room grid becomes three rows, so reclaim
+         vertical space — tighter vertical padding and gaps, slimmer bands, and
+         equal-width band cards so neither second card is squeezed. Everything
+         fits without scrolling down to ~700px tall; shorter than that the page
+         scrolls rather than overlapping. */
+      @media (max-width: 1400px) {
+        .page {
+          gap: 10px;
+          padding: clamp(14px, 1.8vw, 22px) var(--hub-page-pad);
+        }
+        .rooms {
+          grid-template-columns: repeat(2, 1fr);
+        }
         .info {
-          height: clamp(122px, 17vh, 154px);
+          height: clamp(104px, 13.5vh, 130px);
+        }
+        .bottom {
+          height: clamp(88px, 11.5vh, 114px);
         }
         .info .energy,
         .info .transit,

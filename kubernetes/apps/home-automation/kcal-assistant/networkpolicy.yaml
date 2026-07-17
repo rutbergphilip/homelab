@@ -1,13 +1,12 @@
 # Restrict who can reach the kcal pod so the /ui X-authentik-email header
-# cannot be forged by a pod that bypasses nginx in-cluster. Allowed sources:
+# cannot be forged by a source that bypasses nginx in-cluster. Allowed:
 #   - the external ingress-nginx controller (all real traffic — /mcp AND /ui
 #     arrive via nginx), and
-#   - host + remote-node entities (kubelet liveness/readiness probes come from
-#     the node; without this the probes would fail and the pod — which serves
-#     /mcp — would be killed), and
-#   - the home-assistant pod, L7-limited to GET /internal/summary (wall-hub
-#     dashboard REST sensors) — /ui and /mcp stay unreachable from it, so the
-#     X-authentik-email forgery protection is preserved.
+#   - host + remote-node entities, L7-limited to GET /healthz (kubelet
+#     liveness/readiness probes) and GET /internal/summary (Home Assistant
+#     runs with hostNetwork for HomeKit/mDNS, so its wall-hub REST sensors
+#     arrive with host identity). /ui and /mcp stay unreachable from both,
+#     preserving the header-forgery protection.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -25,15 +24,13 @@ spec:
     - fromEntities:
         - host
         - remote-node
-    - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: home-automation
-            app: home-assistant
       toPorts:
         - ports:
             - port: "3000"
               protocol: TCP
           rules:
             http:
+              - method: "GET"
+                path: "/healthz"
               - method: "GET"
                 path: "/internal/summary"

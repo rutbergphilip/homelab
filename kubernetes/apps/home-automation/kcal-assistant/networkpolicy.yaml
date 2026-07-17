@@ -1,12 +1,13 @@
 # Restrict who can reach the kcal pod so the /ui X-authentik-email header
 # cannot be forged by a source that bypasses nginx in-cluster. Allowed:
 #   - the external ingress-nginx controller (all real traffic — /mcp AND /ui
-#     arrive via nginx), and
-#   - host + remote-node entities, L7-limited to GET /healthz (kubelet
-#     liveness/readiness probes) and GET /internal/summary (Home Assistant
-#     runs with hostNetwork for HomeKit/mDNS, so its wall-hub REST sensors
-#     arrive with host identity). /ui and /mcp stay unreachable from both,
-#     preserving the header-forgery protection.
+#     arrive via nginx), restricted to port 3000 (the ingress-facing handler;
+#     /internal/summary does NOT exist there), and
+#   - host + remote-node entities: port 3000 L7-limited to GET /healthz
+#     (kubelet probes); port 3001 L7-limited to GET /internal/summary +
+#     /healthz (Home Assistant runs with hostNetwork for HomeKit/mDNS, so its
+#     wall-hub REST sensors arrive with host identity). /ui and /mcp stay
+#     unreachable except via nginx, preserving the header-forgery protection.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -21,6 +22,10 @@ spec:
             k8s:io.kubernetes.pod.namespace: network
             app.kubernetes.io/instance: external-ingress-nginx
             app.kubernetes.io/component: controller
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
     - fromEntities:
         - host
         - remote-node
@@ -32,5 +37,12 @@ spec:
             http:
               - method: "GET"
                 path: "/healthz"
+        - ports:
+            - port: "3001"
+              protocol: TCP
+          rules:
+            http:
               - method: "GET"
                 path: "/internal/summary"
+              - method: "GET"
+                path: "/healthz"

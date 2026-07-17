@@ -13,3 +13,8 @@ spec:
     - name: http
       port: 3000
       targetPort: 3000
+    # Cluster-internal summary listener (HA REST sensors). Never referenced by
+    # any Ingress — the ingress-facing handler on 3000 does not serve it.
+    - name: internal
+      port: 3001
+      targetPort: 3001

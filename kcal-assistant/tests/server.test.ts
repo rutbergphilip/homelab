@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import type { Database } from "bun:sqlite";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { createHttpServer } from "../src/server";
+import { createHttpServer, createInternalServer } from "../src/server";
 import { openDb } from "../src/db/index";
 
 const TOKEN = "test-token-123";
@@ -62,9 +62,45 @@ describe("http routing", () => {
   });
 });
 
-describe("/internal/summary", () => {
-  test("GET returns 200 with status ok, even with UI auth unconfigured", async () => {
+// SECURITY REGRESSION TEST: /internal/summary once lived on this same
+// ingress-reachable server and was publicly exposed at
+// https://kcal.rutberg.dev/internal/summary as a result (the MCP ingress
+// routes "/" here unauthenticated). It now lives ONLY on createInternalServer
+// (see below) — pin that the main server 404s it, same as any other unknown
+// path, so it can never silently come back.
+describe("/internal/summary is NOT reachable on the main (ingress) server", () => {
+  test("GET 404s, same as any unknown path", async () => {
     const res = await fetch(`${baseUrl}/internal/summary`);
+    expect(res.status).toBe(404);
+  });
+
+  test("/ui routes still fail closed as before, unaffected", async () => {
+    const res = await fetch(`${baseUrl}/ui`);
+    expect(res.status).toBe(503);
+    const api = await fetch(`${baseUrl}/ui/api/overview`);
+    expect(api.status).toBe(503);
+  });
+});
+
+describe("createInternalServer — cluster-internal-only :3001-style listener", () => {
+  let internalServer: Server;
+  let internalDb: Database;
+  let internalBase: string;
+
+  beforeAll(async () => {
+    internalDb = openDb(":memory:");
+    internalServer = createInternalServer({ db: internalDb });
+    await new Promise<void>((resolve) => internalServer.listen(0, resolve));
+    const { port } = internalServer.address() as AddressInfo;
+    internalBase = `http://127.0.0.1:${port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise((resolve) => internalServer.close(resolve));
+  });
+
+  test("GET /internal/summary returns 200 with the summary shape, no auth required", async () => {
+    const res = await fetch(`${internalBase}/internal/summary`);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("application/json");
     expect(res.headers.get("cache-control")).toBe("no-store");
@@ -72,17 +108,22 @@ describe("/internal/summary", () => {
     expect(body.status).toBe("ok");
   });
 
-  test("POST is rejected with 405 and Allow: GET", async () => {
-    const res = await fetch(`${baseUrl}/internal/summary`, { method: "POST" });
+  test("GET /healthz returns 200", async () => {
+    const res = await fetch(`${internalBase}/healthz`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+  });
+
+  test("POST /internal/summary is rejected with 405 and Allow: GET", async () => {
+    const res = await fetch(`${internalBase}/internal/summary`, { method: "POST" });
     expect(res.status).toBe(405);
     expect(res.headers.get("allow")).toBe("GET");
   });
 
-  test("/ui routes still require auth (fail closed) unaffected by the internal route", async () => {
-    const res = await fetch(`${baseUrl}/ui`);
-    expect(res.status).toBe(503);
-    const api = await fetch(`${baseUrl}/ui/api/overview`);
-    expect(api.status).toBe(503);
+  test("unknown paths 404, including /ui and /mcp — this listener serves exactly two routes", async () => {
+    expect((await fetch(`${internalBase}/ui`)).status).toBe(404);
+    expect((await fetch(`${internalBase}/mcp/anything`)).status).toBe(404);
+    expect((await fetch(`${internalBase}/nonsense`)).status).toBe(404);
   });
 });
 

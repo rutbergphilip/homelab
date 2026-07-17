@@ -107,19 +107,6 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
         return;
       }
 
-      // Read-only, unauthenticated: network-layer protected in-cluster by a
-      // CiliumNetworkPolicy (Task 13), polled by the wall-hub kcal card.
-      if (pathname === "/internal/summary") {
-        if (req.method !== "GET") {
-          res.writeHead(405, { allow: "GET" }).end();
-          return;
-        }
-        res
-          .writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
-          .end(JSON.stringify(buildInternalSummary(opts.db)));
-        return;
-      }
-
       if (pathname === "/ui" || pathname.startsWith("/ui/")) {
         // Auth first: Cloudflare Access JWT verified server-side, fail closed.
         if (opts.uiAuth.mode === "unconfigured") {
@@ -183,6 +170,50 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
       res.writeHead(404, { "content-type": "application/json" }).end('{"error":"not found"}');
     } catch (error) {
       console.error("request failed:", error instanceof Error ? error.message : error);
+      if (!res.headersSent) {
+        res.writeHead(500, { "content-type": "application/json" }).end('{"error":"internal"}');
+      } else {
+        res.end();
+      }
+    }
+  });
+}
+
+// Separate, cluster-internal-only listener (default :3001 — see config.ts)
+// for the wall-hub kcal card. Deliberately NOT part of createHttpServer:
+// that server's :3000 is reachable through the ingress (the MCP route there
+// requires a token, but a bare, unauthenticated path would not), so the one
+// unauthenticated read-only route in this app gets its own port instead,
+// gated at the network layer by a CiliumNetworkPolicy (Task 13).
+export function createInternalServer(opts: { db: Database }): Server {
+  return createServer((req, res) => {
+    try {
+      const raw = req.url ?? "/";
+      if (raw.includes("..") || raw.includes("%") || raw.includes("\\") || raw.includes("//")) {
+        res.writeHead(404, { "content-type": "application/json" }).end('{"error":"not found"}');
+        return;
+      }
+      const pathname = new URL(raw, "http://internal").pathname;
+
+      if (req.method === "GET" && pathname === "/healthz") {
+        res.writeHead(200, { "content-type": "application/json" }).end('{"ok":true}');
+        return;
+      }
+
+      if (pathname === "/internal/summary") {
+        if (req.method !== "GET") {
+          res.writeHead(405, { allow: "GET" }).end();
+          return;
+        }
+        res
+          .writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+          .end(JSON.stringify(buildInternalSummary(opts.db)));
+        return;
+      }
+
+      res.writeHead(404, { "content-type": "application/json" }).end('{"error":"not found"}');
+    } catch (error) {
+      console.error("internal request failed:", error instanceof Error ? error.message : error);
       if (!res.headersSent) {
         res.writeHead(500, { "content-type": "application/json" }).end('{"error":"internal"}');
       } else {

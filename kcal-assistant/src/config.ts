@@ -10,6 +10,9 @@ export const config = {
   },
   dbPath: process.env.DB_PATH ?? "./kcal.db",
   port: Number(process.env.PORT ?? 3000),
+  // Cluster-internal-only listener for /internal/summary — never routed
+  // through the ingress, gated by a CiliumNetworkPolicy instead of auth.
+  internalPort: Number(process.env.INTERNAL_PORT ?? 3001),
   icaStoreId: process.env.ICA_STORE_ID ?? "1003421", // Maxi ICA Stormarknad Nynäshamn
   authentikAllowedEmail: process.env.AUTHENTIK_ALLOWED_EMAIL,
   cfAccessTeamDomain: process.env.CF_ACCESS_TEAM_DOMAIN,

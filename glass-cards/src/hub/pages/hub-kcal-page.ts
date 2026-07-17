@@ -32,6 +32,20 @@ export function formatShortDate(iso: string): string {
   return SHORT_DATE.format(d).replace(/\.$/, '');
 }
 
+/**
+ * Whole calendar days spanned by a trend series (first → last point date, UTC).
+ * This is the elapsed time, not the number of weigh-ins — weigh-ins are sparse,
+ * so `points.length` undercounts the period. Returns null when it can't be
+ * computed (fewer than two points, or an unparseable date).
+ */
+export function trendDaySpan(points: { date: string }[]): number | null {
+  if (points.length < 2) return null;
+  const first = new Date(`${points[0].date}T00:00:00Z`).getTime();
+  const last = new Date(`${points[points.length - 1].date}T00:00:00Z`).getTime();
+  if (Number.isNaN(first) || Number.isNaN(last)) return null;
+  return Math.round((last - first) / 86_400_000);
+}
+
 export interface ForecastData {
   goal_kg?: number;
   eta?: string;
@@ -410,12 +424,13 @@ export class HubKcalPage extends GlassBaseElement {
           .filter((p) => Number.isFinite(p.value))
       : [];
 
+    const spanDays = trendDaySpan(trend);
     const delta =
       trend.length >= 2 ? trend[trend.length - 1].value - trend[0].value : null;
     const deltaLabel =
-      delta === null
+      delta === null || spanDays === null
         ? null
-        : `${delta < 0 ? MINUS : delta > 0 ? '+' : ''}${KG_FMT.format(Math.abs(delta))} kg på ${trend.length} dagar`;
+        : `${delta < 0 ? MINUS : delta > 0 ? '+' : ''}${KG_FMT.format(Math.abs(delta))} kg på ${spanDays} ${spanDays === 1 ? 'dag' : 'dagar'}`;
 
     const fc = fore!.attributes.forecast;
     const forecast: ForecastData | null =

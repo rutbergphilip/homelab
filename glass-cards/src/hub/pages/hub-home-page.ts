@@ -1,9 +1,7 @@
 import { html, css } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
-import { inDepartureWindow } from '../widgets/departure-window.js';
-import { buildEnergyModel } from '../energy-model.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
 import type { HubConfig } from '../hub-config.js';
 import '../widgets/hub-clock.js';
@@ -12,6 +10,7 @@ import '../widgets/hub-room-tile.js';
 import '../widgets/hub-now-playing.js';
 import '../widgets/hub-kcal-ring.js';
 import '../widgets/hub-transit-card.js';
+import '../widgets/hub-energy-strip.js';
 
 interface ChipDescriptor {
   icon: string;
@@ -31,11 +30,6 @@ const VAC_LABELS: Record<string, string> = {
 export class HubHomePage extends GlassBaseElement {
   @property({ attribute: false }) config!: HubConfig;
 
-  // Re-evaluate the departure window on a slow tick so the train chip
-  // appears/disappears near the window edges without a state push.
-  @state() private _now = new Date();
-  private _interval?: number;
-
   static styles = [
     hubTokens,
     css`
@@ -48,7 +42,7 @@ export class HubHomePage extends GlassBaseElement {
         height: 100%;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
         padding: var(--hub-page-pad);
       }
       .top {
@@ -56,13 +50,15 @@ export class HubHomePage extends GlassBaseElement {
         justify-content: space-between;
         align-items: flex-start;
         gap: 16px;
+        flex-shrink: 0;
       }
       .chips {
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
         gap: 8px;
-        max-width: 62%;
+        max-width: 56%;
+        padding-right: 56px; /* clear the corner theme toggle */
       }
       .rooms {
         flex: 1;
@@ -77,13 +73,29 @@ export class HubHomePage extends GlassBaseElement {
           grid-template-columns: repeat(2, 1fr);
         }
       }
-      .transit {
-        flex-shrink: 0;
-      }
+
+      /* Two glanceable bands below the rooms. Both are content-capped so the
+         room grid keeps the slack and the page never scrolls. */
+      .info,
       .bottom {
         display: flex;
         gap: var(--hub-gap);
         align-items: stretch;
+        flex-shrink: 0;
+      }
+      .info {
+        height: clamp(118px, 15.5vh, 150px);
+      }
+      .bottom {
+        height: clamp(96px, 12.5vh, 128px);
+      }
+      .info .energy {
+        flex: 3;
+        min-width: 0;
+      }
+      .info .transit {
+        flex: 2;
+        min-width: 0;
       }
       .bottom .np {
         flex: 2;
@@ -93,23 +105,22 @@ export class HubHomePage extends GlassBaseElement {
         flex: 1;
         min-width: 0;
       }
+
+      /* Narrower walls: even the flex ratios out so neither band's second card
+         gets squeezed below legibility, and give the bars a touch more height. */
+      @media (max-width: 1280px) {
+        .info {
+          height: clamp(122px, 17vh, 154px);
+        }
+        .info .energy,
+        .info .transit,
+        .bottom .np,
+        .bottom .kc {
+          flex: 1;
+        }
+      }
     `,
   ];
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this._interval = window.setInterval(() => {
-      this._now = new Date();
-    }, 60000);
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this._interval !== undefined) {
-      clearInterval(this._interval);
-      this._interval = undefined;
-    }
-  }
 
   private get _chips(): ChipDescriptor[] {
     const cfg = this.config;
@@ -125,28 +136,6 @@ export class HubHomePage extends GlassBaseElement {
       active: (count ?? 0) > 0,
     });
 
-    // Price — öre from the Tibber sensor (SEK/kWh × 100); the level word and
-    // tone come from the hourly series once that sensor is live.
-    const priceEnt = cfg.price_entity ? this.getEntity(cfg.price_entity) : undefined;
-    const priceOre =
-      priceEnt && !Number.isNaN(Number(priceEnt.state))
-        ? Math.round(Number(priceEnt.state) * 100)
-        : null;
-    const seriesEnt = cfg.price_series_entity
-      ? this.getEntity(cfg.price_series_entity)
-      : undefined;
-    const model = seriesEnt
-      ? buildEnergyModel(seriesEnt.attributes as Record<string, unknown>, seriesEnt.state, this._now)
-      : null;
-    const level = model?.now ? model.level : 'normal';
-    const word = level === 'låg' ? ' · lågt' : level === 'hög' ? ' · högt' : '';
-    chips.push({
-      icon: 'bolt',
-      label: priceOre === null ? '— öre' : `${priceOre} öre${word}`,
-      tone: level === 'låg' ? 'green' : level === 'hög' ? 'coral' : 'neutral',
-      active: priceOre !== null,
-    });
-
     // Vacuum — only surfaced when it's not resting on the dock.
     if (cfg.vacuum_entity) {
       const v = this.getEntity(cfg.vacuum_entity);
@@ -160,20 +149,10 @@ export class HubHomePage extends GlassBaseElement {
       }
     }
 
-    // Departures — only during the morning commute window.
-    if (
-      cfg.departures &&
-      inDepartureWindow(this._now, cfg.departures.window?.start, cfg.departures.window?.end)
-    ) {
-      const d = this.getEntity(cfg.departures.next_entity);
-      const label = d && d.state && d.state !== 'unavailable' ? d.state : '—';
-      chips.push({ icon: 'train', label, tone: 'neutral', active: true });
-    }
-
     // Person — identity, always neutral.
     if (cfg.person_entity) {
       const p = this.getEntity(cfg.person_entity);
-      const name = (((p?.attributes.friendly_name as string) || 'Philip').split(' ')[0]);
+      const name = ((p?.attributes.friendly_name as string) || 'Philip').split(' ')[0];
       const home = p?.state === 'home';
       chips.push({
         icon: 'home',
@@ -213,7 +192,10 @@ export class HubHomePage extends GlassBaseElement {
           )}
         </div>
 
-        <hub-transit-card class="transit" .hass=${this.hass} .config=${cfg}></hub-transit-card>
+        <div class="info">
+          <hub-energy-strip class="energy" .hass=${this.hass} .config=${cfg}></hub-energy-strip>
+          <hub-transit-card class="transit" .hass=${this.hass} .config=${cfg}></hub-transit-card>
+        </div>
 
         <div class="bottom">
           <hub-now-playing

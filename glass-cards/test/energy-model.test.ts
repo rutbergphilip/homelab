@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildEnergyModel } from '../src/hub/energy-model';
+import { buildEnergyModel, next12Hours } from '../src/hub/energy-model';
 import fixture from './fixtures/tibber-price.json';
 
 // A "now" pinned to an hour boundary that exists in the fixture (today = 2026-07-16,
@@ -65,6 +65,61 @@ describe('buildEnergyModel — level thresholds', () => {
     // squarely inside the 0.85–1.15 band.
     expect(m.now!.ore).toBeCloseTo(125.96, 2);
     expect(m.level).toBe('normal');
+  });
+});
+
+describe('next12Hours', () => {
+  const m = buildEnergyModel(attrs, state, NOW); // 2026-07-16T15:00 +02:00
+
+  it('returns 12 forward slots starting at the current hour', () => {
+    const hours = next12Hours(m, NOW);
+    expect(hours.length).toBe(12);
+    expect(hours[0].start.getTime()).toBe(NOW.getTime());
+    expect(hours[0].current).toBe(true);
+    // strictly ascending, one hour apart
+    for (let i = 1; i < hours.length; i++) {
+      expect(hours[i].start.getTime() - hours[i - 1].start.getTime()).toBe(3_600_000);
+    }
+  });
+
+  it('marks exactly one current hour', () => {
+    const hours = next12Hours(m, NOW);
+    expect(hours.filter((h) => h.current).length).toBe(1);
+  });
+
+  it('flags the cheapest-window hours (today 15–18)', () => {
+    const hours = next12Hours(m, NOW);
+    const cheap = hours.filter((h) => h.cheap);
+    expect(cheap.length).toBe(3);
+    expect(cheap[0].start.getHours()).toBe(15);
+    expect(cheap[2].start.getHours()).toBe(17);
+  });
+
+  it('carries öre through from the model, matching the current hour', () => {
+    const hours = next12Hours(m, NOW);
+    expect(Math.round(hours[0].ore)).toBe(83); // today[15] 0.8283 × 100
+  });
+
+  it('mid-evening spans across the day boundary into tomorrow', () => {
+    const late = new Date('2026-07-16T20:00:00.000+02:00');
+    const model = buildEnergyModel(attrs, state, late);
+    const hours = next12Hours(model, late);
+    expect(hours.length).toBe(12); // 20–23 today (4) + 00–07 tomorrow (8)
+    expect(hours[0].start.getHours()).toBe(20);
+    expect(hours.some((h) => h.start.getHours() === 0)).toBe(true);
+  });
+
+  it('returns fewer than 12 when only today remains and no tomorrow', () => {
+    const late = new Date('2026-07-16T20:00:00.000+02:00');
+    const model = buildEnergyModel({ today: attrs.today }, state, late);
+    const hours = next12Hours(model, late);
+    expect(hours.length).toBe(4); // 20, 21, 22, 23
+    expect(hours[hours.length - 1].start.getHours()).toBe(23);
+  });
+
+  it('is empty for an unavailable series', () => {
+    const model = buildEnergyModel(attrs, 'unavailable', NOW);
+    expect(next12Hours(model, NOW)).toEqual([]);
   });
 });
 

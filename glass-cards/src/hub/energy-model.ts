@@ -70,6 +70,43 @@ function cheapestWindow(future: HourPrice[]): { start: Date; end: Date } | null 
   };
 }
 
+export interface StripHour {
+  start: Date;
+  ore: number;
+  current: boolean; // the hour containing `now`
+  cheap: boolean; // falls inside the model's cheapest 3h window
+}
+
+/**
+ * The next 12 hourly slots from `now` (the current hour first), flagged for the
+ * compact Hem energy strip: which one is live, and which sit in the cheapest
+ * window. Slots whose hour has fully elapsed are dropped, so the strip always
+ * starts at the current hour and looks forward. Fewer than 12 near midnight
+ * before tomorrow's prices publish — the strip renders whatever it has.
+ */
+export function next12Hours(model: EnergyModel, now: Date): StripHour[] {
+  const series = [...model.today, ...model.tomorrow].sort(
+    (a, b) => a.start.getTime() - b.start.getTime(),
+  );
+  const nowMs = now.getTime();
+  const win = model.cheapestWindow;
+  const winStart = win ? win.start.getTime() : null;
+  const winEnd = win ? win.end.getTime() : null;
+
+  return series
+    .filter((h) => h.start.getTime() + HOUR_MS > nowMs)
+    .slice(0, 12)
+    .map((h) => {
+      const t = h.start.getTime();
+      return {
+        start: h.start,
+        ore: h.ore,
+        current: t <= nowMs && nowMs < t + HOUR_MS,
+        cheap: winStart !== null && t >= winStart && t < winEnd!,
+      };
+    });
+}
+
 export function buildEnergyModel(
   attrs: Record<string, unknown> | null | undefined,
   state: string,

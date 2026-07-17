@@ -17,6 +17,7 @@ import './pages/hub-energy-page.js';
 import './pages/hub-media-page.js';
 import './pages/hub-kcal-page.js';
 import './widgets/hub-room-popup.js';
+import './widgets/hub-nav-bar.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal'];
 
@@ -83,6 +84,8 @@ export class GlassHub extends GlassBaseElement {
       .page {
         flex: 0 0 calc(100% / var(--page-count));
         height: 100%;
+        box-sizing: border-box;
+        padding-bottom: var(--hub-nav-h);
         overflow-y: auto;
         overflow-x: hidden;
         overscroll-behavior: contain;
@@ -129,40 +132,6 @@ export class GlassHub extends GlassBaseElement {
         font-family: var(--hub-font-display);
         font-weight: 500;
         font-size: 20px;
-      }
-
-      .dots {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        align-items: center;
-        z-index: 20;
-      }
-      .dot {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .dot::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--hub-text-dim);
-        transition: background 0.25s ease, transform 0.25s ease;
-      }
-      .dot.active::before {
-        background: var(--hub-text);
-        transform: scale(1.15);
       }
     `,
   ];
@@ -448,17 +417,7 @@ export class GlassHub extends GlassBaseElement {
         ${this._themeGlyph()}
       </button>
 
-      <div class="dots">
-        ${pages.map(
-          (id, i) => html`
-            <button
-              class="dot ${i === this._page ? 'active' : ''}"
-              aria-label=${pageTitle(id)}
-              @click=${() => this.goToPage(id)}
-            ></button>
-          `,
-        )}
-      </div>
+      <hub-nav-bar .pages=${pages} .active=${this._page}></hub-nav-bar>
 
       ${this._openRoom
         ? html`<hub-room-popup

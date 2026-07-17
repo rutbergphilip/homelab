@@ -37,6 +37,8 @@ export const hubTokens = css`
     --hub-track: #1E2B31;
     --hub-shadow: none;
     --hub-scrim: rgba(0, 0, 0, 0.4);
+    --hub-navbar-bg: rgba(19, 19, 22, 0.72);
+    --hub-navbar-border: rgba(255, 255, 255, 0.06);
   }
   :host([data-theme='dag']) {
     --hub-surface: #F3F0E9;
@@ -60,6 +62,8 @@ export const hubTokens = css`
     --hub-track: #EDE9DE;
     --hub-shadow: 0 1px 6px rgba(60,50,30,.05);
     --hub-scrim: rgba(40, 35, 25, 0.25);
+    --hub-navbar-bg: rgba(250, 248, 243, 0.72);
+    --hub-navbar-border: rgba(60, 50, 30, 0.08);
   }
   :host {
     --hub-font-display: 'Outfit', sans-serif;
@@ -70,6 +74,7 @@ export const hubTokens = css`
     --hub-radius-pill: 99px;
     --hub-gap: 12px;
     --hub-page-pad: clamp(20px, 3vw, 40px);
+    --hub-nav-h: calc(64px + env(safe-area-inset-bottom, 0px));
     --hub-fade: 600ms;
   }
 `;

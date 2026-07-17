@@ -44,6 +44,12 @@ let lastActivePage = 0;
 export class GlassHub extends GlassBaseElement {
   @property({ reflect: true, attribute: 'data-theme' }) theme: HubTheme = 'natt';
 
+  // Reflected so CSS can add a top inset for HA's header only when the hub is
+  // NOT in kiosk mode (kiosk-mode hides that header). URL is fixed per load.
+  @property({ reflect: true, type: Boolean }) kiosk = new URLSearchParams(
+    location.search,
+  ).has('kiosk');
+
   @state() private _page = 0;
   @state() private _dragX = 0;
   @state() private _openRoom: HubRoom | null = null;
@@ -67,12 +73,18 @@ export class GlassHub extends GlassBaseElement {
       :host {
         position: absolute;
         inset: 0;
+        box-sizing: border-box;
         overflow: hidden;
         background: var(--hub-surface);
         color: var(--hub-text);
         font-family: var(--hub-font-body);
         transition: background var(--hub-fade) ease;
         -webkit-tap-highlight-color: transparent;
+      }
+      /* Outside kiosk mode HA still shows its own header on top of us; inset
+         the whole hub so the top row clears it. HA exposes --header-height. */
+      :host(:not([kiosk])) {
+        padding-top: var(--header-height, 56px);
       }
 
       .strip {
@@ -107,38 +119,9 @@ export class GlassHub extends GlassBaseElement {
         letter-spacing: 0.02em;
       }
 
-      .theme-toggle {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        border: none;
-        border-radius: 50%;
-        background: transparent;
-        color: var(--hub-text-muted);
-        cursor: pointer;
-        z-index: 20;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .theme-toggle svg {
-        width: 24px;
-        height: 24px;
-      }
-      .theme-toggle .glyph-auto {
-        font-family: var(--hub-font-display);
-        font-weight: 500;
-        font-size: 20px;
-      }
-
+      /* Quiet control cluster — slotted into the nav bar's right edge. */
+      .theme-toggle,
       .kiosk-toggle {
-        position: absolute;
-        top: 16px;
-        right: 72px;
         width: 48px;
         height: 48px;
         display: flex;
@@ -150,12 +133,18 @@ export class GlassHub extends GlassBaseElement {
         background: transparent;
         color: var(--hub-text-dim);
         cursor: pointer;
-        z-index: 20;
         -webkit-tap-highlight-color: transparent;
+        transition: color 150ms ease;
       }
+      .theme-toggle svg,
       .kiosk-toggle svg {
         width: 24px;
         height: 24px;
+      }
+      .theme-toggle .glyph-auto {
+        font-family: var(--hub-font-display);
+        font-weight: 500;
+        font-size: 20px;
       }
     `,
   ];
@@ -244,10 +233,6 @@ export class GlassHub extends GlassBaseElement {
   // The kiosk-mode plugin and the drawer shim both read the ?kiosk param at
   // load, so flipping it means rewriting the URL and reloading. Any other
   // query params are preserved (none are expected in normal use).
-  private get _kiosk(): boolean {
-    return new URLSearchParams(location.search).has('kiosk');
-  }
-
   private _toggleKiosk(): void {
     const params = new URLSearchParams(location.search);
     if (params.has('kiosk')) {
@@ -452,23 +437,24 @@ export class GlassHub extends GlassBaseElement {
         )}
       </div>
 
-      <button
-        class="kiosk-toggle"
-        aria-label=${this._kiosk ? 'Avsluta helskärm' : 'Helskärmsläge'}
-        @click=${this._toggleKiosk}
-      >
-        ${this._kiosk ? icons.compress : icons.expand}
-      </button>
-
-      <button
-        class="theme-toggle"
-        aria-label="Byt tema"
-        @click=${this._cycleTheme}
-      >
-        ${this._themeGlyph()}
-      </button>
-
-      <hub-nav-bar .pages=${pages} .active=${this._page}></hub-nav-bar>
+      <hub-nav-bar .pages=${pages} .active=${this._page}>
+        <button
+          slot="controls"
+          class="kiosk-toggle"
+          aria-label=${this.kiosk ? 'Avsluta helskärm' : 'Helskärmsläge'}
+          @click=${this._toggleKiosk}
+        >
+          ${this.kiosk ? icons.compress : icons.expand}
+        </button>
+        <button
+          slot="controls"
+          class="theme-toggle"
+          aria-label="Byt tema"
+          @click=${this._cycleTheme}
+        >
+          ${this._themeGlyph()}
+        </button>
+      </hub-nav-bar>
 
       ${this._openRoom
         ? html`<hub-room-popup

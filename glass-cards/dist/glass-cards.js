@@ -1,4 +1,4 @@
-function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPropertyDescriptor(e,i):a;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(t,e,i,a);else for(var o=t.length-1;o>=0;o--)(r=t[o])&&(n=(s<3?r(n):s>3?r(e,i,n):r(e,i))||n);return s>3&&n&&Object.defineProperty(e,i,n),n}"function"==typeof SuppressedError&&SuppressedError;const e=globalThis,i=e.ShadowRoot&&(void 0===e.ShadyCSS||e.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,a=Symbol(),r=new WeakMap;let s=class{constructor(t,e,i){if(this._$cssResult$=!0,i!==a)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o;const e=this.t;if(i&&void 0===t){const i=void 0!==e&&1===e.length;i&&(t=r.get(e)),void 0===t&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),i&&r.set(e,t))}return t}toString(){return this.cssText}};const n=(t,...e)=>{const i=1===t.length?t[0]:e.reduce((e,i,a)=>e+(t=>{if(!0===t._$cssResult$)return t.cssText;if("number"==typeof t)return t;throw Error("Value passed to 'css' function must be a 'css' function result: "+t+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+t[a+1],t[0]);return new s(i,t,a)},o=i?t=>t:t=>t instanceof CSSStyleSheet?(t=>{let e="";for(const i of t.cssRules)e+=i.cssText;return(t=>new s("string"==typeof t?t:t+"",void 0,a))(e)})(t):t,{is:l,defineProperty:c,getOwnPropertyDescriptor:h,getOwnPropertyNames:d,getOwnPropertySymbols:p,getPrototypeOf:u}=Object,g=globalThis,b=g.trustedTypes,m=b?b.emptyScript:"",v=g.reactiveElementPolyfillSupport,f=(t,e)=>t,x={toAttribute(t,e){switch(e){case Boolean:t=t?m:null;break;case Object:case Array:t=null==t?t:JSON.stringify(t)}return t},fromAttribute(t,e){let i=t;switch(e){case Boolean:i=null!==t;break;case Number:i=null===t?null:Number(t);break;case Object:case Array:try{i=JSON.parse(t)}catch(t){i=null}}return i}},y=(t,e)=>!l(t,e),_={attribute:!0,type:String,converter:x,reflect:!1,useDefault:!1,hasChanged:y};Symbol.metadata??=Symbol("metadata"),g.litPropertyMetadata??=new WeakMap;let w=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=_){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){const i=Symbol(),a=this.getPropertyDescriptor(t,i,e);void 0!==a&&c(this.prototype,t,a)}}static getPropertyDescriptor(t,e,i){const{get:a,set:r}=h(this.prototype,t)??{get(){return this[e]},set(t){this[e]=t}};return{get:a,set(e){const s=a?.call(this);r?.call(this,e),this.requestUpdate(t,s,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??_}static _$Ei(){if(this.hasOwnProperty(f("elementProperties")))return;const t=u(this);t.finalize(),void 0!==t.l&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(f("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(f("properties"))){const t=this.properties,e=[...d(t),...p(t)];for(const i of e)this.createProperty(i,t[i])}const t=this[Symbol.metadata];if(null!==t){const e=litPropertyMetadata.get(t);if(void 0!==e)for(const[t,i]of e)this.elementProperties.set(t,i)}this._$Eh=new Map;for(const[t,e]of this.elementProperties){const i=this._$Eu(t,e);void 0!==i&&this._$Eh.set(i,t)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){const e=[];if(Array.isArray(t)){const i=new Set(t.flat(1/0).reverse());for(const t of i)e.unshift(o(t))}else void 0!==t&&e.push(o(t));return e}static _$Eu(t,e){const i=e.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof t?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),void 0!==this.renderRoot&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){const t=new Map,e=this.constructor.elementProperties;for(const i of e.keys())this.hasOwnProperty(i)&&(t.set(i,this[i]),delete this[i]);t.size>0&&(this._$Ep=t)}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return((t,a)=>{if(i)t.adoptedStyleSheets=a.map(t=>t instanceof CSSStyleSheet?t:t.styleSheet);else for(const i of a){const a=document.createElement("style"),r=e.litNonce;void 0!==r&&a.setAttribute("nonce",r),a.textContent=i.cssText,t.appendChild(a)}})(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,i){this._$AK(t,i)}_$ET(t,e){const i=this.constructor.elementProperties.get(t),a=this.constructor._$Eu(t,i);if(void 0!==a&&!0===i.reflect){const r=(void 0!==i.converter?.toAttribute?i.converter:x).toAttribute(e,i.type);this._$Em=t,null==r?this.removeAttribute(a):this.setAttribute(a,r),this._$Em=null}}_$AK(t,e){const i=this.constructor,a=i._$Eh.get(t);if(void 0!==a&&this._$Em!==a){const t=i.getPropertyOptions(a),r="function"==typeof t.converter?{fromAttribute:t.converter}:void 0!==t.converter?.fromAttribute?t.converter:x;this._$Em=a;const s=r.fromAttribute(e,t.type);this[a]=s??this._$Ej?.get(a)??s,this._$Em=null}}requestUpdate(t,e,i,a=!1,r){if(void 0!==t){const s=this.constructor;if(!1===a&&(r=this[t]),i??=s.getPropertyOptions(t),!((i.hasChanged??y)(r,e)||i.useDefault&&i.reflect&&r===this._$Ej?.get(t)&&!this.hasAttribute(s._$Eu(t,i))))return;this.C(t,e,i)}!1===this.isUpdatePending&&(this._$ES=this._$EP())}C(t,e,{useDefault:i,reflect:a,wrapped:r},s){i&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,s??e??this[t]),!0!==r||void 0!==s)||(this._$AL.has(t)||(this.hasUpdated||i||(e=void 0),this._$AL.set(t,e)),!0===a&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(t){Promise.reject(t)}const t=this.scheduleUpdate();return null!=t&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[t,e]of this._$Ep)this[t]=e;this._$Ep=void 0}const t=this.constructor.elementProperties;if(t.size>0)for(const[e,i]of t){const{wrapped:t}=i,a=this[e];!0!==t||this._$AL.has(e)||void 0===a||this.C(e,void 0,i,a)}}let t=!1;const e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(t=>t.hostUpdate?.()),this.update(e)):this._$EM()}catch(e){throw t=!1,this._$EM(),e}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(t=>t.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(t=>this._$ET(t,this[t])),this._$EM()}updated(t){}firstUpdated(t){}};w.elementStyles=[],w.shadowRootOptions={mode:"open"},w[f("elementProperties")]=new Map,w[f("finalized")]=new Map,v?.({ReactiveElement:w}),(g.reactiveElementVersions??=[]).push("2.1.2");const k=globalThis,$=t=>t,C=k.trustedTypes,E=C?C.createPolicy("lit-html",{createHTML:t=>t}):void 0,S="$lit$",A=`lit$${Math.random().toFixed(9).slice(2)}$`,M="?"+A,T=`<${M}>`,N=document,z=()=>N.createComment(""),P=t=>null===t||"object"!=typeof t&&"function"!=typeof t,F=Array.isArray,j="[ \t\n\f\r]",D=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,H=/-->/g,I=/>/g,O=RegExp(`>|${j}(?:([^\\s"'>=/]+)(${j}*=${j}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),R=/'/g,U=/"/g,B=/^(?:script|style|textarea|title)$/i,L=t=>(e,...i)=>({_$litType$:t,strings:e,values:i}),V=L(1),X=L(2),q=Symbol.for("lit-noChange"),G=Symbol.for("lit-nothing"),W=new WeakMap,Y=N.createTreeWalker(N,129);function K(t,e){if(!F(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==E?E.createHTML(e):e}const Z=(t,e)=>{const i=t.length-1,a=[];let r,s=2===e?"<svg>":3===e?"<math>":"",n=D;for(let e=0;e<i;e++){const i=t[e];let o,l,c=-1,h=0;for(;h<i.length&&(n.lastIndex=h,l=n.exec(i),null!==l);)h=n.lastIndex,n===D?"!--"===l[1]?n=H:void 0!==l[1]?n=I:void 0!==l[2]?(B.test(l[2])&&(r=RegExp("</"+l[2],"g")),n=O):void 0!==l[3]&&(n=O):n===O?">"===l[0]?(n=r??D,c=-1):void 0===l[1]?c=-2:(c=n.lastIndex-l[2].length,o=l[1],n=void 0===l[3]?O:'"'===l[3]?U:R):n===U||n===R?n=O:n===H||n===I?n=D:(n=O,r=void 0);const d=n===O&&t[e+1].startsWith("/>")?" ":"";s+=n===D?i+T:c>=0?(a.push(o),i.slice(0,c)+S+i.slice(c)+A+d):i+A+(-2===c?e:d)}return[K(t,s+(t[i]||"<?>")+(2===e?"</svg>":3===e?"</math>":"")),a]};class J{constructor({strings:t,_$litType$:e},i){let a;this.parts=[];let r=0,s=0;const n=t.length-1,o=this.parts,[l,c]=Z(t,e);if(this.el=J.createElement(l,i),Y.currentNode=this.el.content,2===e||3===e){const t=this.el.content.firstChild;t.replaceWith(...t.childNodes)}for(;null!==(a=Y.nextNode())&&o.length<n;){if(1===a.nodeType){if(a.hasAttributes())for(const t of a.getAttributeNames())if(t.endsWith(S)){const e=c[s++],i=a.getAttribute(t).split(A),n=/([.?@])?(.*)/.exec(e);o.push({type:1,index:r,name:n[2],strings:i,ctor:"."===n[1]?at:"?"===n[1]?rt:"@"===n[1]?st:it}),a.removeAttribute(t)}else t.startsWith(A)&&(o.push({type:6,index:r}),a.removeAttribute(t));if(B.test(a.tagName)){const t=a.textContent.split(A),e=t.length-1;if(e>0){a.textContent=C?C.emptyScript:"";for(let i=0;i<e;i++)a.append(t[i],z()),Y.nextNode(),o.push({type:2,index:++r});a.append(t[e],z())}}}else if(8===a.nodeType)if(a.data===M)o.push({type:2,index:r});else{let t=-1;for(;-1!==(t=a.data.indexOf(A,t+1));)o.push({type:7,index:r}),t+=A.length-1}r++}}static createElement(t,e){const i=N.createElement("template");return i.innerHTML=t,i}}function Q(t,e,i=t,a){if(e===q)return e;let r=void 0!==a?i._$Co?.[a]:i._$Cl;const s=P(e)?void 0:e._$litDirective$;return r?.constructor!==s&&(r?._$AO?.(!1),void 0===s?r=void 0:(r=new s(t),r._$AT(t,i,a)),void 0!==a?(i._$Co??=[])[a]=r:i._$Cl=r),void 0!==r&&(e=Q(t,r._$AS(t,e.values),r,a)),e}class tt{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:e},parts:i}=this._$AD,a=(t?.creationScope??N).importNode(e,!0);Y.currentNode=a;let r=Y.nextNode(),s=0,n=0,o=i[0];for(;void 0!==o;){if(s===o.index){let e;2===o.type?e=new et(r,r.nextSibling,this,t):1===o.type?e=new o.ctor(r,o.name,o.strings,this,t):6===o.type&&(e=new nt(r,this,t)),this._$AV.push(e),o=i[++n]}s!==o?.index&&(r=Y.nextNode(),s++)}return Y.currentNode=N,a}p(t){let e=0;for(const i of this._$AV)void 0!==i&&(void 0!==i.strings?(i._$AI(t,i,e),e+=i.strings.length-2):i._$AI(t[e])),e++}}class et{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,i,a){this.type=2,this._$AH=G,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=i,this.options=a,this._$Cv=a?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode;const e=this._$AM;return void 0!==e&&11===t?.nodeType&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=Q(this,t,e),P(t)?t===G||null==t||""===t?(this._$AH!==G&&this._$AR(),this._$AH=G):t!==this._$AH&&t!==q&&this._(t):void 0!==t._$litType$?this.$(t):void 0!==t.nodeType?this.T(t):(t=>F(t)||"function"==typeof t?.[Symbol.iterator])(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==G&&P(this._$AH)?this._$AA.nextSibling.data=t:this.T(N.createTextNode(t)),this._$AH=t}$(t){const{values:e,_$litType$:i}=t,a="number"==typeof i?this._$AC(t):(void 0===i.el&&(i.el=J.createElement(K(i.h,i.h[0]),this.options)),i);if(this._$AH?._$AD===a)this._$AH.p(e);else{const t=new tt(a,this),i=t.u(this.options);t.p(e),this.T(i),this._$AH=t}}_$AC(t){let e=W.get(t.strings);return void 0===e&&W.set(t.strings,e=new J(t)),e}k(t){F(this._$AH)||(this._$AH=[],this._$AR());const e=this._$AH;let i,a=0;for(const r of t)a===e.length?e.push(i=new et(this.O(z()),this.O(z()),this,this.options)):i=e[a],i._$AI(r),a++;a<e.length&&(this._$AR(i&&i._$AB.nextSibling,a),e.length=a)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){const e=$(t).nextSibling;$(t).remove(),t=e}}setConnected(t){void 0===this._$AM&&(this._$Cv=t,this._$AP?.(t))}}class it{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,i,a,r){this.type=1,this._$AH=G,this._$AN=void 0,this.element=t,this.name=e,this._$AM=a,this.options=r,i.length>2||""!==i[0]||""!==i[1]?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=G}_$AI(t,e=this,i,a){const r=this.strings;let s=!1;if(void 0===r)t=Q(this,t,e,0),s=!P(t)||t!==this._$AH&&t!==q,s&&(this._$AH=t);else{const a=t;let n,o;for(t=r[0],n=0;n<r.length-1;n++)o=Q(this,a[i+n],e,n),o===q&&(o=this._$AH[n]),s||=!P(o)||o!==this._$AH[n],o===G?t=G:t!==G&&(t+=(o??"")+r[n+1]),this._$AH[n]=o}s&&!a&&this.j(t)}j(t){t===G?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}}class at extends it{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===G?void 0:t}}class rt extends it{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==G)}}class st extends it{constructor(t,e,i,a,r){super(t,e,i,a,r),this.type=5}_$AI(t,e=this){if((t=Q(this,t,e,0)??G)===q)return;const i=this._$AH,a=t===G&&i!==G||t.capture!==i.capture||t.once!==i.once||t.passive!==i.passive,r=t!==G&&(i===G||a);a&&this.element.removeEventListener(this.name,this,i),r&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){"function"==typeof this._$AH?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}}class nt{constructor(t,e,i){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(t){Q(this,t)}}const ot=k.litHtmlPolyfillSupport;ot?.(J,et),(k.litHtmlVersions??=[]).push("3.3.2");const lt=globalThis;class ct extends w{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=((t,e,i)=>{const a=i?.renderBefore??e;let r=a._$litPart$;if(void 0===r){const t=i?.renderBefore??null;a._$litPart$=r=new et(e.insertBefore(z(),t),t,void 0,i??{})}return r._$AI(t),r})(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return q}}ct._$litElement$=!0,ct.finalized=!0,lt.litElementHydrateSupport?.({LitElement:ct});const ht=lt.litElementPolyfillSupport;ht?.({LitElement:ct}),(lt.litElementVersions??=[]).push("4.2.2");const dt=t=>(e,i)=>{void 0!==i?i.addInitializer(()=>{customElements.define(t,e)}):customElements.define(t,e)},pt={attribute:!0,type:String,converter:x,reflect:!1,hasChanged:y},ut=(t=pt,e,i)=>{const{kind:a,metadata:r}=i;let s=globalThis.litPropertyMetadata.get(r);if(void 0===s&&globalThis.litPropertyMetadata.set(r,s=new Map),"setter"===a&&((t=Object.create(t)).wrapped=!0),s.set(i.name,t),"accessor"===a){const{name:a}=i;return{set(i){const r=e.get.call(this);e.set.call(this,i),this.requestUpdate(a,r,t,!0,i)},init(e){return void 0!==e&&this.C(a,void 0,t,e),e}}}if("setter"===a){const{name:a}=i;return function(i){const r=this[a];e.call(this,i),this.requestUpdate(a,r,t,!0,i)}}throw Error("Unsupported decorator location: "+a)};function gt(t){return(e,i)=>"object"==typeof i?ut(t,e,i):((t,e,i)=>{const a=e.hasOwnProperty(i);return e.constructor.createProperty(i,t),a?Object.getOwnPropertyDescriptor(e,i):void 0})(t,e,i)}function bt(t){return gt({...t,state:!0,attribute:!1})}let mt=class extends ct{constructor(){super(...arguments),this._cards=[],this._activeView=null,this._cardConfigs=[],this._boundHashChange=this._onHashChange.bind(this)}connectedCallback(){super.connectedCallback(),window.addEventListener("hashchange",this._boundHashChange),this._activeView=this._getViewFromHash()??this._config?.default_view??null}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("hashchange",this._boundHashChange)}_onHashChange(){const t=this._getViewFromHash();null!==t&&(this._activeView=t),location.hash&&"#"!==location.hash||(this._activeView=this._config?.default_view??null)}_getViewFromHash(){const t=location.hash.replace("#","");if(!t)return null;return(this._config?.views??[]).includes(t)?t:null}setConfig(t){this._config=t,this._activeView=this._getViewFromHash()??t.default_view??null,this._createCards()}set hass(t){this._hass=t,this._cards.forEach(e=>{e.hass=t})}get hass(){return this._hass}_createCards(){this._config.cards&&(this._cardConfigs=this._config.cards,this._cards=this._config.cards.map(t=>{const e=t.type?.startsWith("custom:")?t.type.replace("custom:",""):`hui-${t.type}-card`,i=document.createElement(e);return"function"==typeof i.setConfig&&i.setConfig(t),i}),this.requestUpdate())}render(){const t=this._cards.filter((t,e)=>{const i=this._cardConfigs[e];return!i||!i.view||i.view===this._activeView});return V`
+function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPropertyDescriptor(e,i):a;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(t,e,i,a);else for(var o=t.length-1;o>=0;o--)(s=t[o])&&(n=(r<3?s(n):r>3?s(e,i,n):s(e,i))||n);return r>3&&n&&Object.defineProperty(e,i,n),n}"function"==typeof SuppressedError&&SuppressedError;const e=globalThis,i=e.ShadowRoot&&(void 0===e.ShadyCSS||e.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,a=Symbol(),s=new WeakMap;let r=class{constructor(t,e,i){if(this._$cssResult$=!0,i!==a)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o;const e=this.t;if(i&&void 0===t){const i=void 0!==e&&1===e.length;i&&(t=s.get(e)),void 0===t&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),i&&s.set(e,t))}return t}toString(){return this.cssText}};const n=(t,...e)=>{const i=1===t.length?t[0]:e.reduce((e,i,a)=>e+(t=>{if(!0===t._$cssResult$)return t.cssText;if("number"==typeof t)return t;throw Error("Value passed to 'css' function must be a 'css' function result: "+t+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+t[a+1],t[0]);return new r(i,t,a)},o=i?t=>t:t=>t instanceof CSSStyleSheet?(t=>{let e="";for(const i of t.cssRules)e+=i.cssText;return(t=>new r("string"==typeof t?t:t+"",void 0,a))(e)})(t):t,{is:l,defineProperty:c,getOwnPropertyDescriptor:h,getOwnPropertyNames:d,getOwnPropertySymbols:p,getPrototypeOf:u}=Object,g=globalThis,b=g.trustedTypes,m=b?b.emptyScript:"",v=g.reactiveElementPolyfillSupport,f=(t,e)=>t,x={toAttribute(t,e){switch(e){case Boolean:t=t?m:null;break;case Object:case Array:t=null==t?t:JSON.stringify(t)}return t},fromAttribute(t,e){let i=t;switch(e){case Boolean:i=null!==t;break;case Number:i=null===t?null:Number(t);break;case Object:case Array:try{i=JSON.parse(t)}catch(t){i=null}}return i}},y=(t,e)=>!l(t,e),_={attribute:!0,type:String,converter:x,reflect:!1,useDefault:!1,hasChanged:y};Symbol.metadata??=Symbol("metadata"),g.litPropertyMetadata??=new WeakMap;let w=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=_){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){const i=Symbol(),a=this.getPropertyDescriptor(t,i,e);void 0!==a&&c(this.prototype,t,a)}}static getPropertyDescriptor(t,e,i){const{get:a,set:s}=h(this.prototype,t)??{get(){return this[e]},set(t){this[e]=t}};return{get:a,set(e){const r=a?.call(this);s?.call(this,e),this.requestUpdate(t,r,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??_}static _$Ei(){if(this.hasOwnProperty(f("elementProperties")))return;const t=u(this);t.finalize(),void 0!==t.l&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(f("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(f("properties"))){const t=this.properties,e=[...d(t),...p(t)];for(const i of e)this.createProperty(i,t[i])}const t=this[Symbol.metadata];if(null!==t){const e=litPropertyMetadata.get(t);if(void 0!==e)for(const[t,i]of e)this.elementProperties.set(t,i)}this._$Eh=new Map;for(const[t,e]of this.elementProperties){const i=this._$Eu(t,e);void 0!==i&&this._$Eh.set(i,t)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){const e=[];if(Array.isArray(t)){const i=new Set(t.flat(1/0).reverse());for(const t of i)e.unshift(o(t))}else void 0!==t&&e.push(o(t));return e}static _$Eu(t,e){const i=e.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof t?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),void 0!==this.renderRoot&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){const t=new Map,e=this.constructor.elementProperties;for(const i of e.keys())this.hasOwnProperty(i)&&(t.set(i,this[i]),delete this[i]);t.size>0&&(this._$Ep=t)}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return((t,a)=>{if(i)t.adoptedStyleSheets=a.map(t=>t instanceof CSSStyleSheet?t:t.styleSheet);else for(const i of a){const a=document.createElement("style"),s=e.litNonce;void 0!==s&&a.setAttribute("nonce",s),a.textContent=i.cssText,t.appendChild(a)}})(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,i){this._$AK(t,i)}_$ET(t,e){const i=this.constructor.elementProperties.get(t),a=this.constructor._$Eu(t,i);if(void 0!==a&&!0===i.reflect){const s=(void 0!==i.converter?.toAttribute?i.converter:x).toAttribute(e,i.type);this._$Em=t,null==s?this.removeAttribute(a):this.setAttribute(a,s),this._$Em=null}}_$AK(t,e){const i=this.constructor,a=i._$Eh.get(t);if(void 0!==a&&this._$Em!==a){const t=i.getPropertyOptions(a),s="function"==typeof t.converter?{fromAttribute:t.converter}:void 0!==t.converter?.fromAttribute?t.converter:x;this._$Em=a;const r=s.fromAttribute(e,t.type);this[a]=r??this._$Ej?.get(a)??r,this._$Em=null}}requestUpdate(t,e,i,a=!1,s){if(void 0!==t){const r=this.constructor;if(!1===a&&(s=this[t]),i??=r.getPropertyOptions(t),!((i.hasChanged??y)(s,e)||i.useDefault&&i.reflect&&s===this._$Ej?.get(t)&&!this.hasAttribute(r._$Eu(t,i))))return;this.C(t,e,i)}!1===this.isUpdatePending&&(this._$ES=this._$EP())}C(t,e,{useDefault:i,reflect:a,wrapped:s},r){i&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??e??this[t]),!0!==s||void 0!==r)||(this._$AL.has(t)||(this.hasUpdated||i||(e=void 0),this._$AL.set(t,e)),!0===a&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(t){Promise.reject(t)}const t=this.scheduleUpdate();return null!=t&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[t,e]of this._$Ep)this[t]=e;this._$Ep=void 0}const t=this.constructor.elementProperties;if(t.size>0)for(const[e,i]of t){const{wrapped:t}=i,a=this[e];!0!==t||this._$AL.has(e)||void 0===a||this.C(e,void 0,i,a)}}let t=!1;const e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(t=>t.hostUpdate?.()),this.update(e)):this._$EM()}catch(e){throw t=!1,this._$EM(),e}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(t=>t.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(t=>this._$ET(t,this[t])),this._$EM()}updated(t){}firstUpdated(t){}};w.elementStyles=[],w.shadowRootOptions={mode:"open"},w[f("elementProperties")]=new Map,w[f("finalized")]=new Map,v?.({ReactiveElement:w}),(g.reactiveElementVersions??=[]).push("2.1.2");const k=globalThis,$=t=>t,C=k.trustedTypes,E=C?C.createPolicy("lit-html",{createHTML:t=>t}):void 0,S="$lit$",A=`lit$${Math.random().toFixed(9).slice(2)}$`,M="?"+A,T=`<${M}>`,N=document,z=()=>N.createComment(""),P=t=>null===t||"object"!=typeof t&&"function"!=typeof t,F=Array.isArray,j="[ \t\n\f\r]",D=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,H=/-->/g,I=/>/g,O=RegExp(`>|${j}(?:([^\\s"'>=/]+)(${j}*=${j}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),R=/'/g,U=/"/g,B=/^(?:script|style|textarea|title)$/i,L=t=>(e,...i)=>({_$litType$:t,strings:e,values:i}),V=L(1),X=L(2),q=Symbol.for("lit-noChange"),G=Symbol.for("lit-nothing"),W=new WeakMap,Y=N.createTreeWalker(N,129);function K(t,e){if(!F(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==E?E.createHTML(e):e}const Z=(t,e)=>{const i=t.length-1,a=[];let s,r=2===e?"<svg>":3===e?"<math>":"",n=D;for(let e=0;e<i;e++){const i=t[e];let o,l,c=-1,h=0;for(;h<i.length&&(n.lastIndex=h,l=n.exec(i),null!==l);)h=n.lastIndex,n===D?"!--"===l[1]?n=H:void 0!==l[1]?n=I:void 0!==l[2]?(B.test(l[2])&&(s=RegExp("</"+l[2],"g")),n=O):void 0!==l[3]&&(n=O):n===O?">"===l[0]?(n=s??D,c=-1):void 0===l[1]?c=-2:(c=n.lastIndex-l[2].length,o=l[1],n=void 0===l[3]?O:'"'===l[3]?U:R):n===U||n===R?n=O:n===H||n===I?n=D:(n=O,s=void 0);const d=n===O&&t[e+1].startsWith("/>")?" ":"";r+=n===D?i+T:c>=0?(a.push(o),i.slice(0,c)+S+i.slice(c)+A+d):i+A+(-2===c?e:d)}return[K(t,r+(t[i]||"<?>")+(2===e?"</svg>":3===e?"</math>":"")),a]};class Q{constructor({strings:t,_$litType$:e},i){let a;this.parts=[];let s=0,r=0;const n=t.length-1,o=this.parts,[l,c]=Z(t,e);if(this.el=Q.createElement(l,i),Y.currentNode=this.el.content,2===e||3===e){const t=this.el.content.firstChild;t.replaceWith(...t.childNodes)}for(;null!==(a=Y.nextNode())&&o.length<n;){if(1===a.nodeType){if(a.hasAttributes())for(const t of a.getAttributeNames())if(t.endsWith(S)){const e=c[r++],i=a.getAttribute(t).split(A),n=/([.?@])?(.*)/.exec(e);o.push({type:1,index:s,name:n[2],strings:i,ctor:"."===n[1]?at:"?"===n[1]?st:"@"===n[1]?rt:it}),a.removeAttribute(t)}else t.startsWith(A)&&(o.push({type:6,index:s}),a.removeAttribute(t));if(B.test(a.tagName)){const t=a.textContent.split(A),e=t.length-1;if(e>0){a.textContent=C?C.emptyScript:"";for(let i=0;i<e;i++)a.append(t[i],z()),Y.nextNode(),o.push({type:2,index:++s});a.append(t[e],z())}}}else if(8===a.nodeType)if(a.data===M)o.push({type:2,index:s});else{let t=-1;for(;-1!==(t=a.data.indexOf(A,t+1));)o.push({type:7,index:s}),t+=A.length-1}s++}}static createElement(t,e){const i=N.createElement("template");return i.innerHTML=t,i}}function J(t,e,i=t,a){if(e===q)return e;let s=void 0!==a?i._$Co?.[a]:i._$Cl;const r=P(e)?void 0:e._$litDirective$;return s?.constructor!==r&&(s?._$AO?.(!1),void 0===r?s=void 0:(s=new r(t),s._$AT(t,i,a)),void 0!==a?(i._$Co??=[])[a]=s:i._$Cl=s),void 0!==s&&(e=J(t,s._$AS(t,e.values),s,a)),e}class tt{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:e},parts:i}=this._$AD,a=(t?.creationScope??N).importNode(e,!0);Y.currentNode=a;let s=Y.nextNode(),r=0,n=0,o=i[0];for(;void 0!==o;){if(r===o.index){let e;2===o.type?e=new et(s,s.nextSibling,this,t):1===o.type?e=new o.ctor(s,o.name,o.strings,this,t):6===o.type&&(e=new nt(s,this,t)),this._$AV.push(e),o=i[++n]}r!==o?.index&&(s=Y.nextNode(),r++)}return Y.currentNode=N,a}p(t){let e=0;for(const i of this._$AV)void 0!==i&&(void 0!==i.strings?(i._$AI(t,i,e),e+=i.strings.length-2):i._$AI(t[e])),e++}}class et{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,i,a){this.type=2,this._$AH=G,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=i,this.options=a,this._$Cv=a?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode;const e=this._$AM;return void 0!==e&&11===t?.nodeType&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=J(this,t,e),P(t)?t===G||null==t||""===t?(this._$AH!==G&&this._$AR(),this._$AH=G):t!==this._$AH&&t!==q&&this._(t):void 0!==t._$litType$?this.$(t):void 0!==t.nodeType?this.T(t):(t=>F(t)||"function"==typeof t?.[Symbol.iterator])(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==G&&P(this._$AH)?this._$AA.nextSibling.data=t:this.T(N.createTextNode(t)),this._$AH=t}$(t){const{values:e,_$litType$:i}=t,a="number"==typeof i?this._$AC(t):(void 0===i.el&&(i.el=Q.createElement(K(i.h,i.h[0]),this.options)),i);if(this._$AH?._$AD===a)this._$AH.p(e);else{const t=new tt(a,this),i=t.u(this.options);t.p(e),this.T(i),this._$AH=t}}_$AC(t){let e=W.get(t.strings);return void 0===e&&W.set(t.strings,e=new Q(t)),e}k(t){F(this._$AH)||(this._$AH=[],this._$AR());const e=this._$AH;let i,a=0;for(const s of t)a===e.length?e.push(i=new et(this.O(z()),this.O(z()),this,this.options)):i=e[a],i._$AI(s),a++;a<e.length&&(this._$AR(i&&i._$AB.nextSibling,a),e.length=a)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){const e=$(t).nextSibling;$(t).remove(),t=e}}setConnected(t){void 0===this._$AM&&(this._$Cv=t,this._$AP?.(t))}}class it{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,i,a,s){this.type=1,this._$AH=G,this._$AN=void 0,this.element=t,this.name=e,this._$AM=a,this.options=s,i.length>2||""!==i[0]||""!==i[1]?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=G}_$AI(t,e=this,i,a){const s=this.strings;let r=!1;if(void 0===s)t=J(this,t,e,0),r=!P(t)||t!==this._$AH&&t!==q,r&&(this._$AH=t);else{const a=t;let n,o;for(t=s[0],n=0;n<s.length-1;n++)o=J(this,a[i+n],e,n),o===q&&(o=this._$AH[n]),r||=!P(o)||o!==this._$AH[n],o===G?t=G:t!==G&&(t+=(o??"")+s[n+1]),this._$AH[n]=o}r&&!a&&this.j(t)}j(t){t===G?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}}class at extends it{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===G?void 0:t}}class st extends it{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==G)}}class rt extends it{constructor(t,e,i,a,s){super(t,e,i,a,s),this.type=5}_$AI(t,e=this){if((t=J(this,t,e,0)??G)===q)return;const i=this._$AH,a=t===G&&i!==G||t.capture!==i.capture||t.once!==i.once||t.passive!==i.passive,s=t!==G&&(i===G||a);a&&this.element.removeEventListener(this.name,this,i),s&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){"function"==typeof this._$AH?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}}class nt{constructor(t,e,i){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(t){J(this,t)}}const ot=k.litHtmlPolyfillSupport;ot?.(Q,et),(k.litHtmlVersions??=[]).push("3.3.2");const lt=globalThis;class ct extends w{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=((t,e,i)=>{const a=i?.renderBefore??e;let s=a._$litPart$;if(void 0===s){const t=i?.renderBefore??null;a._$litPart$=s=new et(e.insertBefore(z(),t),t,void 0,i??{})}return s._$AI(t),s})(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return q}}ct._$litElement$=!0,ct.finalized=!0,lt.litElementHydrateSupport?.({LitElement:ct});const ht=lt.litElementPolyfillSupport;ht?.({LitElement:ct}),(lt.litElementVersions??=[]).push("4.2.2");const dt=t=>(e,i)=>{void 0!==i?i.addInitializer(()=>{customElements.define(t,e)}):customElements.define(t,e)},pt={attribute:!0,type:String,converter:x,reflect:!1,hasChanged:y},ut=(t=pt,e,i)=>{const{kind:a,metadata:s}=i;let r=globalThis.litPropertyMetadata.get(s);if(void 0===r&&globalThis.litPropertyMetadata.set(s,r=new Map),"setter"===a&&((t=Object.create(t)).wrapped=!0),r.set(i.name,t),"accessor"===a){const{name:a}=i;return{set(i){const s=e.get.call(this);e.set.call(this,i),this.requestUpdate(a,s,t,!0,i)},init(e){return void 0!==e&&this.C(a,void 0,t,e),e}}}if("setter"===a){const{name:a}=i;return function(i){const s=this[a];e.call(this,i),this.requestUpdate(a,s,t,!0,i)}}throw Error("Unsupported decorator location: "+a)};function gt(t){return(e,i)=>"object"==typeof i?ut(t,e,i):((t,e,i)=>{const a=e.hasOwnProperty(i);return e.constructor.createProperty(i,t),a?Object.getOwnPropertyDescriptor(e,i):void 0})(t,e,i)}function bt(t){return gt({...t,state:!0,attribute:!1})}let mt=class extends ct{constructor(){super(...arguments),this._cards=[],this._activeView=null,this._cardConfigs=[],this._boundHashChange=this._onHashChange.bind(this)}connectedCallback(){super.connectedCallback(),window.addEventListener("hashchange",this._boundHashChange),this._activeView=this._getViewFromHash()??this._config?.default_view??null}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("hashchange",this._boundHashChange)}_onHashChange(){const t=this._getViewFromHash();null!==t&&(this._activeView=t),location.hash&&"#"!==location.hash||(this._activeView=this._config?.default_view??null)}_getViewFromHash(){const t=location.hash.replace("#","");if(!t)return null;return(this._config?.views??[]).includes(t)?t:null}setConfig(t){this._config=t,this._activeView=this._getViewFromHash()??t.default_view??null,this._createCards()}set hass(t){this._hass=t,this._cards.forEach(e=>{e.hass=t})}get hass(){return this._hass}_createCards(){this._config.cards&&(this._cardConfigs=this._config.cards,this._cards=this._config.cards.map(t=>{const e=t.type?.startsWith("custom:")?t.type.replace("custom:",""):`hui-${t.type}-card`,i=document.createElement(e);return"function"==typeof i.setConfig&&i.setConfig(t),i}),this.requestUpdate())}render(){const t=this._cards.filter((t,e)=>{const i=this._cardConfigs[e];return!i||!i.view||i.view===this._activeView});return V`
       <div class="background"></div>
       <div class="content">
         ${t.map(t=>t)}
@@ -108,14 +108,14 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           0 0 20px var(--glass-accent-glow),
           0 0 60px rgba(79, 195, 247, 0.1);
       }
-    `}}t([gt({attribute:!1})],vt.prototype,"hass",void 0),t([gt({attribute:!1})],vt.prototype,"_config",void 0);let ft=class extends vt{get _buttonConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleTap(){const t=this._buttonConfig.tap_action?.action??"toggle";"toggle"===t&&this._config.entity?this.toggle(this._config.entity):"navigate"===t&&this._buttonConfig.tap_action?.navigation_path&&(window.location.hash=this._buttonConfig.tap_action.navigation_path)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=!!t&&this.isOn(this._config.entity),i=this._config.name??t?.attributes.friendly_name??"",a=this._config.icon??t?.attributes.icon??"mdi:help-circle";let r="";if(!1!==this._buttonConfig.show_state&&t){const e=t.attributes.unit_of_measurement;r=e?`${t.state} ${e}`:"on"===t.state?"Pa":"off"===t.state?"Av":t.state}return V`
+    `}}t([gt({attribute:!1})],vt.prototype,"hass",void 0),t([gt({attribute:!1})],vt.prototype,"_config",void 0);let ft=class extends vt{get _buttonConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleTap(){const t=this._buttonConfig.tap_action?.action??"toggle";"toggle"===t&&this._config.entity?this.toggle(this._config.entity):"navigate"===t&&this._buttonConfig.tap_action?.navigation_path&&(window.location.hash=this._buttonConfig.tap_action.navigation_path)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=!!t&&this.isOn(this._config.entity),i=this._config.name??t?.attributes.friendly_name??"",a=this._config.icon??t?.attributes.icon??"mdi:help-circle";let s="";if(!1!==this._buttonConfig.show_state&&t){const e=t.attributes.unit_of_measurement;s=e?`${t.state} ${e}`:"on"===t.state?"Pa":"off"===t.state?"Av":t.state}return V`
       <div class="glass button ${e?"active":""}" @click=${this._handleTap}>
         <div class="icon-wrap">
           <ha-icon .icon=${a}></ha-icon>
         </div>
         <div class="info">
           <div class="name">${i}</div>
-          ${r?V`<div class="state">${r}</div>`:""}
+          ${s?V`<div class="state">${s}</div>`:""}
         </div>
       </div>
     `}};ft.styles=[vt.glassStyles,n`
@@ -171,8 +171,8 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         text-overflow: ellipsis;
       }
       .active .state { color: var(--glass-text-secondary); }
-    `],ft=t([dt("glass-button")],ft);let xt=class extends vt{setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}get _chipConfig(){return this._config}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._chipConfig.chip_type??"custom";let i=this._config.icon??"",a="",r=!1;switch(e){case"person":{const e=t?.attributes.friendly_name??"",s=t?.state??"";i=i||"mdi:account",a=`${e} · ${"home"===s?"Hemma":"Borta"}`,r="home"===s;break}case"battery":{const e=t?.state??"?";i=i||"mdi:cellphone",a=`${e} %`,r=Number(e)>20;break}case"lights":{const e=t?.state??"0";i=i||"mdi:lightbulb-group",a=`${e} st`,r=Number(e)>0;break}default:i=i||"mdi:information",a=this._chipConfig.content??t?.state??""}return V`
-      <div class="chip ${r?"active":""}">
+    `],ft=t([dt("glass-button")],ft);let xt=class extends vt{setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}get _chipConfig(){return this._config}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._chipConfig.chip_type??"custom";let i=this._config.icon??"",a="",s=!1;switch(e){case"person":{const e=t?.attributes.friendly_name??"",r=t?.state??"";i=i||"mdi:account",a=`${e} · ${"home"===r?"Hemma":"Borta"}`,s="home"===r;break}case"battery":{const e=t?.state??"?";i=i||"mdi:cellphone",a=`${e} %`,s=Number(e)>20;break}case"lights":{const e=t?.state??"0";i=i||"mdi:lightbulb-group",a=`${e} st`,s=Number(e)>0;break}default:i=i||"mdi:information",a=this._chipConfig.content??t?.state??""}return V`
+      <div class="chip ${s?"active":""}">
         <ha-icon .icon=${i}></ha-icon>
         <span class="value">${a}</span>
       </div>
@@ -206,12 +206,12 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       .chip .value {
         font-variant-numeric: tabular-nums;
       }
-    `],xt=t([dt("glass-chip")],xt);let yt=class extends vt{get _headerConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.weather_entity&&e.push(t.weather_entity),t.chips&&t.chips.forEach(t=>{t.entity&&e.push(t.entity)}),this.setTrackedEntities(e)}_renderChip(t){const e=this.getEntity(t.entity);if(!e)return V``;let i=t.icon??"",a="",r=!1;switch(t.chip_type){case"person":i=i||"mdi:account";a=`${e.attributes.friendly_name??""} · ${"home"===e.state?"Hemma":"Borta"}`,r="home"===e.state;break;case"battery":i=i||"mdi:cellphone",a=`${e.state} %`,r=Number(e.state)>20;break;case"lights":i=i||"mdi:lightbulb-group",a=`${e.state} st`,r=Number(e.state)>0;break;default:i=i||"mdi:information",a=e.state}return V`
-      <div class="chip ${r?"active":""}">
+    `],xt=t([dt("glass-chip")],xt);let yt=class extends vt{get _headerConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.weather_entity&&e.push(t.weather_entity),t.chips&&t.chips.forEach(t=>{t.entity&&e.push(t.entity)}),this.setTrackedEntities(e)}_renderChip(t){const e=this.getEntity(t.entity);if(!e)return V``;let i=t.icon??"",a="",s=!1;switch(t.chip_type){case"person":i=i||"mdi:account";a=`${e.attributes.friendly_name??""} · ${"home"===e.state?"Hemma":"Borta"}`,s="home"===e.state;break;case"battery":i=i||"mdi:cellphone",a=`${e.state} %`,s=Number(e.state)>20;break;case"lights":i=i||"mdi:lightbulb-group",a=`${e.state} st`,s=Number(e.state)>0;break;default:i=i||"mdi:information",a=e.state}return V`
+      <div class="chip ${s?"active":""}">
         <ha-icon .icon=${i}></ha-icon>
         <span>${a}</span>
       </div>
-    `}render(){if(!this.hass||!this._config)return V``;const t=this.hass.user?.name??"",e=!1!==this._headerConfig.greeting?function(t){const e=(new Date).getHours();return e>=5&&e<10?`God morgon, ${t}`:e>=10&&e<17?`Hej, ${t}`:e>=17&&e<22?`God kvall, ${t}`:`God natt, ${t}`}(t):t,i=this._headerConfig.weather_entity?this.getEntity(this._headerConfig.weather_entity):void 0,a=i?.state??"",r=i?.attributes.temperature??"",s=i?.attributes.temperature_unit??"°C",n={"clear-night":"mdi:weather-night",cloudy:"mdi:weather-cloudy",fog:"mdi:weather-fog",hail:"mdi:weather-hail",lightning:"mdi:weather-lightning","lightning-rainy":"mdi:weather-lightning-rainy",partlycloudy:"mdi:weather-partly-cloudy",pouring:"mdi:weather-pouring",rainy:"mdi:weather-rainy",snowy:"mdi:weather-snowy","snowy-rainy":"mdi:weather-snowy-rainy",sunny:"mdi:weather-sunny",windy:"mdi:weather-windy","windy-variant":"mdi:weather-windy-variant",exceptional:"mdi:alert-circle-outline"}[a]??"mdi:weather-cloudy";return V`
+    `}render(){if(!this.hass||!this._config)return V``;const t=this.hass.user?.name??"",e=!1!==this._headerConfig.greeting?function(t){const e=(new Date).getHours();return e>=5&&e<10?`God morgon, ${t}`:e>=10&&e<17?`Hej, ${t}`:e>=17&&e<22?`God kvall, ${t}`:`God natt, ${t}`}(t):t,i=this._headerConfig.weather_entity?this.getEntity(this._headerConfig.weather_entity):void 0,a=i?.state??"",s=i?.attributes.temperature??"",r=i?.attributes.temperature_unit??"°C",n={"clear-night":"mdi:weather-night",cloudy:"mdi:weather-cloudy",fog:"mdi:weather-fog",hail:"mdi:weather-hail",lightning:"mdi:weather-lightning","lightning-rainy":"mdi:weather-lightning-rainy",partlycloudy:"mdi:weather-partly-cloudy",pouring:"mdi:weather-pouring",rainy:"mdi:weather-rainy",snowy:"mdi:weather-snowy","snowy-rainy":"mdi:weather-snowy-rainy",sunny:"mdi:weather-sunny",windy:"mdi:weather-windy","windy-variant":"mdi:weather-windy-variant",exceptional:"mdi:alert-circle-outline"}[a]??"mdi:weather-cloudy";return V`
       <div class="glass header">
         <div class="top-row">
           <div class="home-icon">
@@ -222,7 +222,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
             ${i?V`
               <div class="weather">
                 <ha-icon .icon=${n}></ha-icon>
-                ${{"clear-night":"Klart",cloudy:"Molnigt",fog:"Dimma",partlycloudy:"Delvis molnigt",rainy:"Regn",snowy:"Sno",sunny:"Soligt",windy:"Blasigt"}[a]??a} \u2022 ${r}${s}
+                ${{"clear-night":"Klart",cloudy:"Molnigt",fog:"Dimma",partlycloudy:"Delvis molnigt",rainy:"Regn",snowy:"Sno",sunny:"Soligt",windy:"Blasigt"}[a]??a} \u2022 ${s}${r}
               </div>
             `:""}
           </div>
@@ -303,14 +303,14 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         --mdc-icon-size: 16px;
         display: flex;
       }
-    `],yt=t([dt("glass-header")],yt);let _t=class extends vt{get _roomConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.sub_buttons&&t.sub_buttons.forEach(t=>e.push(t.entity)),this.setTrackedEntities(e)}_handleCardTap(){this._roomConfig.popup_id&&(window.location.hash=this._roomConfig.popup_id)}_handleSubButtonTap(t,e){t.stopPropagation(),this.toggle(e)}render(){if(!this.hass||!this._config)return V``;const t=this._roomConfig.sub_buttons??[],e=t.map(t=>t.entity);this._config.entity&&!e.includes(this._config.entity)&&e.unshift(this._config.entity);const i=e.some(t=>this.isOn(t)),a=function(t,e){const i=function(t,e){return e.filter(e=>"on"===t[e]?.state).length}(t,e);return 0===i?"Av":1===i?"Pa":`${i} lampor pa`}(this.hass.states,e),r=this._config.icon??"mdi:home",s=this._config.name??"";return V`
+    `],yt=t([dt("glass-header")],yt);let _t=class extends vt{get _roomConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.sub_buttons&&t.sub_buttons.forEach(t=>e.push(t.entity)),this.setTrackedEntities(e)}_handleCardTap(){this._roomConfig.popup_id&&(window.location.hash=this._roomConfig.popup_id)}_handleSubButtonTap(t,e){t.stopPropagation(),this.toggle(e)}render(){if(!this.hass||!this._config)return V``;const t=this._roomConfig.sub_buttons??[],e=t.map(t=>t.entity);this._config.entity&&!e.includes(this._config.entity)&&e.unshift(this._config.entity);const i=e.some(t=>this.isOn(t)),a=function(t,e){const i=function(t,e){return e.filter(e=>"on"===t[e]?.state).length}(t,e);return 0===i?"Av":1===i?"Pa":`${i} lampor pa`}(this.hass.states,e),s=this._config.icon??"mdi:home",r=this._config.name??"";return V`
       <div class="glass room-card ${i?"active":""}" @click=${this._handleCardTap}>
         <div class="top">
           <div class="room-icon">
-            <ha-icon .icon=${r}></ha-icon>
+            <ha-icon .icon=${s}></ha-icon>
           </div>
           <div class="room-info">
-            <div class="room-name">${s}</div>
+            <div class="room-name">${r}</div>
             <div class="room-status">${a}</div>
           </div>
         </div>
@@ -405,7 +405,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         color: var(--glass-text-dim);
       }
       .sub-btn.on ha-icon { color: var(--glass-accent); }
-    `],_t=t([dt("glass-room-card")],_t);let wt=class extends vt{constructor(){super(...arguments),this._dragging=!1,this._dragValue=0,this._stopEvent=t=>{t.stopPropagation()},this._toggleLight=t=>{t.stopPropagation(),this._config?.entity&&this.toggle(this._config.entity)}}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleSliderInteraction(t){if(!this._config.entity)return;const e=this.getEntity(this._config.entity);if(!e||"off"===e.state)return void this.callService("light","turn_on",{brightness_pct:100},this._config.entity);const i=t.currentTarget.getBoundingClientRect(),a=t=>{const e=Math.max(0,Math.min(t-i.left,i.width)),a=Math.round(e/i.width*100);this._dragValue=Math.max(1,Math.min(100,a))},r="touches"in t?t.touches[0].clientX:t.clientX;a(r),this._dragging=!0;const s=t=>{const e="touches"in t?t.touches[0].clientX:t.clientX;a(e)},n=()=>{this._dragging=!1,this.callService("light","turn_on",{brightness_pct:this._dragValue},this._config.entity),document.removeEventListener("mousemove",s),document.removeEventListener("mouseup",n),document.removeEventListener("touchmove",s),document.removeEventListener("touchend",n)};document.addEventListener("mousemove",s),document.addEventListener("mouseup",n),document.addEventListener("touchmove",s,{passive:!0}),document.addEventListener("touchend",n)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e="on"===t.state,i=this._dragging?this._dragValue:function(t){if(!t||"on"!==t.state)return 0;const e=t.attributes.brightness;return e?Math.round(e/255*100):100}(t),a=this._config.name??t.attributes.friendly_name??"",r=this._config.icon??t.attributes.icon??"mdi:lightbulb";return V`
+    `],_t=t([dt("glass-room-card")],_t);let wt=class extends vt{constructor(){super(...arguments),this._dragging=!1,this._dragValue=0,this._stopEvent=t=>{t.stopPropagation()},this._toggleLight=t=>{t.stopPropagation(),this._config?.entity&&this.toggle(this._config.entity)}}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleSliderInteraction(t){if(!this._config.entity)return;const e=this.getEntity(this._config.entity);if(!e||"off"===e.state)return void this.callService("light","turn_on",{brightness_pct:100},this._config.entity);const i=t.currentTarget.getBoundingClientRect(),a=t=>{const e=Math.max(0,Math.min(t-i.left,i.width)),a=Math.round(e/i.width*100);this._dragValue=Math.max(1,Math.min(100,a))},s="touches"in t?t.touches[0].clientX:t.clientX;a(s),this._dragging=!0;const r=t=>{const e="touches"in t?t.touches[0].clientX:t.clientX;a(e)},n=()=>{this._dragging=!1,this.callService("light","turn_on",{brightness_pct:this._dragValue},this._config.entity),document.removeEventListener("mousemove",r),document.removeEventListener("mouseup",n),document.removeEventListener("touchmove",r),document.removeEventListener("touchend",n)};document.addEventListener("mousemove",r),document.addEventListener("mouseup",n),document.addEventListener("touchmove",r,{passive:!0}),document.addEventListener("touchend",n)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e="on"===t.state,i=this._dragging?this._dragValue:function(t){if(!t||"on"!==t.state)return 0;const e=t.attributes.brightness;return e?Math.round(e/255*100):100}(t),a=this._config.name??t.attributes.friendly_name??"",s=this._config.icon??t.attributes.icon??"mdi:lightbulb";return V`
       <div class="glass slider-card ${e?"on":"off"}">
         <div class="slider-header">
           <div class="slider-left">
@@ -420,7 +420,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
               @click=${this._toggleLight}
             >
               <span class="light-icon">
-                <ha-icon .icon=${r}></ha-icon>
+                <ha-icon .icon=${s}></ha-icon>
               </span>
             </button>
             <span class="light-name">${a}</span>
@@ -762,7 +762,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       transition: color 0.25s ease;
     }
     .nav-item.active .nav-label { color: rgba(255, 255, 255, 0.85); }
-  `,t([gt({attribute:!1})],Ct.prototype,"hass",void 0),t([gt({attribute:!1})],Ct.prototype,"_config",void 0),t([bt()],Ct.prototype,"_activeHash",void 0),Ct=t([dt("glass-nav-bar")],Ct);let Et=class extends vt{get _vacuumConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getStatusText(t){return{cleaning:"Stader",docked:"Dockad",paused:"Pausad",returning:"Atergar",idle:"Inaktiv",error:"Fel",unavailable:"Otillganglig"}[t]??t}_start(){this._config.entity&&this.callService("vacuum","start",void 0,this._config.entity)}_stop(){this._config.entity&&this.callService("vacuum","return_to_base",void 0,this._config.entity)}_cleanRoom(t){this._config.entity&&null!=t.room_id&&this.callService("vacuum","send_command",{command:"app_segment_clean",params:[t.room_id]},this._config.entity)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e=t.state,i="cleaning"===e,a="error"===e,r=t.attributes.battery_level,s=this._config.name??t.attributes.friendly_name??"Vacuum",n=this._config.icon??"mdi:robot-vacuum";return V`
+  `,t([gt({attribute:!1})],Ct.prototype,"hass",void 0),t([gt({attribute:!1})],Ct.prototype,"_config",void 0),t([bt()],Ct.prototype,"_activeHash",void 0),Ct=t([dt("glass-nav-bar")],Ct);let Et=class extends vt{get _vacuumConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getStatusText(t){return{cleaning:"Stader",docked:"Dockad",paused:"Pausad",returning:"Atergar",idle:"Inaktiv",error:"Fel",unavailable:"Otillganglig"}[t]??t}_start(){this._config.entity&&this.callService("vacuum","start",void 0,this._config.entity)}_stop(){this._config.entity&&this.callService("vacuum","return_to_base",void 0,this._config.entity)}_cleanRoom(t){this._config.entity&&null!=t.room_id&&this.callService("vacuum","send_command",{command:"app_segment_clean",params:[t.room_id]},this._config.entity)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e=t.state,i="cleaning"===e,a="error"===e,s=t.attributes.battery_level,r=this._config.name??t.attributes.friendly_name??"Vacuum",n=this._config.icon??"mdi:robot-vacuum";return V`
       <div
         class="glass vacuum-card ${i?"cleaning":""} ${a?"error":""}"
       >
@@ -771,15 +771,15 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
             <ha-icon .icon=${n}></ha-icon>
           </div>
           <div class="vacuum-info">
-            <div class="vacuum-name">${s}</div>
+            <div class="vacuum-name">${r}</div>
             <div class="vacuum-status">${this._getStatusText(e)}</div>
           </div>
-          ${null!=r?V`
+          ${null!=s?V`
                 <div class="vacuum-battery">
                   <ha-icon
-                    icon="mdi:battery${r>80?"":r>60?"-80":r>40?"-60":r>20?"-40":"-20"}"
+                    icon="mdi:battery${s>80?"":s>60?"-80":s>40?"-60":s>20?"-40":"-20"}"
                   ></ha-icon>
-                  ${r}%
+                  ${s}%
                 </div>
               `:""}
         </div>
@@ -927,7 +927,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       .room-btn:active {
         transform: scale(0.96);
       }
-    `],Et=t([dt("glass-vacuum-card")],Et);let St=class extends vt{get _infoConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.secondary_entity&&e.push(t.secondary_entity),t.badge_entity&&e.push(t.badge_entity),this.setTrackedEntities(e)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._config.name??t?.attributes.friendly_name??"",i=this._config.icon??t?.attributes.icon??"mdi:information";let a=t?.state??"";const r=t?.attributes.unit_of_measurement;r&&(a=`${a} ${r}`);const s=this._infoConfig.badge_entity?this.getEntity(this._infoConfig.badge_entity):void 0;return V`
+    `],Et=t([dt("glass-vacuum-card")],Et);let St=class extends vt{get _infoConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.secondary_entity&&e.push(t.secondary_entity),t.badge_entity&&e.push(t.badge_entity),this.setTrackedEntities(e)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._config.name??t?.attributes.friendly_name??"",i=this._config.icon??t?.attributes.icon??"mdi:information";let a=t?.state??"";const s=t?.attributes.unit_of_measurement;s&&(a=`${a} ${s}`);const r=this._infoConfig.badge_entity?this.getEntity(this._infoConfig.badge_entity):void 0;return V`
       <div class="glass info-card">
         <div class="info-icon">
           <ha-icon .icon=${i}></ha-icon>
@@ -936,12 +936,12 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           <div class="info-name">${e}</div>
           <div class="info-value">${a}</div>
         </div>
-        ${s?V`
+        ${r?V`
               <div class="badge">
                 ${this._infoConfig.badge_icon?V`<ha-icon
                       .icon=${this._infoConfig.badge_icon}
                     ></ha-icon>`:""}
-                ${s.state}
+                ${r.state}
               </div>
             `:""}
       </div>
@@ -1027,11 +1027,11 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       --mdc-icon-size: 14px;
       color: rgba(255, 255, 255, 0.25);
     }
-  `,t([gt({attribute:!1})],At.prototype,"_config",void 0),At=t([dt("glass-section")],At);let Mt=class extends vt{get _departureConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getDepartures(){if(!this._config?.entity)return[];return this.getEntityAttribute(this._config.entity,"departures")??[]}_isDelayed(t){if(!t.scheduled||!t.expected)return!1;const e=new Date(t.scheduled).getTime();return new Date(t.expected).getTime()-e>6e4}_isSoon(t){const e=t.display?.toLowerCase()??"",i=e.match(/^(\d+)\s*min/);return i?parseInt(i[1],10)<=5:"nu"===e}_getTimeClass(t){return this._isDelayed(t)?"time delayed":this._isSoon(t)?"time soon":"time"}getCardSize(){return 3}render(){if(!this.hass||!this._config?.entity)return V``;const t=this._getDepartures(),e=this._departureConfig.max_departures??6,i=t.slice(0,e),a=this._departureConfig.station_name??this._departureConfig.name??(t.length>0?t[0].stop_area?.name:void 0)??"Avgångar",r=this._departureConfig.icon??"mdi:train";return V`
+  `,t([gt({attribute:!1})],At.prototype,"_config",void 0),At=t([dt("glass-section")],At);let Mt=class extends vt{get _departureConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getDepartures(){if(!this._config?.entity)return[];return this.getEntityAttribute(this._config.entity,"departures")??[]}_isDelayed(t){if(!t.scheduled||!t.expected)return!1;const e=new Date(t.scheduled).getTime();return new Date(t.expected).getTime()-e>6e4}_isSoon(t){const e=t.display?.toLowerCase()??"",i=e.match(/^(\d+)\s*min/);return i?parseInt(i[1],10)<=5:"nu"===e}_getTimeClass(t){return this._isDelayed(t)?"time delayed":this._isSoon(t)?"time soon":"time"}getCardSize(){return 3}render(){if(!this.hass||!this._config?.entity)return V``;const t=this._getDepartures(),e=this._departureConfig.max_departures??6,i=t.slice(0,e),a=this._departureConfig.station_name??this._departureConfig.name??(t.length>0?t[0].stop_area?.name:void 0)??"Avgångar",s=this._departureConfig.icon??"mdi:train";return V`
       <div class="glass departure-card">
         <div class="departure-header">
           <div class="departure-icon">
-            <ha-icon .icon=${r}></ha-icon>
+            <ha-icon .icon=${s}></ha-icon>
           </div>
           <div class="station-name">${a}</div>
         </div>
@@ -1475,20 +1475,20 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       .tile.active .subtitle {
         color: var(--hub-amber-muted);
       }
-    `],t([gt({attribute:!1})],It.prototype,"room",void 0),customElements.define("hub-room-tile",It);const Ot=new Set(["off","unavailable","unknown","standby","idle"]);function Rt(t,e){for(const i of e){const e=t[i.entity];if(e&&"playing"===e.state)return{entity:e,name:i.name}}for(const i of e){const e=t[i.entity];if(e&&!Ot.has(e.state))return{entity:e,name:i.name}}return null}function Ut(t,e){if(!t)return 0;const i=t.attributes,a="number"==typeof i.media_duration?i.media_duration:0;if(a<=0)return 0;let r="number"==typeof i.media_position?i.media_position:0;const s="string"==typeof i.media_position_updated_at?Date.parse(i.media_position_updated_at):NaN;return"playing"!==t.state||Number.isNaN(s)||(r+=(e-s)/1e3),Math.max(0,Math.min(100,r/a*100))}class Bt extends vt{constructor(){super(...arguments),this.players=[],this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_goto(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"media"},bubbles:!0,composed:!0}))}_togglePlay(t,e){t.stopPropagation(),this.callService("media_player","media_play_pause",void 0,e)}render(){if(!this.hass)return V``;const t=Rt(this.hass.states,this.players??[]);if(!t)return V`
+    `],t([gt({attribute:!1})],It.prototype,"room",void 0),customElements.define("hub-room-tile",It);const Ot=new Set(["off","unavailable","unknown","standby","idle"]);function Rt(t,e){for(const i of e){const e=t[i.entity];if(e&&"playing"===e.state)return{entity:e,name:i.name}}for(const i of e){const e=t[i.entity];if(e&&!Ot.has(e.state))return{entity:e,name:i.name}}return null}function Ut(t,e){if(!t)return 0;const i=t.attributes,a="number"==typeof i.media_duration?i.media_duration:0;if(a<=0)return 0;let s="number"==typeof i.media_position?i.media_position:0;const r="string"==typeof i.media_position_updated_at?Date.parse(i.media_position_updated_at):NaN;return"playing"!==t.state||Number.isNaN(r)||(s+=(e-r)/1e3),Math.max(0,Math.min(100,s/a*100))}class Bt extends vt{constructor(){super(...arguments),this.players=[],this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_goto(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"media"},bubbles:!0,composed:!0}))}_togglePlay(t,e){t.stopPropagation(),this.callService("media_player","media_play_pause",void 0,e)}render(){if(!this.hass)return V``;const t=Rt(this.hass.states,this.players??[]);if(!t)return V`
         <div class="np idle" @click=${this._goto}>
           <span class="idle-ic">${Ft.note}</span>
           <b class="title dim">Ingenting spelas</b>
         </div>
-      `;const e=t.entity,i="playing"===e.state,a=e.attributes.media_title||t.name,r=e.attributes.media_artist||t.name,s=e.attributes.entity_picture,n=Ut(e,this._now);return V`
+      `;const e=t.entity,i="playing"===e.state,a=e.attributes.media_title||t.name,s=e.attributes.media_artist||t.name,r=e.attributes.entity_picture,n=Ut(e,this._now);return V`
       <div class="np ${i?"playing":""}" @click=${this._goto}>
         <div
           class="art"
-          style=${s?`background-image:url('${s}')`:""}
+          style=${r?`background-image:url('${r}')`:""}
         ></div>
         <div class="meta">
           <b class="title">${a}</b>
-          <small class="sub">${r}</small>
+          <small class="sub">${s}</small>
           <div class="bar"><div class="fill" style="width:${n}%"></div></div>
         </div>
         <button
@@ -1625,7 +1625,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           <div class="ring" style="--pct:0"></div>
           <div class="meta"><b class="val">Kcal · offline</b></div>
         </div>
-      `;const i="number"==typeof t.attributes.kcal_target?t.attributes.kcal_target:0,a=Vt(e,i),r=function(t){const e=t.protein_g;return"number"==typeof e?`${Math.round(e)} g protein`:""}(t.attributes);return V`
+      `;const i="number"==typeof t.attributes.kcal_target?t.attributes.kcal_target:0,a=Vt(e,i),s=function(t){const e=t.protein_g;return"number"==typeof e?`${Math.round(e)} g protein`:""}(t.attributes);return V`
       <div class="kc" @click=${this._goto}>
         <div class="ring" style="--pct:${a}"></div>
         <div class="meta">
@@ -1635,7 +1635,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
               ${i>0?`/ ${Lt.format(i)} kcal`:"kcal"}
             </span>
           </b>
-          ${r?V`<small class="sub">${r}</small>`:G}
+          ${s?V`<small class="sub">${s}</small>`:G}
         </div>
       </div>
     `}}function qt(t){const e=Date.parse(t.expected??t.scheduled??"");return Number.isNaN(e)?Number.POSITIVE_INFINITY:e}Xt.styles=[Tt,n`
@@ -1704,7 +1704,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         overflow: hidden;
         text-overflow: ellipsis;
       }
-    `],t([gt({attribute:!1})],Xt.prototype,"todayEntity",void 0),customElements.define("hub-kcal-ring",Xt);const Gt=new Set(["unavailable","unknown",""]);class Wt extends vt{_pendeltag(){const t=this.config.transit?.pendeltag;if(!t)return V`<span class="sub dim">–</span>`;const e=this.getEntity(t.next_entity),i=function(t){if(!t||Gt.has(t))return null;const e=new Date(t);return Number.isNaN(e.getTime())?null:`${String(e.getHours()).padStart(2,"0")}:${String(e.getMinutes()).padStart(2,"0")}`}(e?.state);if(!i)return V`<span class="sub dim">–</span>`;const a=this.getEntity(t.count_entity),r=a&&!Number.isNaN(Number(a.state))?Number(a.state):null;return V`<span class="sub">Nästa ${i}${null===r?"":` · ${r} ${1===r?"avgång":"avgångar"}`}</span>`}_bus(){const t=this.config.transit?.bus;if(!t)return V`<span class="sub dim">Inga avgångar idag</span>`;const e=this.getEntity(t.entity),i=function(t,e,i){if(!Array.isArray(t))return[];const a=i?new RegExp(i,"i"):null;return t.filter(t=>t?.line?.designation===e).filter(t=>!(a&&t.destination&&a.test(t.destination))).sort((t,e)=>qt(t)-qt(e))}(e?.attributes.departures??[],t.line,t.exclude_destination).slice(0,3);return 0===i.length?V`<span class="sub dim">Inga avgångar idag</span>`:V`<span class="sub"
+    `],t([gt({attribute:!1})],Xt.prototype,"todayEntity",void 0),customElements.define("hub-kcal-ring",Xt);const Gt=new Set(["unavailable","unknown",""]);class Wt extends vt{_pendeltag(){const t=this.config.transit?.pendeltag;if(!t)return V`<span class="sub dim">–</span>`;const e=this.getEntity(t.next_entity),i=function(t){if(!t||Gt.has(t))return null;const e=new Date(t);return Number.isNaN(e.getTime())?null:`${String(e.getHours()).padStart(2,"0")}:${String(e.getMinutes()).padStart(2,"0")}`}(e?.state);if(!i)return V`<span class="sub dim">–</span>`;const a=this.getEntity(t.count_entity),s=a&&!Number.isNaN(Number(a.state))?Number(a.state):null;return V`<span class="sub">Nästa ${i}${null===s?"":` · ${s} ${1===s?"avgång":"avgångar"}`}</span>`}_bus(){const t=this.config.transit?.bus;if(!t)return V`<span class="sub dim">Inga avgångar idag</span>`;const e=this.getEntity(t.entity),i=function(t,e,i){if(!Array.isArray(t))return[];const a=i?new RegExp(i,"i"):null;return t.filter(t=>t?.line?.designation===e).filter(t=>!(a&&t.destination&&a.test(t.destination))).sort((t,e)=>qt(t)-qt(e))}(e?.attributes.departures??[],t.line,t.exclude_destination).slice(0,3);return 0===i.length?V`<span class="sub dim">Inga avgångar idag</span>`:V`<span class="sub"
       >${i.map((t,e)=>V`${e>0?V`<span class="sep">·</span>`:""}<span
             class="dep ${t.state&&"EXPECTED"!==t.state?"delayed":""}"
             >${t.display??"–"}</span
@@ -1803,21 +1803,21 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         color: var(--hub-text-dim);
         margin: 0 6px;
       }
-    `],t([gt({attribute:!1})],Wt.prototype,"config",void 0),customElements.define("hub-transit-card",Wt);const Yt=36e5,Kt=new Set(["unavailable","unknown","none",""]);function Zt(t){if(!Array.isArray(t))return[];const e=[];for(const i of t){if(!i||"object"!=typeof i)continue;const t=i,a="number"==typeof t.total?t.total:Number(t.total);if(!Number.isFinite(a)||"string"!=typeof t.startsAt)continue;const r=new Date(t.startsAt);Number.isNaN(r.getTime())||e.push({start:r,ore:100*a})}return e.sort((t,e)=>t.start.getTime()-e.start.getTime())}function Jt(t){if(t.length<3)return null;let e=1/0,i=-1;for(let a=0;a+3<=t.length;a++){let r=!0,s=t[a].ore;for(let e=a+1;e<a+3;e++){if(t[e].start.getTime()-t[e-1].start.getTime()!==Yt){r=!1;break}s+=t[e].ore}r&&s<e&&(e=s,i=a)}return i<0?null:{start:t[i].start,end:new Date(t[i+3-1].start.getTime()+Yt)}}function Qt(t,e,i){if(Kt.has(String(e??"").toLowerCase()))return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const a=Zt(t?.today),r=Zt(t?.tomorrow);if(0===a.length&&0===r.length)return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const s=[...a,...r].sort((t,e)=>t.start.getTime()-e.start.getTime()),n=i.getTime(),o=s.find(t=>t.start.getTime()<=n&&n<t.start.getTime()+Yt)??null;let l="normal";if(o&&a.length){const t=a.reduce((t,e)=>t+e.ore,0)/a.length;if(t>0){const e=o.ore/t;e<.85?l="låg":e>1.15&&(l="hög")}}const c=s.filter(t=>t.start.getTime()+Yt>n);return{now:o,level:l,today:a,tomorrow:r,cheapestWindow:Jt(c)}}const te={"låg":"lågt",normal:"normalt","hög":"högt"};class ee extends vt{constructor(){super(...arguments),this._now=new Date,this._open=()=>{this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"energi"},bubbles:!0,composed:!0}))}}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;return t?Qt(t.attributes,t.state,this._now):null}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_bars(t){const e=function(t,e){const i=[...t.today,...t.tomorrow].sort((t,e)=>t.start.getTime()-e.start.getTime()),a=e.getTime(),r=t.cheapestWindow,s=r?r.start.getTime():null,n=r?r.end.getTime():null;return i.filter(t=>t.start.getTime()+Yt>a).slice(0,12).map(t=>{const e=t.start.getTime();return{start:t.start,ore:t.ore,current:e<=a&&a<e+Yt,cheap:null!==s&&e>=s&&e<n}})}(t,this._now);if(0===e.length)return V`<div class="waiting">Väntar på prisdata</div>`;const i=e.map(t=>t.ore),a=Math.min(...i),r=Math.max(...i)-a;return V`<div class="bars">
+    `],t([gt({attribute:!1})],Wt.prototype,"config",void 0),customElements.define("hub-transit-card",Wt);const Yt=36e5,Kt=new Set(["unavailable","unknown","none",""]);function Zt(t){if(!Array.isArray(t))return[];const e=[];for(const i of t){if(!i||"object"!=typeof i)continue;const t=i,a="number"==typeof t.total?t.total:Number(t.total);if(!Number.isFinite(a)||"string"!=typeof t.startsAt)continue;const s=new Date(t.startsAt);Number.isNaN(s.getTime())||e.push({start:s,ore:100*a})}return e.sort((t,e)=>t.start.getTime()-e.start.getTime())}function Qt(t){if(t.length<3)return null;let e=1/0,i=-1;for(let a=0;a+3<=t.length;a++){let s=!0,r=t[a].ore;for(let e=a+1;e<a+3;e++){if(t[e].start.getTime()-t[e-1].start.getTime()!==Yt){s=!1;break}r+=t[e].ore}s&&r<e&&(e=r,i=a)}return i<0?null:{start:t[i].start,end:new Date(t[i+3-1].start.getTime()+Yt)}}function Jt(t,e,i){if(Kt.has(String(e??"").toLowerCase()))return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const a=Zt(t?.today),s=Zt(t?.tomorrow);if(0===a.length&&0===s.length)return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const r=[...a,...s].sort((t,e)=>t.start.getTime()-e.start.getTime()),n=i.getTime(),o=r.find(t=>t.start.getTime()<=n&&n<t.start.getTime()+Yt)??null;let l="normal";if(o&&a.length){const t=a.reduce((t,e)=>t+e.ore,0)/a.length;if(t>0){const e=o.ore/t;e<.85?l="låg":e>1.15&&(l="hög")}}const c=r.filter(t=>t.start.getTime()+Yt>n);return{now:o,level:l,today:a,tomorrow:s,cheapestWindow:Qt(c)}}const te={"låg":"lågt",normal:"normalt","hög":"högt"};class ee extends vt{constructor(){super(...arguments),this._now=new Date,this._open=()=>{this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"energi"},bubbles:!0,composed:!0}))}}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;return t?Jt(t.attributes,t.state,this._now):null}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_bars(t){const e=function(t,e){const i=[...t.today,...t.tomorrow].sort((t,e)=>t.start.getTime()-e.start.getTime()),a=e.getTime(),s=t.cheapestWindow,r=s?s.start.getTime():null,n=s?s.end.getTime():null;return i.filter(t=>t.start.getTime()+Yt>a).slice(0,12).map(t=>{const e=t.start.getTime();return{start:t.start,ore:t.ore,current:e<=a&&a<e+Yt,cheap:null!==r&&e>=r&&e<n}})}(t,this._now);if(0===e.length)return V`<div class="waiting">Väntar på prisdata</div>`;const i=e.map(t=>t.ore),a=Math.min(...i),s=Math.max(...i)-a;return V`<div class="bars">
       ${e.map(t=>{return V`<div
           class="bar ${t.current?"current":t.cheap?"cheap":""}"
-          style="height:${(e=t.ore,r>0?100*(.2+(e-a)/r*.8):60).toFixed(1)}%"
+          style="height:${(e=t.ore,s>0?100*(.2+(e-a)/s*.8):60).toFixed(1)}%"
         ></div>`;var e})}
-    </div>`}render(){if(!this.hass||!this.config)return V``;const t=this._model(),e=this._currentOre(t),i=!!t&&t.today.length>0,a=t?.now?t.level:"normal",r="låg"===a?"low":"hög"===a?"high":"",s=i&&!!t?.now&&"normal"!==a,n=t?.cheapestWindow,o=n?V`<span class="hint"
+    </div>`}render(){if(!this.hass||!this.config)return V``;const t=this._model(),e=this._currentOre(t),i=!!t&&t.today.length>0,a=t?.now?t.level:"normal",s="låg"===a?"low":"hög"===a?"high":"",r=i&&!!t?.now&&"normal"!==a,n=t?.cheapestWindow,o=n?V`<span class="hint"
           ><span class="ic">${Ft.clock}</span>Billigast ${n.start.getHours()}–${n.end.getHours()}</span
         >`:G;return V`
-      <button class="card" aria-label=${null===e?"Elpris, öppna energisidan":`Elpris ${e} öre just nu${s?`, ${te[a]}`:""}, öppna energisidan`} @click=${this._open}>
+      <button class="card" aria-label=${null===e?"Elpris, öppna energisidan":`Elpris ${e} öre just nu${r?`, ${te[a]}`:""}, öppna energisidan`} @click=${this._open}>
         <div class="head">
           <div class="lead">
             <span class="ic">${Ft.bolt}</span>
-            <span class="num ${r}">${null===e?"—":e}</span>
+            <span class="num ${s}">${null===e?"—":e}</span>
             <span class="unit">öre</span>
-            ${s?V`<span class="level ${r}">· ${te[a]}</span>`:G}
+            ${r?V`<span class="level ${s}">· ${te[a]}</span>`:G}
           </div>
           ${o}
         </div>
@@ -1948,7 +1948,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         color: var(--hub-text-dim);
         letter-spacing: 0.01em;
       }
-    `],t([gt({attribute:!1})],ee.prototype,"config",void 0),t([bt()],ee.prototype,"_now",void 0),customElements.define("hub-energy-strip",ee);const ie={cleaning:"Städar",returning:"Åker hem",paused:"Pausad",error:"Fel",idle:"Väntar"};class ae extends vt{get _chips(){const t=this.config,e=[],i=t.lights_count_entity?this.getEntity(t.lights_count_entity):void 0,a=i&&!Number.isNaN(Number(i.state))?Number(i.state):null;if(e.push({icon:"lamp",label:null===a?"—":`${a} ${1===a?"lampa":"lampor"}`,tone:"amber",active:(a??0)>0}),t.vacuum_entity){const i=this.getEntity(t.vacuum_entity);i&&"docked"!==i.state&&"unavailable"!==i.state&&"unknown"!==i.state&&e.push({icon:"vacuum",label:ie[i.state]??"Städar",tone:"error"===i.state?"coral":"neutral",active:!0})}if(t.person_entity){const i=this.getEntity(t.person_entity),a=(i?.attributes.friendly_name||"Philip").split(" ")[0],r="home"===i?.state;e.push({icon:"home",label:`${a} ${r?"hemma":"borta"}`,tone:"neutral",active:!1})}return e}render(){if(!this.hass||!this.config)return V``;const t=this.config;return V`
+    `],t([gt({attribute:!1})],ee.prototype,"config",void 0),t([bt()],ee.prototype,"_now",void 0),customElements.define("hub-energy-strip",ee);const ie={cleaning:"Städar",returning:"Åker hem",paused:"Pausad",error:"Fel",idle:"Väntar"};class ae extends vt{get _chips(){const t=this.config,e=[],i=t.lights_count_entity?this.getEntity(t.lights_count_entity):void 0,a=i&&!Number.isNaN(Number(i.state))?Number(i.state):null;if(e.push({icon:"lamp",label:null===a?"—":`${a} ${1===a?"lampa":"lampor"}`,tone:"amber",active:(a??0)>0}),t.vacuum_entity){const i=this.getEntity(t.vacuum_entity);i&&"docked"!==i.state&&"unavailable"!==i.state&&"unknown"!==i.state&&e.push({icon:"vacuum",label:ie[i.state]??"Städar",tone:"error"===i.state?"coral":"neutral",active:!0})}if(t.person_entity){const i=this.getEntity(t.person_entity),a=(i?.attributes.friendly_name||"Philip").split(" ")[0],s="home"===i?.state;e.push({icon:"home",label:`${a} ${s?"hemma":"borta"}`,tone:"neutral",active:!1})}return e}render(){if(!this.hass||!this.config)return V``;const t=this.config;return V`
       <div class="page">
         <div class="top">
           <hub-clock .hass=${this.hass} .weatherEntity=${t.weather_entity}></hub-clock>
@@ -2087,7 +2087,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           flex: 1;
         }
       }
-    `],t([gt({attribute:!1})],ae.prototype,"config",void 0),customElements.define("hub-home-page",ae);const re=new Set(["unavailable","unknown"]);function se(t){return!!t&&!re.has(t.state)}class ne extends vt{constructor(){super(...arguments),this._armed=!1,this._flash=!1,this._onAllOff=()=>{if(!this._armed)return this._armed=!0,void 0!==this._armTimer&&clearTimeout(this._armTimer),void(this._armTimer=window.setTimeout(()=>{this._armed=!1,this._armTimer=void 0},3e3));void 0!==this._armTimer&&clearTimeout(this._armTimer),this._armTimer=void 0,this._armed=!1,this._flash=!0,this.callService("light","turn_off",void 0,"all"),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)}}disconnectedCallback(){super.disconnectedCallback(),this._clearTimers()}_clearTimers(){void 0!==this._armTimer&&clearTimeout(this._armTimer),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._armTimer=void 0,this._flashTimer=void 0,this._armed=!1,this._flash=!1}_activateScene(t){this.callService("scene","turn_on",void 0,t)}_lightRow(t){return se(this.hass.states[t.entity])?V`
+    `],t([gt({attribute:!1})],ae.prototype,"config",void 0),customElements.define("hub-home-page",ae);const se=new Set(["unavailable","unknown"]);function re(t){return!!t&&!se.has(t.state)}class ne extends vt{constructor(){super(...arguments),this._armed=!1,this._flash=!1,this._onAllOff=()=>{if(!this._armed)return this._armed=!0,void 0!==this._armTimer&&clearTimeout(this._armTimer),void(this._armTimer=window.setTimeout(()=>{this._armed=!1,this._armTimer=void 0},3e3));void 0!==this._armTimer&&clearTimeout(this._armTimer),this._armTimer=void 0,this._armed=!1,this._flash=!0,this.callService("light","turn_off",void 0,"all"),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)}}disconnectedCallback(){super.disconnectedCallback(),this._clearTimers()}_clearTimers(){void 0!==this._armTimer&&clearTimeout(this._armTimer),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._armTimer=void 0,this._flashTimer=void 0,this._armed=!1,this._flash=!1}_activateScene(t){this.callService("scene","turn_on",void 0,t)}_lightRow(t){return re(this.hass.states[t.entity])?V`
       <glass-light-slider
         .hass=${this.hass}
         ._config=${{type:"glass-light-slider",entity:t.entity,name:t.name}}
@@ -2101,7 +2101,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       <button class="scene-chip" @click=${()=>this._activateScene(t.entity)}>
         ${t.name}
       </button>
-    `}_roomCard(t){const e=function(t,e){const i=t.lights.filter(t=>"on"===e[t.entity]?.state),a=i.length;if(0===a)return{onCount:0,pct:null,label:"Släckt"};const r=i.map(t=>e[t.entity]?.attributes.brightness).filter(t=>"number"==typeof t),s=r.length?Math.round(r.reduce((t,e)=>t+e,0)/r.length/255*100):null,n=1===a?"1 lampa":`${a} lampor`;return{onCount:a,pct:s,label:null!==s?`${n} · ${s} %`:n}}(t,this.hass.states),i=e.onCount>0,a=Ft[t.icon];return V`
+    `}_roomCard(t){const e=function(t,e){const i=t.lights.filter(t=>"on"===e[t.entity]?.state),a=i.length;if(0===a)return{onCount:0,pct:null,label:"Släckt"};const s=i.map(t=>e[t.entity]?.attributes.brightness).filter(t=>"number"==typeof t),r=s.length?Math.round(s.reduce((t,e)=>t+e,0)/s.length/255*100):null,n=1===a?"1 lampa":`${a} lampor`;return{onCount:a,pct:r,label:null!==r?`${n} · ${r} %`:n}}(t,this.hass.states),i=e.onCount>0,a=Ft[t.icon];return V`
       <div class="room ${i?"active":""}">
         <div class="room-head">
           <span class="room-ic">${a??""}</span>
@@ -2113,7 +2113,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         <div class="lights">${t.lights.map(t=>this._lightRow(t))}</div>
         ${t.scenes?.length?V`<div class="scenes">${t.scenes.map(t=>this._sceneChip(t))}</div>`:G}
       </div>
-    `}render(){if(!this.hass||!this.config)return V``;const t=this.config,e=function(t,e){let i=0,a=0;for(const r of t.rooms??[])for(const t of r.lights){const r=e[t.entity];se(r)&&(a+=1,"on"===r.state&&(i+=1))}return{on:i,total:a}}(t,this.hass.states);return V`
+    `}render(){if(!this.hass||!this.config)return V``;const t=this.config,e=function(t,e){let i=0,a=0;for(const s of t.rooms??[])for(const t of s.lights){const s=e[t.entity];re(s)&&(a+=1,"on"===s.state&&(i+=1))}return{on:i,total:a}}(t,this.hass.states);return V`
       <div class="page">
         <div class="header">
           <div class="heading">
@@ -2376,15 +2376,15 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         border-color: var(--hub-amber-border);
         color: var(--hub-amber-text);
       }
-    `],t([gt({attribute:!1})],ne.prototype,"config",void 0),t([bt()],ne.prototype,"_armed",void 0),t([bt()],ne.prototype,"_flash",void 0),customElements.define("hub-lights-page",ne);class oe extends ct{_slots(){const t=this.model,e=t?.today??[],i=t?.tomorrow??[],a=t?.now?t.now.start.getTime():null,r=t?.cheapestWindow,s=r?r.start.getTime():null,n=r?r.end.getTime():null,o=t=>{const e=t.start.getTime();let i="future",r=null;return null!==a&&(e<a?i="past":e===a&&(i="current",r=String(Math.round(t.ore)))),null!==s&&e>=s&&e<n&&(i+=" cheap"),{kind:"bar",hour:t,cls:i,label:r}},l=e.map(o);if(i.length){l.push({kind:"divider"});for(const t of i)l.push(o(t))}return l}_bounds(){const t=[...this.model?.today??[],...this.model?.tomorrow??[]].map(t=>t.ore);return{min:Math.min(...t),max:Math.max(...t)}}_height(t,e,i){const a=i-e;return!Number.isFinite(a)||a<=0?60:100*(.14+(t-e)/a*.86)}_tint(t,e,i){const a=i-e,r=a>0?(i-t)/a:.5;return`color-mix(in srgb, var(--hub-green) ${Math.round(22+58*r)}%, var(--hub-track))`}_tick(t){const e=t.start.getHours();return V`<span class="tick ${0===e?"day":""}"
+    `],t([gt({attribute:!1})],ne.prototype,"config",void 0),t([bt()],ne.prototype,"_armed",void 0),t([bt()],ne.prototype,"_flash",void 0),customElements.define("hub-lights-page",ne);class oe extends ct{_slots(){const t=this.model,e=t?.today??[],i=t?.tomorrow??[],a=t?.now?t.now.start.getTime():null,s=t?.cheapestWindow,r=s?s.start.getTime():null,n=s?s.end.getTime():null,o=t=>{const e=t.start.getTime();let i="future",s=null;return null!==a&&(e<a?i="past":e===a&&(i="current",s=String(Math.round(t.ore)))),null!==r&&e>=r&&e<n&&(i+=" cheap"),{kind:"bar",hour:t,cls:i,label:s}},l=e.map(o);if(i.length){l.push({kind:"divider"});for(const t of i)l.push(o(t))}return l}_bounds(){const t=[...this.model?.today??[],...this.model?.tomorrow??[]].map(t=>t.ore);return{min:Math.min(...t),max:Math.max(...t)}}_height(t,e,i){const a=i-e;return!Number.isFinite(a)||a<=0?60:100*(.14+(t-e)/a*.86)}_tint(t,e,i){const a=i-e,s=a>0?(i-t)/a:.5;return`color-mix(in srgb, var(--hub-green) ${Math.round(22+58*s)}%, var(--hub-track))`}_tick(t){const e=t.start.getHours();return V`<span class="tick ${0===e?"day":""}"
       >${e%6==0?String(e).padStart(2,"0"):""}</span
     >`}render(){if(!this.model||0===this.model.today.length)return V``;const t=this._slots(),{min:e,max:i}=this._bounds(),a=t.map(t=>"divider"===t.kind?"8px":"minmax(0, 1fr)").join(" ");return V`
       <div class="chart">
         <div class="plot" style="grid-template-columns:${a}">
-          ${t.map(t=>{if("divider"===t.kind)return V`<div class="divider"></div>`;const a=this._height(t.hour.ore,e,i),r=t.cls.startsWith("future")?`background:${this._tint(t.hour.ore,e,i)}`:"";return V`
+          ${t.map(t=>{if("divider"===t.kind)return V`<div class="divider"></div>`;const a=this._height(t.hour.ore,e,i),s=t.cls.startsWith("future")?`background:${this._tint(t.hour.ore,e,i)}`:"";return V`
               <div class="cell ${t.cls}" style="--bar-h:${a}%">
                 ${t.label?V`<span class="cell-label">${t.label}</span>`:G}
-                <div class="bar" style="height:${a}%;${r}"></div>
+                <div class="bar" style="height:${a}%;${s}"></div>
               </div>
             `})}
         </div>
@@ -2469,7 +2469,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         color: var(--hub-text-muted);
         font-weight: 600;
       }
-    `],t([gt({attribute:!1})],oe.prototype,"model",void 0),customElements.define("hub-price-chart",oe);const le={"låg":"lågt",normal:"normalt","hög":"högt"};class ce extends vt{constructor(){super(...arguments),this._now=new Date}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;return t?Qt(t.attributes,t.state,this._now):null}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_chips(t){const e=this.config,i=[],a=e.co2_entity?this.getEntity(e.co2_entity):void 0;a&&!Number.isNaN(Number(a.state))&&i.push({icon:"leaf",label:`${Math.round(Number(a.state))} g CO₂`,tone:"green"});const r=e.fossil_entity?this.getEntity(e.fossil_entity):void 0;if(r&&!Number.isNaN(Number(r.state))){const t=Math.round(Number(r.state));i.push({icon:"leaf",label:`${t} % fossilt`,tone:t>=40?"coral":"green"})}const s=t?.cheapestWindow;if(s){const t=s.start.getHours(),e=s.end.getHours();i.push({icon:"clock",label:`Billigast ${t}–${e}`,tone:"green"})}return i}render(){if(!this.hass||!this.config)return V``;const t=this._model(),e=this._currentOre(t),i=t?.now?t.level:"normal",a=!!t&&t.today.length>0,r=this._chips(t);return V`
+    `],t([gt({attribute:!1})],oe.prototype,"model",void 0),customElements.define("hub-price-chart",oe);const le={"låg":"lågt",normal:"normalt","hög":"högt"};class ce extends vt{constructor(){super(...arguments),this._now=new Date}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;return t?Jt(t.attributes,t.state,this._now):null}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_chips(t){const e=this.config,i=[],a=e.co2_entity?this.getEntity(e.co2_entity):void 0;a&&!Number.isNaN(Number(a.state))&&i.push({icon:"leaf",label:`${Math.round(Number(a.state))} g CO₂`,tone:"green"});const s=e.fossil_entity?this.getEntity(e.fossil_entity):void 0;if(s&&!Number.isNaN(Number(s.state))){const t=Math.round(Number(s.state));i.push({icon:"leaf",label:`${t} % fossilt`,tone:t>=40?"coral":"green"})}const r=t?.cheapestWindow;if(r){const t=r.start.getHours(),e=r.end.getHours();i.push({icon:"clock",label:`Billigast ${t}–${e}`,tone:"green"})}return i}render(){if(!this.hass||!this.config)return V``;const t=this._model(),e=this._currentOre(t),i=t?.now?t.level:"normal",a=!!t&&t.today.length>0,s=this._chips(t);return V`
       <div class="page">
         <div class="header">
           <div class="price">
@@ -2489,7 +2489,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         </div>
 
         <div class="chips">
-          ${r.map(t=>V`
+          ${s.map(t=>V`
               <hub-status-chip
                 .icon=${t.icon}
                 .label=${t.label}
@@ -2499,7 +2499,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
             `)}
         </div>
       </div>
-    `}}async function he(t){if(!t)return null;try{const i=await(e=t,new Promise((t,i)=>{const a=new Image;a.crossOrigin="anonymous",a.onload=()=>t(a),a.onerror=()=>i(new Error("image load failed")),a.src=e})),a=document.createElement("canvas");a.width=8,a.height=8;const r=a.getContext("2d");if(!r)return null;r.drawImage(i,0,0,8,8);const{data:s}=r.getImageData(0,0,8,8);let n=0,o=0,l=0,c=0;for(let t=0;t<s.length;t+=4){0!==s[t+3]&&(n+=s[t],o+=s[t+1],l+=s[t+2],c+=1)}return 0===c?null:[Math.round(n/c),Math.round(o/c),Math.round(l/c)]}catch{return null}var e}ce.styles=[Tt,n`
+    `}}async function he(t){if(!t)return null;try{const i=await(e=t,new Promise((t,i)=>{const a=new Image;a.crossOrigin="anonymous",a.onload=()=>t(a),a.onerror=()=>i(new Error("image load failed")),a.src=e})),a=document.createElement("canvas");a.width=8,a.height=8;const s=a.getContext("2d");if(!s)return null;s.drawImage(i,0,0,8,8);const{data:r}=s.getImageData(0,0,8,8);let n=0,o=0,l=0,c=0;for(let t=0;t<r.length;t+=4){0!==r[t+3]&&(n+=r[t],o+=r[t+1],l+=r[t+2],c+=1)}return 0===c?null:[Math.round(n/c),Math.round(o/c),Math.round(l/c)]}catch{return null}var e}ce.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -2578,8 +2578,8 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         gap: 8px;
         padding-bottom: 44px; /* clear the page dots */
       }
-    `],t([gt({attribute:!1})],ce.prototype,"config",void 0),t([bt()],ce.prototype,"_now",void 0),customElements.define("hub-energy-page",ce);const de=new Set(["unavailable","unknown"]);class pe extends vt{constructor(){super(...arguments),this.groupMaster=null,this._drag=null}_entity(){return this.hass?.states[this.player.entity]}_volume(){if(null!==this._drag)return this._drag;const t=this._entity()?.attributes.volume_level;return"number"==typeof t?t:0}_onInput(t){this._drag=Number(t.target.value)}_onChange(t){const e=Number(t.target.value);this._drag=null,this.callService("media_player","volume_set",{volume_level:e},this.player.entity)}_stop(t){t.stopPropagation()}_toggleGroup(t){this.groupMaster&&(t?this.callService("media_player","unjoin",void 0,this.player.entity):this.callService("media_player","join",{group_members:[this.player.entity]},this.groupMaster))}render(){if(!this.hass||!this.player)return V``;const t=this._entity(),e=!t||de.has(t.state),i=this._volume(),a=Math.round(100*i),r=!e&&i>0,s=this.player.entity===this.groupMaster,n=!s&&!!this.groupMaster&&(o=this.hass.states[this.groupMaster]?.attributes.group_members,l=this.player.entity,Array.isArray(o)&&o.includes(l));var o,l;const c=`linear-gradient(90deg, var(--hub-teal) 0 ${a}%, var(--hub-track) ${a}% 100%)`;return V`
-      <div class="row ${r?"active":""}">
+    `],t([gt({attribute:!1})],ce.prototype,"config",void 0),t([bt()],ce.prototype,"_now",void 0),customElements.define("hub-energy-page",ce);const de=new Set(["unavailable","unknown"]);class pe extends vt{constructor(){super(...arguments),this.groupMaster=null,this._drag=null}_entity(){return this.hass?.states[this.player.entity]}_volume(){if(null!==this._drag)return this._drag;const t=this._entity()?.attributes.volume_level;return"number"==typeof t?t:0}_onInput(t){this._drag=Number(t.target.value)}_onChange(t){const e=Number(t.target.value);this._drag=null,this.callService("media_player","volume_set",{volume_level:e},this.player.entity)}_stop(t){t.stopPropagation()}_toggleGroup(t){this.groupMaster&&(t?this.callService("media_player","unjoin",void 0,this.player.entity):this.callService("media_player","join",{group_members:[this.player.entity]},this.groupMaster))}render(){if(!this.hass||!this.player)return V``;const t=this._entity(),e=!t||de.has(t.state),i=this._volume(),a=Math.round(100*i),s=!e&&i>0,r=this.player.entity===this.groupMaster,n=!r&&!!this.groupMaster&&(o=this.hass.states[this.groupMaster]?.attributes.group_members,l=this.player.entity,Array.isArray(o)&&o.includes(l));var o,l;const c=`linear-gradient(90deg, var(--hub-teal) 0 ${a}%, var(--hub-track) ${a}% 100%)`;return V`
+      <div class="row ${s?"active":""}">
         <span class="ic">${Ft.speaker}</span>
         <div class="main">
           <div class="top">
@@ -2605,7 +2605,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
                 />
               `}
         </div>
-        ${e||s?G:V`
+        ${e||r?G:V`
               <button
                 class="chip ${n?"on":""}"
                 @click=${()=>this._toggleGroup(n)}
@@ -2761,12 +2761,12 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         font: 500 12.5px var(--hub-font-body);
         margin-left: auto;
       }
-    `],t([gt({attribute:!1})],pe.prototype,"player",void 0),t([gt({attribute:!1})],pe.prototype,"groupMaster",void 0),t([bt()],pe.prototype,"_drag",void 0),customElements.define("hub-volume-row",pe);const ue=new Set(["off","unavailable","unknown","standby","idle"]);function ge(t){const e=Number.isFinite(t)&&t>0?t:0,i=Math.floor(e/60),a=Math.floor(e%60);return`${i}:${String(a).padStart(2,"0")}`}class be extends vt{constructor(){super(...arguments),this._sel=null,this._rgb=null,this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}get _players(){return this.config?.media_players??[]}_selId(){if(this._sel)return this._sel;const t=Rt(this.hass?.states??{},this._players);return t?.entity.entity_id??this._players[0]?.entity??null}_theme(){const t=this.getRootNode()?.host;return"dag"===t?.getAttribute("data-theme")?"dag":"natt"}updated(t){const e=this._selId(),i=e?this.hass?.states[e]?.attributes.entity_picture:void 0;i!==this._pic&&(this._pic=i,i?he(i).then(t=>{this._pic===i&&(this._rgb=t)}):this._rgb=null)}_transport(t,e){this.callService("media_player",t,void 0,e)}_hero(t,e){const i="playing"===t.state,a=t.attributes.media_title||e,r=t.attributes.media_artist||e,s=t.attributes.entity_picture,n="number"==typeof t.attributes.media_duration?t.attributes.media_duration:0,o=Ut(t,this._now),l=o/100*n,c=t.entity_id;return V`
+    `],t([gt({attribute:!1})],pe.prototype,"player",void 0),t([gt({attribute:!1})],pe.prototype,"groupMaster",void 0),t([bt()],pe.prototype,"_drag",void 0),customElements.define("hub-volume-row",pe);const ue=new Set(["off","unavailable","unknown","standby","idle"]);function ge(t){const e=Number.isFinite(t)&&t>0?t:0,i=Math.floor(e/60),a=Math.floor(e%60);return`${i}:${String(a).padStart(2,"0")}`}class be extends vt{constructor(){super(...arguments),this._sel=null,this._rgb=null,this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}get _players(){return this.config?.media_players??[]}_selId(){if(this._sel)return this._sel;const t=Rt(this.hass?.states??{},this._players);return t?.entity.entity_id??this._players[0]?.entity??null}_theme(){const t=this.getRootNode()?.host;return"dag"===t?.getAttribute("data-theme")?"dag":"natt"}updated(t){const e=this._selId(),i=e?this.hass?.states[e]?.attributes.entity_picture:void 0;i!==this._pic&&(this._pic=i,i?he(i).then(t=>{this._pic===i&&(this._rgb=t)}):this._rgb=null)}_transport(t,e){this.callService("media_player",t,void 0,e)}_hero(t,e){const i="playing"===t.state,a=t.attributes.media_title||e,s=t.attributes.media_artist||e,r=t.attributes.entity_picture,n="number"==typeof t.attributes.media_duration?t.attributes.media_duration:0,o=Ut(t,this._now),l=o/100*n,c=t.entity_id;return V`
       <div class="hero">
-        <div class="art" style=${s?`background-image:url('${s}')`:""}></div>
+        <div class="art" style=${r?`background-image:url('${r}')`:""}></div>
         <div class="meta">
           <div class="title">${a}</div>
-          <div class="artist">${r}</div>
+          <div class="artist">${s}</div>
         </div>
         ${n>0?V`
               <div class="progress">
@@ -2806,7 +2806,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         <span class="qic">${Ft.note}</span>
         <span class="qtext">Ingenting spelas</span>
       </div>
-    `}render(){if(!this.hass||!this.config)return V``;const t=this._players,e=this.hass.states,i=this._selId(),a=i?e[i]:void 0,r=t.find(t=>t.entity===i)?.name??"",s=!!a&&!ue.has(a.state),n=function(t,e){for(const i of e)if("playing"===t[i.entity]?.state)return i.entity;return e[0]?.entity??null}(e,t),o=function(t,e){if(!t)return"none";const[i,a,r]=t;return`radial-gradient(80% 60% at 30% 20%, rgba(${i}, ${a}, ${r}, ${"natt"===e?"0.22":"0.12"}), transparent 70%)`}(this._rgb,this._theme());return V`
+    `}render(){if(!this.hass||!this.config)return V``;const t=this._players,e=this.hass.states,i=this._selId(),a=i?e[i]:void 0,s=t.find(t=>t.entity===i)?.name??"",r=!!a&&!ue.has(a.state),n=function(t,e){for(const i of e)if("playing"===t[i.entity]?.state)return i.entity;return e[0]?.entity??null}(e,t),o=function(t,e){if(!t)return"none";const[i,a,s]=t;return`radial-gradient(80% 60% at 30% 20%, rgba(${i}, ${a}, ${s}, ${"natt"===e?"0.22":"0.12"}), transparent 70%)`}(this._rgb,this._theme());return V`
       <div class="page">
         <div class="bleed" style=${`background:${o}`}></div>
         <div class="content">
@@ -2823,9 +2823,9 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
                 </div>
               `:G}
 
-          ${s?this._hero(a,r):this._quiet()}
+          ${r?this._hero(a,s):this._quiet()}
 
-          <div class="speakers ${s?"":"pushed"}">
+          <div class="speakers ${r?"":"pushed"}">
             ${t.map(t=>V`
                 <hub-volume-row
                   .hass=${this.hass}
@@ -3042,7 +3042,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       .speakers.pushed {
         margin-top: auto;
       }
-    `],t([gt({attribute:!1})],be.prototype,"config",void 0),t([bt()],be.prototype,"_sel",void 0),t([bt()],be.prototype,"_rgb",void 0),t([bt()],be.prototype,"_now",void 0),customElements.define("hub-media-page",be);let me=0;class ve extends ct{constructor(){super(...arguments),this.points=[],this.stroke="--hub-lavender",this.width=560,this.height=130,this._gid="hub-spark-"+me++}render(){const t=function(t,e,i,a=.1){const r=t.length;if(0===r)return[];if(1===r)return[{x:e,y:i/2}];const s=t.map(t=>t.value),n=Math.min(...s),o=Math.max(...s)-n,l=n-o*a,c=o*(1+2*a);return t.map((t,a)=>({x:a/(r-1)*e,y:o<=0?i/2:i-(t.value-l)/c*i}))}(this.points,this.width,this.height);if(0===t.length)return V``;const e=t.map(t=>`${t.x.toFixed(2)},${t.y.toFixed(2)}`).join(" "),i=t[t.length-1],a=t[0],r=t.length>=2,s=`${e} ${i.x.toFixed(2)},${this.height} ${a.x.toFixed(2)},${this.height}`;return V`
+    `],t([gt({attribute:!1})],be.prototype,"config",void 0),t([bt()],be.prototype,"_sel",void 0),t([bt()],be.prototype,"_rgb",void 0),t([bt()],be.prototype,"_now",void 0),customElements.define("hub-media-page",be);let me=0;class ve extends ct{constructor(){super(...arguments),this.points=[],this.stroke="--hub-lavender",this.width=560,this.height=130,this._gid="hub-spark-"+me++}render(){const t=function(t,e,i,a=.1){const s=t.length;if(0===s)return[];if(1===s)return[{x:e,y:i/2}];const r=t.map(t=>t.value),n=Math.min(...r),o=Math.max(...r)-n,l=n-o*a,c=o*(1+2*a);return t.map((t,a)=>({x:a/(s-1)*e,y:o<=0?i/2:i-(t.value-l)/c*i}))}(this.points,this.width,this.height);if(0===t.length)return V``;const e=t.map(t=>`${t.x.toFixed(2)},${t.y.toFixed(2)}`).join(" "),i=t[t.length-1],a=t[0],s=t.length>=2,r=`${e} ${i.x.toFixed(2)},${this.height} ${a.x.toFixed(2)},${this.height}`;return V`
       <div class="spark" style="--spark-stroke:var(${this.stroke})">
         ${X`
           <svg
@@ -3057,7 +3057,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
                 <stop class="grad-b" offset="100%"></stop>
               </linearGradient>
             </defs>
-            ${r?X`<polygon points="${s}" fill="url(#${this._gid})" stroke="none"></polygon>
+            ${s?X`<polygon points="${r}" fill="url(#${this._gid})" stroke="none"></polygon>
                        <polyline points="${e}" vector-effect="non-scaling-stroke"></polyline>`:G}
           </svg>
         `}
@@ -3118,7 +3118,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           <div class="w-num-row"><span class="w-num">${"−"}</span><span class="w-unit">kg</span></div>
           <div class="spark-wrap"><span class="spark-empty">Ingen viktdata</span></div>
         </section>
-      `;const a=e.attributes.weight_trend,r=Array.isArray(a)?a.filter(t=>!!t&&"object"==typeof t).map(t=>({date:String(t.date??""),value:Number(t.kg)})).filter(t=>Number.isFinite(t.value)):[],s=function(t){if(t.length<2)return null;const e=new Date(`${t[0].date}T00:00:00Z`).getTime(),i=new Date(`${t[t.length-1].date}T00:00:00Z`).getTime();return Number.isNaN(e)||Number.isNaN(i)?null:Math.round((i-e)/864e5)}(r),n=r.length>=2?r[r.length-1].value-r[0].value:null,o=null===n||null===s?null:`${n<0?"−":n>0?"+":""}${xe.format(Math.abs(n))} kg på ${s} ${1===s?"dag":"dagar"}`,l=e.attributes.forecast,c=l&&"object"==typeof l?l:null,h=c?function(t){const e="number"==typeof t.goal_kg?`Mål ${ye.format(t.goal_kg)} kg`:"",i=t.eta?ke(t.eta):"",a=t.eta_early&&t.eta_late?`${ke(t.eta_early)}–${ke(t.eta_late)}`:"";return[e,i?`ETA ${i}${a?` (${a})`:""}`:""].filter(Boolean).join(" · ")}(c):"",d=!!c?.on_track;return V`
+      `;const a=e.attributes.weight_trend,s=Array.isArray(a)?a.filter(t=>!!t&&"object"==typeof t).map(t=>({date:String(t.date??""),value:Number(t.kg)})).filter(t=>Number.isFinite(t.value)):[],r=function(t){if(t.length<2)return null;const e=new Date(`${t[0].date}T00:00:00Z`).getTime(),i=new Date(`${t[t.length-1].date}T00:00:00Z`).getTime();return Number.isNaN(e)||Number.isNaN(i)?null:Math.round((i-e)/864e5)}(s),n=s.length>=2?s[s.length-1].value-s[0].value:null,o=null===n||null===r?null:`${n<0?"−":n>0?"+":""}${xe.format(Math.abs(n))} kg på ${r} ${1===r?"dag":"dagar"}`,l=e.attributes.forecast,c=l&&"object"==typeof l?l:null,h=c?function(t){const e="number"==typeof t.goal_kg?`Mål ${ye.format(t.goal_kg)} kg`:"",i=t.eta?ke(t.eta):"",a=t.eta_early&&t.eta_late?`${ke(t.eta_early)}–${ke(t.eta_late)}`:"";return[e,i?`ETA ${i}${a?` (${a})`:""}`:""].filter(Boolean).join(" · ")}(c):"",d=!!c?.on_track;return V`
       <section class="card">
         <span class="w-eyebrow">Vikt</span>
         <div class="w-num-row">
@@ -3128,8 +3128,8 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         ${o?V`<span class="w-delta">${o}</span>`:G}
 
         <div class="spark-wrap">
-          ${r.length>=2?V`<hub-sparkline
-                .points=${r}
+          ${s.length>=2?V`<hub-sparkline
+                .points=${s}
                 stroke="--hub-lavender"
                 .width=${560}
                 .height=${130}
@@ -3141,7 +3141,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           ${d?V`<span class="fc-chip">i fas ✓</span>`:G}
         </div>
       </section>
-    `}render(){if(!this.hass||!this.config)return V``;const t=this.config.kcal?.today_entity,e=t?this.getEntity(t):void 0,i=e?Number(e.state):NaN;if(!e||"unavailable"===e.state||"unknown"===e.state||Number.isNaN(i))return this._offline();const a=this._num(e.attributes.kcal_target),r=Vt(i,a),s=Number.isFinite(a)&&a>0,n=s?a-i:NaN,o=s?n>0?`${fe.format(Math.round(n))} kcal kvar`:0===n?"Målet nått":`${fe.format(Math.round(-n))} över målet`:null,l=this._num(e.attributes.protein_g),c=this._num(e.attributes.protein_target_g),h=Number.isFinite(l)&&Number.isFinite(c)&&c>0,d=h?Math.max(0,Math.min(100,l/c*100)):0,p=this._meals(e),u=e.attributes.date,g="string"!=typeof u||Number.isNaN(new Date(`${u}T00:00:00Z`).getTime())?"":we.format(new Date(`${u}T00:00:00Z`));return V`
+    `}render(){if(!this.hass||!this.config)return V``;const t=this.config.kcal?.today_entity,e=t?this.getEntity(t):void 0,i=e?Number(e.state):NaN;if(!e||"unavailable"===e.state||"unknown"===e.state||Number.isNaN(i))return this._offline();const a=this._num(e.attributes.kcal_target),s=Vt(i,a),r=Number.isFinite(a)&&a>0,n=r?a-i:NaN,o=r?n>0?`${fe.format(Math.round(n))} kcal kvar`:0===n?"Målet nått":`${fe.format(Math.round(-n))} över målet`:null,l=this._num(e.attributes.protein_g),c=this._num(e.attributes.protein_target_g),h=Number.isFinite(l)&&Number.isFinite(c)&&c>0,d=h?Math.max(0,Math.min(100,l/c*100)):0,p=this._meals(e),u=e.attributes.date,g="string"!=typeof u||Number.isNaN(new Date(`${u}T00:00:00Z`).getTime())?"":we.format(new Date(`${u}T00:00:00Z`));return V`
       <div class="page">
         <div class="header">
           <h1 class="title">Kcal</h1>
@@ -3152,11 +3152,11 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           <section class="card">
             <div class="ring-wrap">
               <div class="ring-glow"></div>
-              <div class="ring" style="--pct:${r}"></div>
+              <div class="ring" style="--pct:${s}"></div>
               <div class="ring-center">
                 <span class="kc-num">${fe.format(Math.round(i))}</span>
                 <span class="kc-target">
-                  ${s?`/ ${fe.format(a)} kcal`:"kcal"}
+                  ${r?`/ ${fe.format(a)} kcal`:"kcal"}
                 </span>
               </div>
             </div>
@@ -3592,19 +3592,25 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       }
     `],t([gt({attribute:!1})],Ee.prototype,"room",void 0),customElements.define("hub-room-popup",Ee);const Se={hem:{label:"Hem",icon:"home",tone:"neutral"},ljus:{label:"Ljus",icon:"lamp",tone:"amber"},media:{label:"Media",icon:"note",tone:"teal"},energi:{label:"Energi",icon:"bolt",tone:"green"},kcal:{label:"Kcal",icon:"ring",tone:"lavender"}};class Ae extends ct{constructor(){super(...arguments),this.pages=[],this.active=0}_select(t){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:t},bubbles:!0,composed:!0}))}render(){return V`
       <nav>
-        ${this.pages.map((t,e)=>{const i=function(t){const e=Se[t];return e?{id:t,...e}:{id:t,label:t.charAt(0).toUpperCase()+t.slice(1),icon:"",tone:"neutral"}}(t),a=e===this.active,r=Ft[i.icon];return V`
-            <button
-              class="item tone-${i.tone} ${a?"active":""}"
-              aria-label=${i.label}
-              aria-current=${a?"page":G}
-              @click=${()=>this._select(t)}
-            >
-              <span class="pill">
-                ${r?V`<span class="icon">${r}</span>`:G}
-              </span>
-              <span class="label">${i.label}</span>
-            </button>
-          `})}
+        <div class="rail"></div>
+        <div class="items">
+          ${this.pages.map((t,e)=>{const i=function(t){const e=Se[t];return e?{id:t,...e}:{id:t,label:t.charAt(0).toUpperCase()+t.slice(1),icon:"",tone:"neutral"}}(t),a=e===this.active,s=Ft[i.icon];return V`
+              <button
+                class="item tone-${i.tone} ${a?"active":""}"
+                aria-label=${i.label}
+                aria-current=${a?"page":G}
+                @click=${()=>this._select(t)}
+              >
+                <span class="pill">
+                  ${s?V`<span class="icon">${s}</span>`:G}
+                </span>
+                <span class="label">${i.label}</span>
+              </button>
+            `})}
+        </div>
+        <div class="rail controls">
+          <slot name="controls"></slot>
+        </div>
       </nav>
     `}}Ae.styles=[Tt,n`
       :host {
@@ -3617,6 +3623,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       }
       nav {
         display: flex;
+        align-items: stretch;
         height: var(--hub-nav-h);
         padding-bottom: env(safe-area-inset-bottom, 0px);
         box-sizing: border-box;
@@ -3625,15 +3632,41 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         backdrop-filter: blur(24px) saturate(1.4);
         -webkit-backdrop-filter: blur(24px) saturate(1.4);
       }
-      .item {
+      /* Three-column bar: an empty left rail balances the right control
+         cluster so the 5 nav items stay optically centred at any width. */
+      .rail {
         flex: 1 1 0;
         min-width: 0;
+        display: flex;
+        align-items: center;
+      }
+      .rail.controls {
+        justify-content: flex-end;
+        gap: 4px;
+        padding-right: 12px;
+      }
+      /* Quiet divider between the nav items and the theme/kiosk controls. */
+      .rail.controls::before {
+        content: '';
+        width: 1px;
+        height: 26px;
+        margin-right: 8px;
+        background: var(--hub-card-border);
+      }
+      .items {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: stretch;
+      }
+      .item {
+        flex: 0 0 auto;
+        min-width: 64px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 4px;
-        padding: 0;
+        padding: 0 6px;
         border: none;
         background: transparent;
         cursor: pointer;
@@ -3706,7 +3739,7 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         background: var(--hub-lavender-bg);
         border-color: var(--hub-lavender-border);
       }
-    `],t([gt({attribute:!1})],Ae.prototype,"pages",void 0),t([gt({type:Number})],Ae.prototype,"active",void 0),customElements.define("hub-nav-bar",Ae);const Me=["hem","ljus","media","energi","kcal"],Te={hem:"Hem",ljus:"Ljus",media:"Media",energi:"Energi",kcal:"Kcal"};const Ne=["auto","dag","natt"];let ze=0;class Pe extends vt{constructor(){super(...arguments),this.theme="natt",this._page=0,this._dragX=0,this._openRoom=null,this._override=function(){const t=localStorage.getItem(Nt);return"natt"===t||"dag"===t?t:"auto"}(),this._pointerActive=!1,this._dragging=!1,this._startX=0,this._startY=0,this._lastX=0,this._lastT=0,this._velocity=0,this._onRoomOpen=t=>{const e=t.detail?.roomId;this._openRoom=this._cfg?.rooms?.find(t=>t.id===e)??null},this._onGotoPage=t=>{const e=t.detail?.page;e&&this.goToPage(e)},this._onPopupClose=()=>{this._openRoom=null},this._onAnyInteraction=()=>{this._resetIdle()},this._onPointerDown=t=>{this._pointerActive=!0,this._dragging=!1,this._startX=t.clientX,this._startY=t.clientY,this._lastX=t.clientX,this._lastT=t.timeStamp,this._velocity=0,this._dragX=0},this._onPointerMove=t=>{if(!this._pointerActive)return;const e=t.clientX-this._startX,i=t.clientY-this._startY;if(!this._dragging){if(!zt(e)&&!zt(i))return;if(!function(t,e){return Math.abs(t)>Math.abs(e)}(e,i))return void(this._pointerActive=!1);this._dragging=!0,t.currentTarget.setPointerCapture?.(t.pointerId),this._lastX=t.clientX,this._lastT=t.timeStamp}const a=t.timeStamp-this._lastT;a>0&&(this._velocity=(t.clientX-this._lastX)/a),this._lastX=t.clientX,this._lastT=t.timeStamp,this._dragX=e},this._onPointerUp=t=>{if(!this._pointerActive)return;const e=this._dragging;if(this._pointerActive=!1,this._dragging=!1,e){t.currentTarget.releasePointerCapture?.(t.pointerId);const e=this.clientWidth||window.innerWidth;this._page=function(t,e,i,a,r){const s=.2*e,n=Math.abs(i)>.5;let o=a;return t<-s||n&&i<-.5?o=a+1:(t>s||n&&i>.5)&&(o=a-1),Math.max(0,Math.min(r-1,o))}(this._dragX,e,this._velocity,this._page,this._pages.length),ze=this._page}this._dragX=0,this._velocity=0}}setConfig(t){super.setConfig(t)}get _cfg(){return this._config}get _pages(){return this._cfg?.pages??Me}connectedCallback(){super.connectedCallback(),function(){if(document.getElementById("glass-hub-fonts"))return;const t=document.createElement("style");t.id="glass-hub-fonts",t.textContent="\n@font-face{font-family:'Outfit';src:url('/local/glass-cards/fonts/outfit-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n@font-face{font-family:'Inter';src:url('/local/glass-cards/fonts/inter-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n",document.head.appendChild(t)}(),this._applyTheme(),this._page=ze,this._resetIdle(),this._startKioskDrawerShim(),this.addEventListener("pointerdown",this._onAnyInteraction),this.addEventListener("hub-room-open",this._onRoomOpen),this.addEventListener("hub-goto-page",this._onGotoPage),this.addEventListener("hub-popup-close",this._onPopupClose)}disconnectedCallback(){super.disconnectedCallback(),this._clearIdle(),void 0!==this._kioskTimer&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0),this.removeEventListener("pointerdown",this._onAnyInteraction),this.removeEventListener("hub-room-open",this._onRoomOpen),this.removeEventListener("hub-goto-page",this._onGotoPage),this.removeEventListener("hub-popup-close",this._onPopupClose)}willUpdate(t){t.has("hass")&&this._applyTheme()}goToPage(t){const e=this._pages.indexOf(t);e>=0&&(this._page=e,ze=e,this._dragX=0)}_applyTheme(){const t=this.hass?.states["sun.sun"]?.attributes?.elevation,e="number"==typeof t?t:null;this.theme=function(t,e,i=4){return"auto"!==e?e:null===t?"natt":t>i?"dag":"natt"}(e,this._override,this._cfg?.day_elevation??4)}_cycleTheme(){const t=Ne.indexOf(this._override);this._override=Ne[(t+1)%Ne.length],function(t){localStorage.setItem(Nt,t)}(this._override),this._applyTheme()}get _kiosk(){return new URLSearchParams(location.search).has("kiosk")}_toggleKiosk(){const t=new URLSearchParams(location.search);t.has("kiosk")?t.delete("kiosk"):t.set("kiosk","true");const e=t.toString();location.assign(location.pathname+(e?`?${e}`:""))}_resetIdle(){this._clearIdle();const t=this._cfg?.idle_return_s??120;this._idleTimer=window.setTimeout(()=>{0!==this._page&&this.goToPage(this._pages[0])},1e3*t)}_clearIdle(){void 0!==this._idleTimer&&(clearTimeout(this._idleTimer),this._idleTimer=void 0)}_startKioskDrawerShim(){if(!new URLSearchParams(location.search).has("kiosk"))return;const t=Date.now(),e=()=>{const t=document.querySelector("home-assistant")?.shadowRoot?.querySelector("home-assistant-main");if(!t)return!1;t.style.setProperty("--mdc-drawer-width","0px");const e=t.shadowRoot?.querySelector("ha-drawer");return e?.style.setProperty("--mdc-drawer-width","0px"),!0};e()||(this._kioskTimer=window.setInterval(()=>{(e()||Date.now()-t>5e3)&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0)},250))}_themeGlyph(){return"auto"===this._override?V`<span class="glyph-auto">A</span>`:"dag"===this._override?X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+    `],t([gt({attribute:!1})],Ae.prototype,"pages",void 0),t([gt({type:Number})],Ae.prototype,"active",void 0),customElements.define("hub-nav-bar",Ae);const Me=["hem","ljus","media","energi","kcal"],Te={hem:"Hem",ljus:"Ljus",media:"Media",energi:"Energi",kcal:"Kcal"};const Ne=["auto","dag","natt"];let ze=0;class Pe extends vt{constructor(){super(...arguments),this.theme="natt",this.kiosk=new URLSearchParams(location.search).has("kiosk"),this._page=0,this._dragX=0,this._openRoom=null,this._override=function(){const t=localStorage.getItem(Nt);return"natt"===t||"dag"===t?t:"auto"}(),this._pointerActive=!1,this._dragging=!1,this._startX=0,this._startY=0,this._lastX=0,this._lastT=0,this._velocity=0,this._onRoomOpen=t=>{const e=t.detail?.roomId;this._openRoom=this._cfg?.rooms?.find(t=>t.id===e)??null},this._onGotoPage=t=>{const e=t.detail?.page;e&&this.goToPage(e)},this._onPopupClose=()=>{this._openRoom=null},this._onAnyInteraction=()=>{this._resetIdle()},this._onPointerDown=t=>{this._pointerActive=!0,this._dragging=!1,this._startX=t.clientX,this._startY=t.clientY,this._lastX=t.clientX,this._lastT=t.timeStamp,this._velocity=0,this._dragX=0},this._onPointerMove=t=>{if(!this._pointerActive)return;const e=t.clientX-this._startX,i=t.clientY-this._startY;if(!this._dragging){if(!zt(e)&&!zt(i))return;if(!function(t,e){return Math.abs(t)>Math.abs(e)}(e,i))return void(this._pointerActive=!1);this._dragging=!0,t.currentTarget.setPointerCapture?.(t.pointerId),this._lastX=t.clientX,this._lastT=t.timeStamp}const a=t.timeStamp-this._lastT;a>0&&(this._velocity=(t.clientX-this._lastX)/a),this._lastX=t.clientX,this._lastT=t.timeStamp,this._dragX=e},this._onPointerUp=t=>{if(!this._pointerActive)return;const e=this._dragging;if(this._pointerActive=!1,this._dragging=!1,e){t.currentTarget.releasePointerCapture?.(t.pointerId);const e=this.clientWidth||window.innerWidth;this._page=function(t,e,i,a,s){const r=.2*e,n=Math.abs(i)>.5;let o=a;return t<-r||n&&i<-.5?o=a+1:(t>r||n&&i>.5)&&(o=a-1),Math.max(0,Math.min(s-1,o))}(this._dragX,e,this._velocity,this._page,this._pages.length),ze=this._page}this._dragX=0,this._velocity=0}}setConfig(t){super.setConfig(t)}get _cfg(){return this._config}get _pages(){return this._cfg?.pages??Me}connectedCallback(){super.connectedCallback(),function(){if(document.getElementById("glass-hub-fonts"))return;const t=document.createElement("style");t.id="glass-hub-fonts",t.textContent="\n@font-face{font-family:'Outfit';src:url('/local/glass-cards/fonts/outfit-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n@font-face{font-family:'Inter';src:url('/local/glass-cards/fonts/inter-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n",document.head.appendChild(t)}(),this._applyTheme(),this._page=ze,this._resetIdle(),this._startKioskDrawerShim(),this.addEventListener("pointerdown",this._onAnyInteraction),this.addEventListener("hub-room-open",this._onRoomOpen),this.addEventListener("hub-goto-page",this._onGotoPage),this.addEventListener("hub-popup-close",this._onPopupClose)}disconnectedCallback(){super.disconnectedCallback(),this._clearIdle(),void 0!==this._kioskTimer&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0),this.removeEventListener("pointerdown",this._onAnyInteraction),this.removeEventListener("hub-room-open",this._onRoomOpen),this.removeEventListener("hub-goto-page",this._onGotoPage),this.removeEventListener("hub-popup-close",this._onPopupClose)}willUpdate(t){t.has("hass")&&this._applyTheme()}goToPage(t){const e=this._pages.indexOf(t);e>=0&&(this._page=e,ze=e,this._dragX=0)}_applyTheme(){const t=this.hass?.states["sun.sun"]?.attributes?.elevation,e="number"==typeof t?t:null;this.theme=function(t,e,i=4){return"auto"!==e?e:null===t?"natt":t>i?"dag":"natt"}(e,this._override,this._cfg?.day_elevation??4)}_cycleTheme(){const t=Ne.indexOf(this._override);this._override=Ne[(t+1)%Ne.length],function(t){localStorage.setItem(Nt,t)}(this._override),this._applyTheme()}_toggleKiosk(){const t=new URLSearchParams(location.search);t.has("kiosk")?t.delete("kiosk"):t.set("kiosk","true");const e=t.toString();location.assign(location.pathname+(e?`?${e}`:""))}_resetIdle(){this._clearIdle();const t=this._cfg?.idle_return_s??120;this._idleTimer=window.setTimeout(()=>{0!==this._page&&this.goToPage(this._pages[0])},1e3*t)}_clearIdle(){void 0!==this._idleTimer&&(clearTimeout(this._idleTimer),this._idleTimer=void 0)}_startKioskDrawerShim(){if(!new URLSearchParams(location.search).has("kiosk"))return;const t=Date.now(),e=()=>{const t=document.querySelector("home-assistant")?.shadowRoot?.querySelector("home-assistant-main");if(!t)return!1;t.style.setProperty("--mdc-drawer-width","0px");const e=t.shadowRoot?.querySelector("ha-drawer");return e?.style.setProperty("--mdc-drawer-width","0px"),!0};e()||(this._kioskTimer=window.setInterval(()=>{(e()||Date.now()-t>5e3)&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0)},250))}_themeGlyph(){return"auto"===this._override?V`<span class="glyph-auto">A</span>`:"dag"===this._override?X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"></circle>
         <line x1="12" y1="2" x2="12" y2="5"></line>
@@ -3750,23 +3783,24 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
           `)}
       </div>
 
-      <button
-        class="kiosk-toggle"
-        aria-label=${this._kiosk?"Avsluta helskärm":"Helskärmsläge"}
-        @click=${this._toggleKiosk}
-      >
-        ${this._kiosk?Ft.compress:Ft.expand}
-      </button>
-
-      <button
-        class="theme-toggle"
-        aria-label="Byt tema"
-        @click=${this._cycleTheme}
-      >
-        ${this._themeGlyph()}
-      </button>
-
-      <hub-nav-bar .pages=${t} .active=${this._page}></hub-nav-bar>
+      <hub-nav-bar .pages=${t} .active=${this._page}>
+        <button
+          slot="controls"
+          class="kiosk-toggle"
+          aria-label=${this.kiosk?"Avsluta helskärm":"Helskärmsläge"}
+          @click=${this._toggleKiosk}
+        >
+          ${this.kiosk?Ft.compress:Ft.expand}
+        </button>
+        <button
+          slot="controls"
+          class="theme-toggle"
+          aria-label="Byt tema"
+          @click=${this._cycleTheme}
+        >
+          ${this._themeGlyph()}
+        </button>
+      </hub-nav-bar>
 
       ${this._openRoom?V`<hub-room-popup
             .hass=${this.hass}
@@ -3776,12 +3810,18 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
       :host {
         position: absolute;
         inset: 0;
+        box-sizing: border-box;
         overflow: hidden;
         background: var(--hub-surface);
         color: var(--hub-text);
         font-family: var(--hub-font-body);
         transition: background var(--hub-fade) ease;
         -webkit-tap-highlight-color: transparent;
+      }
+      /* Outside kiosk mode HA still shows its own header on top of us; inset
+         the whole hub so the top row clears it. HA exposes --header-height. */
+      :host(:not([kiosk])) {
+        padding-top: var(--header-height, 56px);
       }
 
       .strip {
@@ -3816,38 +3856,9 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         letter-spacing: 0.02em;
       }
 
-      .theme-toggle {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        border: none;
-        border-radius: 50%;
-        background: transparent;
-        color: var(--hub-text-muted);
-        cursor: pointer;
-        z-index: 20;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .theme-toggle svg {
-        width: 24px;
-        height: 24px;
-      }
-      .theme-toggle .glyph-auto {
-        font-family: var(--hub-font-display);
-        font-weight: 500;
-        font-size: 20px;
-      }
-
+      /* Quiet control cluster — slotted into the nav bar's right edge. */
+      .theme-toggle,
       .kiosk-toggle {
-        position: absolute;
-        top: 16px;
-        right: 72px;
         width: 48px;
         height: 48px;
         display: flex;
@@ -3859,11 +3870,17 @@ function t(t,e,i,a){var r,s=arguments.length,n=s<3?e:null===a?a=Object.getOwnPro
         background: transparent;
         color: var(--hub-text-dim);
         cursor: pointer;
-        z-index: 20;
         -webkit-tap-highlight-color: transparent;
+        transition: color 150ms ease;
       }
+      .theme-toggle svg,
       .kiosk-toggle svg {
         width: 24px;
         height: 24px;
       }
-    `],t([gt({reflect:!0,attribute:"data-theme"})],Pe.prototype,"theme",void 0),t([bt()],Pe.prototype,"_page",void 0),t([bt()],Pe.prototype,"_dragX",void 0),t([bt()],Pe.prototype,"_openRoom",void 0),customElements.define("glass-hub",Pe);const Fe=window;Fe.customCards=Fe.customCards||[],Fe.customCards.push({type:"glass-background",name:"Glass Background",description:"Animated gradient background"},{type:"glass-button",name:"Glass Button",description:"Toggle/info button"},{type:"glass-chip",name:"Glass Chip",description:"Small status pill"},{type:"glass-header",name:"Glass Header",description:"Greeting, weather, status chips"},{type:"glass-room-card",name:"Glass Room Card",description:"Room with sub-buttons and popup"},{type:"glass-light-slider",name:"Glass Light Slider",description:"Brightness slider with glow"},{type:"glass-popup",name:"Glass Popup",description:"Modal overlay"},{type:"glass-nav-bar",name:"Glass Nav Bar",description:"Bottom navigation"},{type:"glass-vacuum-card",name:"Glass Vacuum Card",description:"Vacuum controls"},{type:"glass-info-row",name:"Glass Info Row",description:"Information display"},{type:"glass-section",name:"Glass Section",description:"Section header label"},{type:"glass-departure-card",name:"Glass Departure Card",description:"Train departure list"},{type:"glass-hub",name:"Glass Hub",description:"Full-screen wall hub"}),console.info("%c GLASS CARDS %c v0.1.0 ","color: white; background: #4FC3F7; font-weight: bold; padding: 2px 6px; border-radius: 4px 0 0 4px;","color: #4FC3F7; background: rgba(79,195,247,0.1); padding: 2px 6px; border-radius: 0 4px 4px 0;");
+      .theme-toggle .glyph-auto {
+        font-family: var(--hub-font-display);
+        font-weight: 500;
+        font-size: 20px;
+      }
+    `],t([gt({reflect:!0,attribute:"data-theme"})],Pe.prototype,"theme",void 0),t([gt({reflect:!0,type:Boolean})],Pe.prototype,"kiosk",void 0),t([bt()],Pe.prototype,"_page",void 0),t([bt()],Pe.prototype,"_dragX",void 0),t([bt()],Pe.prototype,"_openRoom",void 0),customElements.define("glass-hub",Pe);const Fe=window;Fe.customCards=Fe.customCards||[],Fe.customCards.push({type:"glass-background",name:"Glass Background",description:"Animated gradient background"},{type:"glass-button",name:"Glass Button",description:"Toggle/info button"},{type:"glass-chip",name:"Glass Chip",description:"Small status pill"},{type:"glass-header",name:"Glass Header",description:"Greeting, weather, status chips"},{type:"glass-room-card",name:"Glass Room Card",description:"Room with sub-buttons and popup"},{type:"glass-light-slider",name:"Glass Light Slider",description:"Brightness slider with glow"},{type:"glass-popup",name:"Glass Popup",description:"Modal overlay"},{type:"glass-nav-bar",name:"Glass Nav Bar",description:"Bottom navigation"},{type:"glass-vacuum-card",name:"Glass Vacuum Card",description:"Vacuum controls"},{type:"glass-info-row",name:"Glass Info Row",description:"Information display"},{type:"glass-section",name:"Glass Section",description:"Section header label"},{type:"glass-departure-card",name:"Glass Departure Card",description:"Train departure list"},{type:"glass-hub",name:"Glass Hub",description:"Full-screen wall hub"}),console.info("%c GLASS CARDS %c v0.1.0 ","color: white; background: #4FC3F7; font-weight: bold; padding: 2px 6px; border-radius: 4px 0 0 4px;","color: #4FC3F7; background: rgba(79,195,247,0.1); padding: 2px 6px; border-radius: 0 4px 4px 0;");

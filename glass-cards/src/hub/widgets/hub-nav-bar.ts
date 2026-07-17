@@ -48,6 +48,7 @@ export class HubNavBar extends LitElement {
       }
       nav {
         display: flex;
+        align-items: stretch;
         height: var(--hub-nav-h);
         padding-bottom: env(safe-area-inset-bottom, 0px);
         box-sizing: border-box;
@@ -56,15 +57,41 @@ export class HubNavBar extends LitElement {
         backdrop-filter: blur(24px) saturate(1.4);
         -webkit-backdrop-filter: blur(24px) saturate(1.4);
       }
-      .item {
+      /* Three-column bar: an empty left rail balances the right control
+         cluster so the 5 nav items stay optically centred at any width. */
+      .rail {
         flex: 1 1 0;
         min-width: 0;
+        display: flex;
+        align-items: center;
+      }
+      .rail.controls {
+        justify-content: flex-end;
+        gap: 4px;
+        padding-right: 12px;
+      }
+      /* Quiet divider between the nav items and the theme/kiosk controls. */
+      .rail.controls::before {
+        content: '';
+        width: 1px;
+        height: 26px;
+        margin-right: 8px;
+        background: var(--hub-card-border);
+      }
+      .items {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: stretch;
+      }
+      .item {
+        flex: 0 0 auto;
+        min-width: 64px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 4px;
-        padding: 0;
+        padding: 0 6px;
         border: none;
         background: transparent;
         cursor: pointer;
@@ -153,24 +180,30 @@ export class HubNavBar extends LitElement {
   render() {
     return html`
       <nav>
-        ${this.pages.map((id, i) => {
-          const item = navItem(id);
-          const isActive = i === this.active;
-          const glyph = icons[item.icon];
-          return html`
-            <button
-              class="item tone-${item.tone} ${isActive ? 'active' : ''}"
-              aria-label=${item.label}
-              aria-current=${isActive ? 'page' : nothing}
-              @click=${() => this._select(id)}
-            >
-              <span class="pill">
-                ${glyph ? html`<span class="icon">${glyph}</span>` : nothing}
-              </span>
-              <span class="label">${item.label}</span>
-            </button>
-          `;
-        })}
+        <div class="rail"></div>
+        <div class="items">
+          ${this.pages.map((id, i) => {
+            const item = navItem(id);
+            const isActive = i === this.active;
+            const glyph = icons[item.icon];
+            return html`
+              <button
+                class="item tone-${item.tone} ${isActive ? 'active' : ''}"
+                aria-label=${item.label}
+                aria-current=${isActive ? 'page' : nothing}
+                @click=${() => this._select(id)}
+              >
+                <span class="pill">
+                  ${glyph ? html`<span class="icon">${glyph}</span>` : nothing}
+                </span>
+                <span class="label">${item.label}</span>
+              </button>
+            `;
+          })}
+        </div>
+        <div class="rail controls">
+          <slot name="controls"></slot>
+        </div>
       </nav>
     `;
   }

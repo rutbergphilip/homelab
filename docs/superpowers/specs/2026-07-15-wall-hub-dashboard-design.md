@@ -1,7 +1,7 @@
 # Wall Hub Dashboard — Design Spec
 
 **Date:** 2026-07-15
-**Status:** Approved by Philip (brainstorming session with visual mockups)
+**Status:** Implemented (2026-07-17). Deltas from design: dashboard url_path is `wall-hub` (HA requires a hyphen); whole-home Hue scenes skipped by user decision (per-room scene chips shipped instead); hourly prices via a Tibber-GraphQL REST sensor (`sensor.elpris_timserie`) because the official integration lacks hourly arrays; HA moved to `hostNetwork` for HomeKit pairing, with the kcal netpol host rule L7-tightened to compensate; kiosk fullscreen via kiosk-mode plugin + a drawer-width shim in glass-hub.
 **Scope:** New wall-mounted home hub dashboard for Home Assistant, built by evolving the existing `glass-cards` library, plus integration plumbing (Tibber, HomeKit Bridge, kcal endpoint) and a Claude-for-Chrome visual verification workflow.
 
 ---

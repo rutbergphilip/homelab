@@ -9,6 +9,7 @@ spec:
   # under HomeKit's mDNS identity. Recreate avoids both.
   strategy:
     type: Recreate
+    rollingUpdate: null  # explicit clear — live object carries RollingUpdate defaults
   selector:
     matchLabels:
       app: home-assistant

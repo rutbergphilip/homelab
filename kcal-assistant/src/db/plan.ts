@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { type Macros, scaleMacros, sumMacros } from "../lib/macros";
-import { resolveItem, type MealItemInput, type DayView, getDay } from "./meals";
+import { resolveItem, logMeal, getDay, type MealItemInput, type DayView } from "./meals";
 import { getRecipe, reconstructInput, type IngredientRow } from "./recipes";
 import { getTargetsFor, type DayTargets } from "./preferences";
 import { todayStockholm, isValidDate, toEpochDays, epochDaysToDate, addDays } from "../lib/dates";
@@ -381,6 +381,159 @@ export function upsertPlanDays(db: Database, days: PlanDayInput[], replace = tru
     }
     return view;
   });
+}
+
+export interface ShoppingLine {
+  product_id: number | null;
+  description: string;
+  grams: number | null;
+  quantity: number | null;
+  portion_name: string | null;
+}
+
+// Handlingslista: aggregates the range's UNLOGGED planned meals — recipe
+// meals expand their ingredients scaled by the planned servings. Product
+// lines merge on (product, portion); ad-hoc/unresolved lines are listed
+// individually so nothing silently disappears.
+export function buildShoppingList(db: Database, start: string, days: number): ShoppingLine[] {
+  if (!isValidDate(start)) throw new Error(`Invalid date: ${start} (expected YYYY-MM-DD)`);
+  const span = Math.min(28, Math.max(1, Math.trunc(days)));
+  const end = addDays(start, span - 1);
+
+  const rows = db
+    .query<PlannedMealRow, [string, string]>(
+      `SELECT id, day_date, slot, position, name, recipe_id, recipe_servings, post_gym_shake, logged_meal_id, note
+       FROM planned_meals WHERE day_date >= ? AND day_date <= ? AND logged_meal_id IS NULL ORDER BY day_date, id`,
+    )
+    .all(start, end);
+
+  const productLines = new Map<string, ShoppingLine>();
+  const looseLines: ShoppingLine[] = [];
+
+  const addResolved = (
+    item: { product_id: number | null; description: string; grams: number | null; quantity: number | null; portion_name: string | null },
+    factor: number,
+  ) => {
+    if (item.product_id === null) {
+      looseLines.push({
+        product_id: null,
+        description: item.description,
+        grams: item.grams !== null ? item.grams * factor : null,
+        quantity: item.quantity !== null ? item.quantity * factor : null,
+        portion_name: item.portion_name,
+      });
+      return;
+    }
+    const key = `${item.product_id}|${item.portion_name ?? ""}`;
+    const line =
+      productLines.get(key) ??
+      ({ product_id: item.product_id, description: item.description, grams: null, quantity: null, portion_name: item.portion_name } as ShoppingLine);
+    if (item.grams !== null) line.grams = (line.grams ?? 0) + item.grams * factor;
+    if (item.portion_name !== null && item.quantity !== null) {
+      line.quantity = (line.quantity ?? 0) + item.quantity * factor;
+    }
+    productLines.set(key, line);
+  };
+
+  for (const row of rows) {
+    if (row.recipe_id !== null || row.recipe_servings !== null) {
+      const recipe = row.recipe_id !== null ? getRecipe(db, row.recipe_id) : null;
+      if (!recipe) {
+        looseLines.push({ product_id: null, description: `${row.name} (recept saknas)`, grams: null, quantity: null, portion_name: null });
+        continue;
+      }
+      const servings = row.recipe_servings ?? 1;
+      const factor = recipe.servings !== null && recipe.servings > 0 ? servings / recipe.servings : servings;
+      for (const ing of recipe.ingredients) {
+        addResolved(
+          { product_id: ing.product_id, description: ing.description, grams: ing.grams, quantity: ing.quantity, portion_name: ing.portion_name },
+          factor,
+        );
+      }
+      continue;
+    }
+    const r = resolvePlannedMeal(db, row);
+    for (const item of r.items) {
+      addResolved(
+        { product_id: item.product_id, description: item.description, grams: item.grams, quantity: item.quantity, portion_name: item.portion_name },
+        1,
+      );
+    }
+  }
+
+  const round1 = (x: number | null) => (x === null ? null : Math.round(x * 10) / 10);
+  return [...productLines.values(), ...looseLines]
+    .map((l) => ({ ...l, grams: round1(l.grams), quantity: round1(l.quantity) }))
+    .sort((a, b) => a.description.localeCompare(b.description, "sv"));
+}
+
+// Confirm = lock + log: copies planned meals into `meals` through logMeal
+// (the exact same insert/rounding path as chat logging) and links each via
+// logged_meal_id. Idempotent per meal; a fully confirmed day refuses.
+export function confirmDay(
+  db: Database,
+  date: string,
+  slots?: PlanSlot[],
+): { day: DayView; plan: PlanDayView } {
+  if (!isValidDate(date)) throw new Error(`Invalid date: ${date} (expected YYYY-MM-DD)`);
+  for (const slot of slots ?? []) assertSlot(slot);
+  const rows = readPlannedMealRows(db, date).filter((r) => !slots || slots.includes(r.slot));
+  if (rows.length === 0) throw new Error("inget planerat");
+  const pending = rows.filter((r) => r.logged_meal_id === null);
+  if (pending.length === 0) throw new Error("redan bekräftad");
+
+  const resolved = pending.map((row) => ({ row, r: resolvePlannedMeal(db, row) }));
+  const broken = resolved.filter((x) => x.r.incomplete);
+  if (broken.length > 0) {
+    throw new Error(
+      `kan inte bekräfta: olösta poster i ${broken.map((x) => `"${x.row.name}"`).join(", ")}`,
+    );
+  }
+
+  db.transaction(() => {
+    for (const { row, r } of resolved) {
+      const { meal_id } = logMeal(db, {
+        name: row.name,
+        date,
+        post_gym_shake: row.post_gym_shake === 1,
+        items: r.loggableItems,
+      });
+      db.run(
+        "UPDATE planned_meals SET logged_meal_id = ?, updated_at = datetime('now') WHERE id = ?",
+        [meal_id, row.id],
+      );
+    }
+    const remaining = db
+      .query<{ n: number }, [string]>(
+        "SELECT count(*) AS n FROM planned_meals WHERE day_date = ? AND logged_meal_id IS NULL",
+      )
+      .get(date)!.n;
+    if (remaining === 0) {
+      db.run("UPDATE days SET plan_confirmed_at = datetime('now') WHERE date = ?", [date]);
+    }
+  })();
+
+  return { day: getDay(db, date), plan: readPlanDay(db, date) };
+}
+
+// Removes ONLY plan-originated meals (via the logged_meal_id links); meals
+// logged outside the plan survive. FK ON DELETE SET NULL clears the links.
+export function unconfirmDay(db: Database, date: string): { day: DayView; plan: PlanDayView } {
+  if (!isValidDate(date)) throw new Error(`Invalid date: ${date} (expected YYYY-MM-DD)`);
+  const ids = db
+    .query<{ logged_meal_id: number }, [string]>(
+      "SELECT logged_meal_id FROM planned_meals WHERE day_date = ? AND logged_meal_id IS NOT NULL",
+    )
+    .all(date)
+    .map((r) => r.logged_meal_id);
+  if (ids.length === 0) throw new Error("inget att ångra");
+
+  db.transaction(() => {
+    for (const id of ids) db.run("DELETE FROM meals WHERE id = ?", [id]);
+    db.run("UPDATE days SET plan_confirmed_at = NULL WHERE date = ?", [date]);
+  })();
+
+  return { day: getDay(db, date), plan: readPlanDay(db, date) };
 }
 
 export function getPlanWeek(

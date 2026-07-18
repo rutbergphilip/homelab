@@ -1,5 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { readDay } from "../db/meals";
+import { getPlanWeek } from "../db/plan";
+import { todayStockholm } from "../lib/dates";
 import { getTrend, listWeights } from "../db/weights";
 import { buildForecast } from "../db/forecast";
 import { getProfile } from "../db/profile";
@@ -36,6 +38,65 @@ export interface InternalSummary {
 }
 
 const r1 = (x: number): number => Math.round(x * 10) / 10;
+
+export interface InternalPlannerDay {
+  date: string;
+  weekday: string;
+  day_type: string;
+  confirmed: boolean;
+  meals: Array<{
+    slot: string;
+    name: string;
+    kcal: number;
+    protein: number;
+    fat: number;
+    carbs: number;
+    logged: boolean;
+  }>;
+  total_kcal: number;
+  target_kcal: number;
+  protein_ok: boolean;
+  kcal_ok: boolean;
+}
+
+export interface InternalPlanner {
+  status: "ok";
+  week_start: string;
+  today: string;
+  confirmed_days: number;
+  days: InternalPlannerDay[];
+}
+
+// Read-only week-plan projection for the wall-hub planner page (no auth —
+// cluster-only listener, see server.ts). Same read functions as the UI.
+export function buildInternalPlanner(db: Database): InternalPlanner {
+  const week = getPlanWeek(db);
+  return {
+    status: "ok",
+    week_start: week.start_date,
+    today: todayStockholm(),
+    confirmed_days: week.week.confirmed_days,
+    days: week.days.map((d) => ({
+      date: d.date,
+      weekday: d.weekday,
+      day_type: d.day_type,
+      confirmed: d.confirmed,
+      meals: d.meals.map((m) => ({
+        slot: m.slot,
+        name: m.name,
+        kcal: Math.round(m.kcal),
+        protein: r1(m.protein),
+        fat: r1(m.fat),
+        carbs: r1(m.carbs),
+        logged: m.logged,
+      })),
+      total_kcal: Math.round(d.totals.kcal),
+      target_kcal: Math.round(d.targets.kcal),
+      protein_ok: d.checks.protein_floor_ok,
+      kcal_ok: d.checks.kcal_ok,
+    })),
+  };
+}
 
 // Read-only projection for the in-cluster wall-hub poller (no auth — see
 // server.ts). Reuses the same read functions as ui/api.ts's overview/forecast

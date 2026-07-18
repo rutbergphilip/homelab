@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPlannerModel, nextMeal, dayTypeLetter } from '../src/hub/planner-model';
+import { buildPlannerModel, nextMeal, dayTypeLetter, upcomingMeals } from '../src/hub/planner-model';
 
 const day = (date: string, overrides: Record<string, unknown> = {}) => ({
   date,
@@ -102,5 +102,35 @@ describe('dayTypeLetter', () => {
     expect(dayTypeLetter('vilodag')).toBe('V');
     expect(dayTypeLetter('flexdag')).toBe('F');
     expect(dayTypeLetter('festdag')).toBe('·');
+  });
+});
+
+describe('upcomingMeals', () => {
+  const build = (today: string, days: unknown[]) =>
+    buildPlannerModel({ week_start: '2026-07-13', today, days })!;
+
+  it('prefers today, falls back to tomorrow, in slot order', () => {
+    const model = build('2026-07-14', [
+      day('2026-07-14', { meals: [meal('middag', 'Lax'), meal('frukost', 'Gröt')] }),
+      day('2026-07-15', { meals: [meal('lunch', 'Rester')] }),
+    ]);
+    const up = upcomingMeals(model)!;
+    expect(up.dayLabel).toBe('Idag');
+    expect(up.meals.map((m) => m.name)).toEqual(['Gröt', 'Lax']);
+
+    const allLogged = build('2026-07-14', [
+      day('2026-07-14', { meals: [meal('middag', 'Lax', { logged: true })] }),
+      day('2026-07-15', { meals: [meal('lunch', 'Rester')] }),
+    ]);
+    const tomorrow = upcomingMeals(allLogged)!;
+    expect(tomorrow.dayLabel).toBe('Imorgon');
+    expect(tomorrow.meals[0].name).toBe('Rester');
+  });
+
+  it('returns null when nothing upcoming exists (e.g. Sunday evening)', () => {
+    const model = build('2026-07-19', [
+      day('2026-07-19', { meals: [meal('middag', 'Lax', { logged: true })] }),
+    ]);
+    expect(upcomingMeals(model)).toBeNull();
   });
 });

@@ -4,12 +4,12 @@ import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
 import type { HubConfig } from '../hub-config.js';
-import { buildPlannerModel, nextMeal, SLOT_LABELS } from '../planner-model.js';
 import '../widgets/hub-clock.js';
 import '../widgets/hub-status-chip.js';
 import '../widgets/hub-room-tile.js';
 import '../widgets/hub-now-playing.js';
 import '../widgets/hub-kcal-ring.js';
+import '../widgets/hub-meal-card.js';
 import '../widgets/hub-transit-card.js';
 import '../widgets/hub-energy-strip.js';
 
@@ -108,6 +108,10 @@ export class HubHomePage extends GlassBaseElement {
         flex: 1;
         min-width: 0;
       }
+      .bottom .meal {
+        flex: 1.4;
+        min-width: 0;
+      }
 
       /* 2-col regime (≤1400): the room grid becomes three rows, so reclaim
          vertical space — tighter vertical padding and gaps, slimmer bands, and
@@ -131,7 +135,8 @@ export class HubHomePage extends GlassBaseElement {
         .info .energy,
         .info .transit,
         .bottom .np,
-        .bottom .kc {
+        .bottom .kc,
+        .bottom .meal {
           flex: 1;
         }
       }
@@ -171,25 +176,7 @@ export class HubHomePage extends GlassBaseElement {
       }
     }
 
-    // Next planned meal today — the meal planner's presence on Hem. Hidden
-    // when nothing is planned or everything is already logged.
-    if (cfg.kcal?.planner_entity) {
-      const entity = this.getEntity(cfg.kcal.planner_entity);
-      const model =
-        entity && entity.state !== 'unavailable' && entity.state !== 'unknown'
-          ? buildPlannerModel(entity.attributes as Record<string, unknown>)
-          : null;
-      const next = model ? nextMeal(model) : null;
-      if (next) {
-        chips.push({
-          icon: 'calendar',
-          label: `${SLOT_LABELS[next.meal.slot]} · ${next.meal.name}`,
-          tone: 'lavender',
-          active: true,
-          goto: 'vecka',
-        });
-      }
-    }
+    // (The meal plan lives in the bottom band's hub-meal-card, not a chip.)
 
     // Person — identity, always neutral.
     if (cfg.person_entity) {
@@ -252,6 +239,13 @@ export class HubHomePage extends GlassBaseElement {
             .hass=${this.hass}
             .todayEntity=${cfg.kcal?.today_entity}
           ></hub-kcal-ring>
+          ${cfg.kcal?.planner_entity
+            ? html`<hub-meal-card
+                class="meal"
+                .hass=${this.hass}
+                .plannerEntity=${cfg.kcal.planner_entity}
+              ></hub-meal-card>`
+            : nothing}
         </div>
       </div>
     `;

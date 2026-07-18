@@ -576,3 +576,11 @@ button.chip:focus-visible { outline: 2px solid var(--accent-dim); outline-offset
 .vshop { margin: 16px 0; padding: 10px 12px; background: var(--surface); border: 1px solid var(--hair); border-radius: 2px; }
 .vshop summary { font-family: var(--mono); font-size: 12px; cursor: pointer; }
 .vshop ul { list-style: none; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.vadd-rows { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.vadd-rows li { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 12px; color: var(--ink-2); padding: 3px 0; border-bottom: 1px dotted var(--hair); }
+.vadd-rows li button { font: inherit; background: none; border: none; color: var(--under); cursor: pointer; padding: 0 4px; }
+.vadd-amount { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vadd-amount label { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.vadd-amount input { width: 90px; }
+.vadd-amount button { font: inherit; font-family: var(--mono); font-size: 12px; color: var(--accent); background: none; border: 1px solid var(--hair-2); border-radius: 2px; padding: 5px 10px; cursor: pointer; }
+.vadd-amount button:disabled { opacity: 0.5; cursor: default; }

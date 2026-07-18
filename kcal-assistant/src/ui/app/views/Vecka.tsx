@@ -8,6 +8,7 @@ import {
   type PlanMeal,
   type PlanSlot,
   type PlanWeek,
+  type Product,
   type RecipeSummary,
 } from "../api";
 import { EmptyState, ErrorNote, macroLine } from "../components/Bits";
@@ -66,33 +67,96 @@ interface WriteApi {
 }
 
 function AddMealForm({ day, slot, writer, onDone }: { day: PlanDay; slot: PlanSlot; writer: WriteApi; onDone: () => void }) {
-  const [mode, setMode] = useState<"recept" | "snabb">("recept");
+  const [mode, setMode] = useState<"recept" | "produkt" | "snabb">("recept");
   const recipes = useApi<{ recipes: RecipeSummary[] }>(mode === "recept" ? "/ui/api/recipes" : null);
+  const products = useApi<{ products: Product[] }>(mode === "produkt" ? "/ui/api/products" : null);
   const [recipeId, setRecipeId] = useState("");
   const [servings, setServings] = useState("1");
   const [name, setName] = useState("");
   const [m, setM] = useState({ kcal: "", protein: "", fat: "", carbs: "" });
+  // produkt mode: build a multi-item meal row by row
+  const [search, setSearch] = useState("");
+  const [productId, setProductId] = useState("");
+  const [unit, setUnit] = useState("gram"); // "gram" | portion name
+  const [grams, setGrams] = useState("");
+  const [qty, setQty] = useState("1");
+  const [rows, setRows] = useState<{ label: string; item: Record<string, unknown> }[]>([]);
 
   const selected = recipes.data?.recipes.find((r) => String(r.id) === recipeId);
   const canSaveRecipe = mode === "recept" && selected !== undefined && Number(servings) > 0;
   const canSaveSnabb =
     mode === "snabb" && name.trim() !== "" && Object.values(m).every((v) => v !== "" && Number.isFinite(Number(v)));
 
+  const productList = products.data?.products ?? [];
+  const query = search.trim().toLowerCase();
+  const filtered = (query
+    ? productList.filter((p) => `${p.name} ${p.brand ?? ""}`.toLowerCase().includes(query))
+    : productList
+  ).slice(0, 60);
+  const product = productList.find((p) => String(p.id) === productId);
+
+  const pickProduct = (id: string) => {
+    setProductId(id);
+    const p = productList.find((x) => String(x.id) === id);
+    // default unit: gram when per-100g exists, else the first named portion
+    setUnit(p?.per_100g ? "gram" : (p?.portions[0]?.name ?? "gram"));
+    setGrams("");
+    setQty("1");
+  };
+
+  const currentItem = (): { label: string; item: Record<string, unknown> } | null => {
+    if (!product) return null;
+    if (unit === "gram") {
+      const g = Number(grams);
+      if (!(g > 0) || !product.per_100g) return null;
+      return { label: `${product.name} · ${g} g`, item: { product_id: product.id, grams: g } };
+    }
+    const q = Number(qty);
+    if (!(q > 0)) return null;
+    return {
+      label: `${product.name} · ${sv(q, 1)} × ${unit}`,
+      item: { product_id: product.id, portion_name: unit, quantity: q },
+    };
+  };
+
+  const addRow = () => {
+    const row = currentItem();
+    if (!row) return;
+    setRows((xs) => [...xs, row]);
+    if (name.trim() === "" && product) setName(product.name);
+    setProductId("");
+    setGrams("");
+    setQty("1");
+    setSearch("");
+  };
+
+  const produktItems = () => {
+    const inline = currentItem();
+    return [...rows, ...(inline ? [inline] : [])];
+  };
+  const canSaveProdukt = mode === "produkt" && produktItems().length > 0;
+
   const save = () =>
     writer.run(async () => {
       const meal =
         mode === "recept"
           ? { slot, name: selected!.name, recipe_id: selected!.id, recipe_servings: Number(servings) }
-          : {
-              slot,
-              name: name.trim(),
-              items: [
-                {
-                  description: name.trim(),
-                  macros: { kcal: Number(m.kcal), protein: Number(m.protein), fat: Number(m.fat), carbs: Number(m.carbs) },
-                },
-              ],
-            };
+          : mode === "produkt"
+            ? {
+                slot,
+                name: name.trim() || product?.name || rows[0]!.label.split(" · ")[0]!,
+                items: produktItems().map((r) => r.item),
+              }
+            : {
+                slot,
+                name: name.trim(),
+                items: [
+                  {
+                    description: name.trim(),
+                    macros: { kcal: Number(m.kcal), protein: Number(m.protein), fat: Number(m.fat), carbs: Number(m.carbs) },
+                  },
+                ],
+              };
       await putJson(`/ui/api/plan/${day.date}`, { meals: [meal], replace: false });
       onDone();
     });
@@ -101,6 +165,7 @@ function AddMealForm({ day, slot, writer, onDone }: { day: PlanDay; slot: PlanSl
     <div className="vadd">
       <div className="vadd-tabs">
         <button className={mode === "recept" ? "active" : ""} onClick={() => setMode("recept")}>Från recept</button>
+        <button className={mode === "produkt" ? "active" : ""} onClick={() => setMode("produkt")}>Produkt</button>
         <button className={mode === "snabb" ? "active" : ""} onClick={() => setMode("snabb")}>Snabb</button>
       </div>
       {mode === "recept" ? (
@@ -121,6 +186,57 @@ function AddMealForm({ day, slot, writer, onDone }: { day: PlanDay; slot: PlanSl
             <input type="number" min="0.5" step="0.5" value={servings} onChange={(e) => setServings(e.target.value)} />
           </label>
         </div>
+      ) : mode === "produkt" ? (
+        <div className="vadd-fields">
+          <input placeholder="Måltidsnamn (valfritt)" value={name} onChange={(e) => setName(e.target.value)} />
+          {rows.length > 0 ? (
+            <ul className="vadd-rows">
+              {rows.map((r, i) => (
+                <li key={i}>
+                  <span>{r.label}</span>
+                  <button aria-label={`ta bort ${r.label}`} onClick={() => setRows((xs) => xs.filter((_, j) => j !== i))}>×</button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <input placeholder="Sök produkt…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <KvittoSelect
+            value={productId}
+            onChange={pickProduct}
+            ariaLabel="välj produkt"
+            placeholder={products.data ? `Välj produkt (${filtered.length})…` : "Hämtar produkter…"}
+            options={filtered.map((p) => ({
+              value: String(p.id),
+              label: p.brand ? `${p.name} · ${p.brand}` : p.name,
+              description: p.per_100g ? `${sv(p.per_100g.kcal, 0)} kcal/100 g` : undefined,
+            }))}
+          />
+          {product ? (
+            <div className="vadd-amount">
+              <KvittoSelect
+                value={unit}
+                onChange={setUnit}
+                ariaLabel="enhet"
+                options={[
+                  ...(product.per_100g ? [{ value: "gram", label: "gram" }] : []),
+                  ...product.portions.map((p) => ({ value: p.name, label: p.name })),
+                ]}
+              />
+              {unit === "gram" ? (
+                <label>
+                  g
+                  <input type="number" inputMode="decimal" min="1" value={grams} onChange={(e) => setGrams(e.target.value)} />
+                </label>
+              ) : (
+                <label>
+                  antal
+                  <input type="number" inputMode="decimal" min="0.25" step="0.25" value={qty} onChange={(e) => setQty(e.target.value)} />
+                </label>
+              )}
+              <button className="ghost" disabled={currentItem() === null} onClick={addRow}>+ rad</button>
+            </div>
+          ) : null}
+        </div>
       ) : (
         <div className="vadd-fields">
           <input placeholder="Namn" value={name} onChange={(e) => setName(e.target.value)} />
@@ -135,7 +251,7 @@ function AddMealForm({ day, slot, writer, onDone }: { day: PlanDay; slot: PlanSl
         </div>
       )}
       <div className="vadd-actions">
-        <button disabled={writer.busy || !(canSaveRecipe || canSaveSnabb)} onClick={save}>Lägg till</button>
+        <button disabled={writer.busy || !(canSaveRecipe || canSaveSnabb || canSaveProdukt)} onClick={save}>Lägg till</button>
         <button className="ghost" onClick={onDone}>Avbryt</button>
       </div>
     </div>

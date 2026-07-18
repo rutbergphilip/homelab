@@ -165,6 +165,41 @@ const MIGRATIONS: string[] = [
     curve_json         TEXT NOT NULL
   );
   `,
+  // 6: week meal planner — planned meals per date+slot, raw-input items
+  // (recipe_ingredients shape, resolved live), day confirm state. Confirm
+  // copies planned meals into `meals` and records the link in logged_meal_id.
+  `
+  CREATE TABLE planned_meals (
+    id              INTEGER PRIMARY KEY,
+    day_date        TEXT NOT NULL REFERENCES days(date),
+    slot            TEXT NOT NULL CHECK (slot IN ('frukost','lunch','middag','mellis')),
+    position        INTEGER NOT NULL DEFAULT 0,
+    name            TEXT NOT NULL,
+    recipe_id       INTEGER REFERENCES recipes(id) ON DELETE SET NULL,
+    recipe_servings REAL,
+    post_gym_shake  INTEGER NOT NULL DEFAULT 0,
+    logged_meal_id  INTEGER REFERENCES meals(id) ON DELETE SET NULL,
+    note            TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX idx_planned_meals_day ON planned_meals(day_date);
+
+  CREATE TABLE planned_meal_items (
+    id              INTEGER PRIMARY KEY,
+    planned_meal_id INTEGER NOT NULL REFERENCES planned_meals(id) ON DELETE CASCADE,
+    position        INTEGER NOT NULL,
+    product_id      INTEGER REFERENCES products(id) ON DELETE SET NULL,
+    description     TEXT NOT NULL,
+    grams REAL, quantity REAL, portion_name TEXT,
+    kcal REAL, protein REAL, fat REAL, carbs REAL,
+    CHECK ((kcal IS NULL) = (protein IS NULL) AND (kcal IS NULL) = (fat IS NULL)
+       AND (kcal IS NULL) = (carbs IS NULL))
+  );
+  CREATE INDEX idx_planned_items_meal ON planned_meal_items(planned_meal_id);
+
+  ALTER TABLE days ADD COLUMN plan_confirmed_at TEXT;
+  `,
 ];
 
 export function migrate(db: Database): void {

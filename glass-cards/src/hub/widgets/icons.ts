@@ -116,6 +116,15 @@ export const icons: Record<string, TemplateResult> = {
     <circle cx="12" cy="12" r="8.5"></circle>
     <path d="M12 7.5V12l3 2"></path>
   `),
+  calendar: wrap(svg`
+    <rect x="4" y="5.5" width="16" height="14.5" rx="2"></rect>
+    <path d="M4 10h16"></path>
+    <path d="M8 3.5v3"></path>
+    <path d="M16 3.5v3"></path>
+    <path d="M8.5 14h2"></path>
+    <path d="M13.5 14h2"></path>
+    <path d="M8.5 17h2"></path>
+  `),
   expand: wrap(svg`
     <path d="M8 4H5a1 1 0 0 0-1 1v3"></path>
     <path d="M16 4h3a1 1 0 0 1 1 1v3"></path>

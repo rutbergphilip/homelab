@@ -69,7 +69,7 @@ interface RecipeRow {
   updated_at: string;
 }
 
-interface IngredientRow {
+export interface IngredientRow {
   product_id: number | null;
   description: string;
   grams: number | null;
@@ -85,7 +85,8 @@ interface IngredientRow {
 // non-null => ad-hoc (description IS input); else portion_name => portion item;
 // else grams item. Product rows get NO description — live resolution supplies
 // the current product name, so renames propagate.
-function reconstructInput(row: IngredientRow): MealItemInput {
+// Exported for db/plan.ts: planned_meal_items share the raw-input row shape.
+export function reconstructInput(row: IngredientRow): MealItemInput {
   if (row.kcal !== null && row.protein !== null && row.fat !== null && row.carbs !== null) {
     return {
       description: row.description,

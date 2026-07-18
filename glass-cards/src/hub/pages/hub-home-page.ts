@@ -1,9 +1,10 @@
-import { html, css } from 'lit';
+import { html, css, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
 import type { HubConfig } from '../hub-config.js';
+import { buildPlannerModel, nextMeal, SLOT_LABELS } from '../planner-model.js';
 import '../widgets/hub-clock.js';
 import '../widgets/hub-status-chip.js';
 import '../widgets/hub-room-tile.js';
@@ -17,6 +18,7 @@ interface ChipDescriptor {
   label: string;
   tone: HubChipTone;
   active: boolean;
+  goto?: string; // tap navigates to this hub page
 }
 
 const VAC_LABELS: Record<string, string> = {
@@ -136,6 +138,12 @@ export class HubHomePage extends GlassBaseElement {
     `,
   ];
 
+  private _gotoPage(page: string): void {
+    this.dispatchEvent(
+      new CustomEvent('hub-goto-page', { detail: { page }, bubbles: true, composed: true }),
+    );
+  }
+
   private get _chips(): ChipDescriptor[] {
     const cfg = this.config;
     const chips: ChipDescriptor[] = [];
@@ -159,6 +167,26 @@ export class HubHomePage extends GlassBaseElement {
           label: VAC_LABELS[v.state] ?? 'Städar',
           tone: v.state === 'error' ? 'coral' : 'neutral',
           active: true,
+        });
+      }
+    }
+
+    // Next planned meal today — the meal planner's presence on Hem. Hidden
+    // when nothing is planned or everything is already logged.
+    if (cfg.kcal?.planner_entity) {
+      const entity = this.getEntity(cfg.kcal.planner_entity);
+      const model =
+        entity && entity.state !== 'unavailable' && entity.state !== 'unknown'
+          ? buildPlannerModel(entity.attributes as Record<string, unknown>)
+          : null;
+      const next = model ? nextMeal(model) : null;
+      if (next) {
+        chips.push({
+          icon: 'calendar',
+          label: `${SLOT_LABELS[next.meal.slot]} · ${next.meal.name}`,
+          tone: 'lavender',
+          active: true,
+          goto: 'vecka',
         });
       }
     }
@@ -190,10 +218,12 @@ export class HubHomePage extends GlassBaseElement {
             ${this._chips.map(
               (c) => html`
                 <hub-status-chip
+                  style=${c.goto ? 'cursor:pointer' : ''}
                   .icon=${c.icon}
                   .label=${c.label}
                   .tone=${c.tone}
                   ?active=${c.active}
+                  @click=${c.goto ? () => this._gotoPage(c.goto!) : nothing}
                 ></hub-status-chip>
               `,
             )}

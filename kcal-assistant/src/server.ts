@@ -4,7 +4,9 @@ import type { Database } from "bun:sqlite";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { buildMcpServer } from "./mcp";
 import { handleUiApi } from "./ui/api";
-import { buildInternalSummary } from "./ui/internal";
+import { buildInternalSummary, buildInternalPlanner } from "./ui/internal";
+import { confirmDay } from "./db/plan";
+import { isValidDate } from "./lib/dates";
 import type { UiAuthState } from "./ui/auth";
 
 function safeEqual(a: string, b: string): boolean {
@@ -122,9 +124,13 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
             return;
           }
         }
-        if (req.method !== "GET" && !(req.method === "PUT" && pathname === "/ui/api/profile")) {
+        // The only writable UI routes: profile plus plan/confirm per-date.
+        const putRoute =
+          pathname === "/ui/api/profile" ||
+          /^\/ui\/api\/(plan|confirm)\/\d{4}-\d{2}-\d{2}$/.test(pathname);
+        if (req.method !== "GET" && !(req.method === "PUT" && putRoute)) {
           uiHeaders(res);
-          res.writeHead(405, { allow: pathname === "/ui/api/profile" ? "GET, PUT" : "GET" }).end();
+          res.writeHead(405, { allow: putRoute ? "GET, PUT" : "GET" }).end();
           return;
         }
         const staticRoute = STATIC_ROUTES[pathname];
@@ -186,7 +192,7 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
 // unauthenticated read-only route in this app gets its own port instead,
 // gated at the network layer by a CiliumNetworkPolicy (Task 13).
 export function createInternalServer(opts: { db: Database }): Server {
-  return createServer((req, res) => {
+  return createServer(async (req, res) => {
     try {
       const raw = req.url ?? "/";
       if (raw.includes("..") || raw.includes("%") || raw.includes("\\") || raw.includes("//")) {
@@ -208,6 +214,52 @@ export function createInternalServer(opts: { db: Database }): Server {
         res
           .writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
           .end(JSON.stringify(buildInternalSummary(opts.db)));
+        return;
+      }
+
+      if (pathname === "/internal/planner") {
+        if (req.method !== "GET") {
+          res.writeHead(405, { allow: "GET" }).end();
+          return;
+        }
+        res
+          .writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+          .end(JSON.stringify(buildInternalPlanner(opts.db)));
+        return;
+      }
+
+      // The single write on this listener: the wall panel's Bekräfta button
+      // (HA rest_command). Whole-day confirm only; unconfirm deliberately
+      // stays off the panel. Cilium L7 pins exactly this method+path to the
+      // HA host identity.
+      if (pathname === "/internal/planner/confirm") {
+        if (req.method !== "POST") {
+          res.writeHead(405, { allow: "POST" }).end();
+          return;
+        }
+        const rawBody = await readBody(req, 4096);
+        let date: unknown;
+        try {
+          date = rawBody === null ? undefined : (JSON.parse(rawBody) as { date?: unknown }).date;
+        } catch {
+          /* handled below */
+        }
+        if (typeof date !== "string" || !isValidDate(date)) {
+          res.writeHead(400, { "content-type": "application/json" }).end('{"error":"ogiltigt datum"}');
+          return;
+        }
+        try {
+          confirmDay(opts.db, date);
+          res
+            .writeHead(200, { "content-type": "application/json" })
+            .end(JSON.stringify({ ok: true, date }));
+        } catch (e) {
+          const message = e instanceof Error ? e.message : "fel";
+          const conflict = /redan bekräftad|inget planerat/.test(message);
+          res
+            .writeHead(conflict ? 409 : 400, { "content-type": "application/json" })
+            .end(JSON.stringify({ error: message }));
+        }
         return;
       }
 

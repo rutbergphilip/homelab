@@ -20,6 +20,7 @@ configMapGenerator:
   - name: authentik-blueprints
     files:
       - blueprints/forward-auth.yaml
+      - blueprints/sessions.yaml
 
 commonLabels:
   app.kubernetes.io/name: authentik

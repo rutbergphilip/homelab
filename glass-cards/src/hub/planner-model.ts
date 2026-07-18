@@ -116,3 +116,36 @@ export function nextMeal(model: PlannerModel): { day: PlannerDay; meal: PlannerM
   }
   return null;
 }
+
+function addDaysIso(date: string, n: number): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
+
+export interface UpcomingMeals {
+  dayLabel: 'Idag' | 'Imorgon';
+  day: PlannerDay;
+  meals: PlannerMeal[]; // slot order, unlogged only
+}
+
+/**
+ * The Hem card's content: today's unlogged planned meals, else tomorrow's
+ * (when it exists in the payload — Sunday evening's "tomorrow" is next week
+ * and simply yields null). Meals come back in slot order.
+ */
+export function upcomingMeals(model: PlannerModel): UpcomingMeals | null {
+  const inSlotOrder = (day: PlannerDay): PlannerMeal[] =>
+    SLOT_ORDER.flatMap((slot) => day.meals.filter((m) => m.slot === slot && !m.logged));
+
+  const today = model.days.find((d) => d.date === model.today);
+  if (today) {
+    const meals = inSlotOrder(today);
+    if (meals.length > 0) return { dayLabel: 'Idag', day: today, meals };
+  }
+  const tomorrow = model.days.find((d) => d.date === addDaysIso(model.today, 1));
+  if (tomorrow) {
+    const meals = inSlotOrder(tomorrow);
+    if (meals.length > 0) return { dayLabel: 'Imorgon', day: tomorrow, meals };
+  }
+  return null;
+}

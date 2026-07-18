@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+#
+# Session lifetime policy, managed from git (same rules as forward-auth.yaml:
+# never edit these objects in the UI/API — blueprint apply overwrites drift).
+#
+# Goal (Philip, 2026-07-18): protected pages should NOT prompt for login for
+# weeks. Two knobs cooperate:
+#   1. The core Authentik session (set here): 30 days, persisted across
+#      browser restarts. While it lives, any outpost/provider re-auth is a
+#      silent redirect — "auto refresh upon entering a protected page".
+#   2. Per-provider access_token_validity (forward-auth.yaml): days=7 — how
+#      long the outpost's own session cookie lasts between those silent hops.
+version: 1
+metadata:
+  name: homelab-sessions
+  labels:
+    blueprints.goauthentik.io/description: >-
+      Long-lived login sessions (30 d) so forward-auth apps silently
+      re-authenticate instead of prompting.
+entries:
+  - model: authentik_stages_user_login.userloginstage
+    state: present
+    identifiers:
+      name: default-authentication-login
+    attrs:
+      session_duration: days=30

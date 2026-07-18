@@ -17,10 +17,11 @@ import './pages/hub-lights-page.js';
 import './pages/hub-energy-page.js';
 import './pages/hub-media-page.js';
 import './pages/hub-kcal-page.js';
+import './pages/hub-planner-page.js';
 import './widgets/hub-room-popup.js';
 import './widgets/hub-nav-bar.js';
 
-const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal'];
+const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka'];
 
 const PAGE_TITLES: Record<string, string> = {
   hem: 'Hem',
@@ -28,6 +29,7 @@ const PAGE_TITLES: Record<string, string> = {
   media: 'Media',
   energi: 'Energi',
   kcal: 'Kcal',
+  vecka: 'Vecka',
 };
 
 function pageTitle(id: string): string {
@@ -431,7 +433,12 @@ export class GlassHub extends GlassBaseElement {
                             .hass=${this.hass}
                             .config=${this._cfg}
                           ></hub-kcal-page>`
-                        : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
+                        : id === 'vecka'
+                          ? html`<hub-planner-page
+                              .hass=${this.hass}
+                              .config=${this._cfg}
+                            ></hub-planner-page>`
+                          : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
             </section>
           `,
         )}

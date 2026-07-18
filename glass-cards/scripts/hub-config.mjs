@@ -29,7 +29,7 @@ export const hubDashboard = {
         media_players: [
           { entity: 'media_player.arc_sub', name: 'Vardagsrum (Arc)' },
         ],
-        kcal: { today_entity: 'sensor.kcal_idag', forecast_entity: 'sensor.kcal_viktprognos' },
+        kcal: { today_entity: 'sensor.kcal_idag', forecast_entity: 'sensor.kcal_viktprognos', planner_entity: 'sensor.kcal_veckoplan' },
         rooms: [
           { id: 'vardagsrum', name: 'Vardagsrum', icon: 'sofa', main_entity: 'light.vardagsrum',
             lights: [ { entity: 'light.vardagsrum', name: 'Taklampa' }, { entity: 'light.tv', name: 'TV-lampa' } ] },

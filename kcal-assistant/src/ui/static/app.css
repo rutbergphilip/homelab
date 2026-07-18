@@ -523,3 +523,56 @@ button.chip:focus-visible { outline: 2px solid var(--accent-dim); outline-offset
 /* collapsible profile (v0.8) */
 .collapsible-summary { display: block; width: 100%; text-align: left; font: inherit; font-family: var(--mono); font-size: 13px; color: var(--ink); background: none; border: none; padding: 10px 12px; cursor: pointer; }
 .collapsible-summary:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 0; }
+
+/* vecka — meal planner (v0.11) */
+.vnav { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; }
+.vnav button { font: inherit; font-family: var(--mono); font-size: 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--hair-2); border-radius: 2px; padding: 6px 10px; cursor: pointer; }
+.vnav button:hover { border-color: var(--accent-dim); }
+.vnav button:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 0; }
+.vnav-range { flex: 1; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.vday { margin: 14px 0; padding: 12px 12px 10px; background: var(--surface); border: 1px solid var(--hair); border-radius: 2px; }
+.vday.today { border-color: var(--accent-dim); }
+.vday.confirmed { background: var(--surface-2); }
+.vday-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vday-title { display: flex; align-items: baseline; gap: 8px; }
+.vday-name { font-family: var(--mono); font-size: 13px; font-weight: 700; text-transform: capitalize; }
+.vday-date { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.vday-lock { font-family: var(--mono); font-size: 11px; color: var(--ok); }
+.vday-type { width: 120px; }
+.vday-sum { font-family: var(--mono); font-size: 11px; color: var(--ink-2); margin: 8px 0 2px; font-variant-numeric: tabular-nums; }
+.vday-warn { font-family: var(--mono); font-size: 11px; color: var(--under); margin: 4px 0; }
+.vslot { margin-top: 8px; border-top: 1px dotted var(--hair); padding-top: 6px; }
+.vslot-head { display: flex; align-items: baseline; justify-content: space-between; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.vslot-add { font: inherit; font-family: var(--mono); font-size: 10px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 2px 0; }
+.vslot-add:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 0; }
+.vmeal { width: 100%; }
+.vlogged { font-family: var(--mono); font-size: 10px; color: var(--ok); margin-left: 8px; }
+.vwarn { font-family: var(--mono); font-size: 10px; color: var(--under); margin-left: 8px; }
+.vmeal-detail { padding: 6px 8px 10px; border-left: 2px solid var(--hair-2); margin: 2px 0 8px 6px; display: flex; flex-direction: column; gap: 8px; }
+.vmacro { font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+.vitems { list-style: none; font-family: var(--mono); font-size: 11px; color: var(--ink-3); display: flex; flex-direction: column; gap: 2px; }
+.vfield { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vfield label { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.vfield input, .vadd-fields input { font: inherit; font-family: var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--hair-2); border-radius: 2px; padding: 5px 8px; width: 80px; }
+.vfield input:focus, .vadd-fields input:focus { outline: 2px solid var(--accent-dim); outline-offset: 0; }
+.vfield button, .vadd-actions button, .vday-actions button { font: inherit; font-family: var(--mono); font-size: 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--hair-2); border-radius: 2px; padding: 5px 10px; cursor: pointer; }
+.vfield button:disabled, .vadd-actions button:disabled, .vday-actions button:disabled { opacity: 0.5; cursor: default; }
+.vfield button:focus-visible, .vadd-actions button:focus-visible, .vday-actions button:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 0; }
+.vfield button.danger { color: var(--under); border-color: var(--under); }
+.vday-actions { margin-top: 10px; display: flex; justify-content: flex-end; }
+.vday-actions .vconfirm { color: var(--accent); border-color: var(--accent-dim); }
+.vday-actions .ghost, .vadd-actions .ghost { color: var(--ink-3); }
+.vadd { margin: 6px 0; padding: 8px; background: var(--bg); border: 1px dashed var(--hair-2); border-radius: 2px; display: flex; flex-direction: column; gap: 8px; }
+.vadd-tabs { display: flex; gap: 6px; }
+.vadd-tabs button { font: inherit; font-family: var(--mono); font-size: 11px; color: var(--ink-3); background: none; border: 1px solid var(--hair); border-radius: 2px; padding: 4px 8px; cursor: pointer; }
+.vadd-tabs button.active { color: var(--accent); border-color: var(--accent-dim); }
+.vadd-fields { display: flex; flex-direction: column; gap: 8px; }
+.vadd-fields > input { width: 100%; }
+.vadd-servings { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.vadd-macros { display: flex; gap: 8px; flex-wrap: wrap; }
+.vadd-macros label { display: flex; flex-direction: column; gap: 3px; font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+.vadd-macros input { width: 72px; }
+.vadd-actions { display: flex; gap: 8px; }
+.vshop { margin: 16px 0; padding: 10px 12px; background: var(--surface); border: 1px solid var(--hair); border-radius: 2px; }
+.vshop summary { font-family: var(--mono); font-size: 12px; cursor: pointer; }
+.vshop ul { list-style: none; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; font-family: var(--mono); font-size: 12px; color: var(--ink-2); }

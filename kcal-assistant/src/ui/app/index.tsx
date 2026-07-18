@@ -8,9 +8,10 @@ import { Recept } from "./views/Recept";
 import { ReceptDetalj } from "./views/ReceptDetalj";
 import { Vikt } from "./views/Vikt";
 import { Regler } from "./views/Regler";
+import { Vecka } from "./views/Vecka";
 
 const TABS = [
-  ["idag", "Idag"], ["dagar", "Dagar"], ["produkter", "Produkter"],
+  ["idag", "Idag"], ["vecka", "Vecka"], ["dagar", "Dagar"], ["produkter", "Produkter"],
   ["recept", "Recept"], ["vikt", "Vikt"], ["regler", "Regler"],
 ] as const;
 
@@ -29,6 +30,7 @@ export interface Route { tab: string; el: ReactNode }
 export function resolveRoute(hash: string): Route {
   let m: RegExpMatchArray | null;
   if (/^#\/idag$/.test(hash)) return { tab: "idag", el: <Idag /> };
+  if (/^#\/vecka$/.test(hash)) return { tab: "vecka", el: <Vecka /> };
   if (/^#\/dagar$/.test(hash)) return { tab: "dagar", el: <Dagar /> };
   if ((m = hash.match(/^#\/dagar\/(\d{4}-\d{2}-\d{2})$/))) return { tab: "dagar", el: <DagDetalj date={m[1]!} /> };
   if (/^#\/produkter$/.test(hash)) return { tab: "produkter", el: <Produkter /> };

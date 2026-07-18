@@ -85,3 +85,12 @@ export interface ForecastView { forecast: Forecast | null; reason?: string;
 export interface Profile { birth_date: string; sex: "man" | "kvinna"; height_cm: number; activity_factor: number; goal_weight_kg: number | null; goal_date: string | null }
 export interface Preference { id: number; category: string; content: string }
 export interface OverviewView { day: DayView; trend: TrendView; week: WeekView; counts: { products: number; recipes: number } }
+export type PlanSlot = "frukost" | "lunch" | "middag" | "mellis";
+export interface PlanItem { product_id: number | null; description: string; grams: number | null; quantity: number | null; portion_name: string | null; macros?: Macros; kcal?: number; protein?: number; fat?: number; carbs?: number; unresolved?: true; reason?: string }
+export interface PlanMeal extends Macros { id: number; slot: PlanSlot; position: number; name: string; recipe_id: number | null; recipe_servings: number | null; post_gym_shake: boolean; note: string | null; logged: boolean; totals_incomplete?: true; items?: PlanItem[] }
+export interface PlanDay { date: string; weekday: string; day_type: string; targets: DayTargets; confirmed: boolean; confirmed_at: string | null; meals: PlanMeal[]; totals: Macros; remaining: { kcal: number; protein_to_min: number; fat_to_min: number; carbs: number | null }; checks: { kcal_ok: boolean; protein_floor_ok: boolean; fat_floor_ok: boolean }; warning?: string }
+export interface ShoppingLine { product_id: number | null; description: string; grams: number | null; quantity: number | null; portion_name: string | null }
+export interface PlanWeek { start_date: string; end_date: string; days: PlanDay[]; week: { planned_days: number; confirmed_days: number; avg_planned_kcal: number | null; avg_target_kcal: number }; shopping_list: ShoppingLine[] }
+
+export const putJson = <T,>(path: string, body: unknown): Promise<T> =>
+  api<T>(path, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });

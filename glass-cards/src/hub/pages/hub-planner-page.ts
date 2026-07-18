@@ -35,6 +35,7 @@ export class HubPlannerPage extends GlassBaseElement {
       :host {
         display: block;
         height: 100%;
+        position: relative; /* containing block for the day-popup overlay */
       }
       .page {
         box-sizing: border-box;
@@ -200,8 +201,11 @@ export class HubPlannerPage extends GlassBaseElement {
       }
 
       /* ── Day popup ─────────────────────────────────────────── */
+      /* Absolute, not fixed: the swipe strip's translateX makes it the
+         containing block for fixed elements, which would center the popup
+         across the whole strip instead of the visible page. */
       .scrim {
-        position: fixed;
+        position: absolute;
         inset: 0;
         background: color-mix(in srgb, var(--hub-surface) 62%, transparent);
         backdrop-filter: blur(8px);

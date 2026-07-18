@@ -122,9 +122,13 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
             return;
           }
         }
-        if (req.method !== "GET" && !(req.method === "PUT" && pathname === "/ui/api/profile")) {
+        // The only writable UI routes: profile plus plan/confirm per-date.
+        const putRoute =
+          pathname === "/ui/api/profile" ||
+          /^\/ui\/api\/(plan|confirm)\/\d{4}-\d{2}-\d{2}$/.test(pathname);
+        if (req.method !== "GET" && !(req.method === "PUT" && putRoute)) {
           uiHeaders(res);
-          res.writeHead(405, { allow: pathname === "/ui/api/profile" ? "GET, PUT" : "GET" }).end();
+          res.writeHead(405, { allow: putRoute ? "GET, PUT" : "GET" }).end();
           return;
         }
         const staticRoute = STATIC_ROUTES[pathname];

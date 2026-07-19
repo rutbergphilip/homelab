@@ -19,6 +19,7 @@ import './pages/hub-media-page.js';
 import './pages/hub-kcal-page.js';
 import './pages/hub-planner-page.js';
 import './widgets/hub-room-popup.js';
+import './widgets/hub-light-popup.js';
 import './widgets/hub-nav-bar.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka'];
@@ -55,6 +56,7 @@ export class GlassHub extends GlassBaseElement {
   @state() private _page = 0;
   @state() private _dragX = 0;
   @state() private _openRoom: HubRoom | null = null;
+  @state() private _openLight: { entity: string; name: string } | null = null;
 
   private _override: ThemeOverride = getStoredOverride();
   private _idleTimer?: number;
@@ -172,6 +174,7 @@ export class GlassHub extends GlassBaseElement {
     this._startKioskDrawerShim();
     this.addEventListener('pointerdown', this._onAnyInteraction);
     this.addEventListener('hub-room-open', this._onRoomOpen as EventListener);
+    this.addEventListener('hub-light-open', this._onLightOpen as EventListener);
     this.addEventListener('hub-goto-page', this._onGotoPage as EventListener);
     this.addEventListener('hub-popup-close', this._onPopupClose);
   }
@@ -185,6 +188,7 @@ export class GlassHub extends GlassBaseElement {
     }
     this.removeEventListener('pointerdown', this._onAnyInteraction);
     this.removeEventListener('hub-room-open', this._onRoomOpen as EventListener);
+    this.removeEventListener('hub-light-open', this._onLightOpen as EventListener);
     this.removeEventListener('hub-goto-page', this._onGotoPage as EventListener);
     this.removeEventListener('hub-popup-close', this._onPopupClose);
   }
@@ -195,6 +199,11 @@ export class GlassHub extends GlassBaseElement {
     this._openRoom = this._cfg?.rooms?.find((r) => r.id === id) ?? null;
   };
 
+  private _onLightOpen = (e: CustomEvent<{ entity: string; name: string }>): void => {
+    const d = e.detail;
+    this._openLight = d?.entity ? { entity: d.entity, name: d.name ?? d.entity } : null;
+  };
+
   private _onGotoPage = (e: CustomEvent<{ page: string }>): void => {
     const page = e.detail?.page;
     if (page) this.goToPage(page);
@@ -202,6 +211,7 @@ export class GlassHub extends GlassBaseElement {
 
   private _onPopupClose = (): void => {
     this._openRoom = null;
+    this._openLight = null;
   };
 
   willUpdate(changed: PropertyValues): void {
@@ -468,6 +478,13 @@ export class GlassHub extends GlassBaseElement {
             .hass=${this.hass}
             .room=${this._openRoom}
           ></hub-room-popup>`
+        : nothing}
+      ${this._openLight
+        ? html`<hub-light-popup
+            .hass=${this.hass}
+            .entity=${this._openLight.entity}
+            .name=${this._openLight.name}
+          ></hub-light-popup>`
         : nothing}
     `;
   }

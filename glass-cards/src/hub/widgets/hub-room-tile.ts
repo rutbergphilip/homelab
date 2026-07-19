@@ -1,9 +1,10 @@
 import { html, css } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import { icons } from './icons.js';
 import { isDrag } from '../swipe.js';
+import { roomTapPlan } from '../light-actions.js';
 import type { HubRoom } from '../hub-config.js';
 
 const LONG_PRESS_MS = 500;
@@ -15,6 +16,8 @@ export class HubRoomTile extends GlassBaseElement {
   private _longPressed = false;
   private _downX = 0;
   private _downY = 0;
+  @state() private _flash = false;
+  private _flashTimer?: number;
 
   static styles = [
     hubTokens,
@@ -38,12 +41,15 @@ export class HubRoomTile extends GlassBaseElement {
         border: 1px solid var(--hub-card-border);
         box-shadow: var(--hub-shadow);
         transition: background var(--hub-fade) ease, border-color var(--hub-fade) ease,
-          box-shadow var(--hub-fade) ease;
+          box-shadow var(--hub-fade) ease, transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
       }
       .tile.active {
         background: var(--hub-amber-bg);
         border-color: var(--hub-amber-border);
         box-shadow: var(--hub-amber-glow);
+      }
+      .tile.flash {
+        transform: scale(0.96);
       }
       .icon-chip {
         width: 32px;
@@ -86,6 +92,10 @@ export class HubRoomTile extends GlassBaseElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._cancelPress();
+    if (this._flashTimer !== undefined) {
+      clearTimeout(this._flashTimer);
+      this._flashTimer = undefined;
+    }
   }
 
   private get _lightsOn(): number {
@@ -111,7 +121,13 @@ export class HubRoomTile extends GlassBaseElement {
     this._downY = e.clientY;
     this._pressTimer = window.setTimeout(() => {
       this._longPressed = true;
-      this.toggle(this.room.main_entity);
+      this.dispatchEvent(
+        new CustomEvent('hub-room-open', {
+          detail: { roomId: this.room.id },
+          bubbles: true,
+          composed: true,
+        }),
+      );
     }, LONG_PRESS_MS);
   };
 
@@ -136,13 +152,14 @@ export class HubRoomTile extends GlassBaseElement {
       this._longPressed = false;
       return;
     }
-    this.dispatchEvent(
-      new CustomEvent('hub-room-open', {
-        detail: { roomId: this.room.id },
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    const plan = roomTapPlan(this.room, this.hass.states);
+    this.callService('light', plan.service, { entity_id: plan.entities });
+    this._flash = true;
+    if (this._flashTimer !== undefined) clearTimeout(this._flashTimer);
+    this._flashTimer = window.setTimeout(() => {
+      this._flash = false;
+      this._flashTimer = undefined;
+    }, 200);
   };
 
   render() {
@@ -151,7 +168,7 @@ export class HubRoomTile extends GlassBaseElement {
     const ic = icons[this.room.icon];
     return html`
       <div
-        class="tile ${active ? 'active' : ''}"
+        class="tile ${active ? 'active' : ''} ${this._flash ? 'flash' : ''}"
         @pointerdown=${this._onPointerDown}
         @pointermove=${this._onPointerMove}
         @pointerup=${this._cancelPress}

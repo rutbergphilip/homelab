@@ -123,6 +123,67 @@ describe('next12Hours', () => {
   });
 });
 
+import {
+  buildEnergyModel as buildV2,
+  hasSpotSeries,
+  priceBreakdown,
+} from '../src/hub/energy-model';
+
+describe('dual-series price views', () => {
+  const NOW = new Date('2026-07-20T10:30:00');
+  const attrs = {
+    today: [
+      { total: 1.0, energy: 0.6, startsAt: '2026-07-20T10:00:00' },
+      { total: 1.5, energy: 1.0, startsAt: '2026-07-20T11:00:00' },
+    ],
+    tomorrow: [],
+  };
+
+  it('allin view adds gridAddOre on top of total', () => {
+    const m = buildV2(attrs, '1.0', NOW, 'allin', 71);
+    expect(m.today[0].ore).toBeCloseTo(171); // 100 + 71
+    expect(m.today[0].totalOre).toBeCloseTo(100);
+    expect(m.today[0].spotOre).toBeCloseTo(60);
+  });
+
+  it('spot view uses the energy field, no grid add', () => {
+    const m = buildV2(attrs, '1.0', NOW, 'spot', 71);
+    expect(m.today[0].ore).toBeCloseTo(60);
+    expect(m.today[1].ore).toBeCloseTo(100);
+  });
+
+  it('default 3-arg call behaves like before (ore = total×100)', () => {
+    const m = buildV2(attrs, '1.0', NOW);
+    expect(m.today[0].ore).toBeCloseTo(100);
+  });
+
+  it('hours without energy fall back to total in spot view and report no spot series', () => {
+    const partial = { today: [{ total: 1.0, startsAt: '2026-07-20T10:00:00' }], tomorrow: [] };
+    const m = buildV2(partial, '1.0', NOW, 'spot', 71);
+    expect(m.today[0].ore).toBeCloseTo(100);
+    expect(m.today[0].spotOre).toBeNull();
+    expect(hasSpotSeries(m)).toBe(false);
+    expect(hasSpotSeries(buildV2(attrs, '1.0', NOW))).toBe(true);
+  });
+
+  it('priceBreakdown splits spot / taxes / grid, null without spot data', () => {
+    const m = buildV2(attrs, '1.0', NOW, 'allin', 71);
+    expect(priceBreakdown(m.today[0], 71)).toEqual({ spot: 60, taxes: 40, grid: 71 });
+    const partial = buildV2(
+      { today: [{ total: 1.0, startsAt: '2026-07-20T10:00:00' }], tomorrow: [] },
+      '1.0',
+      NOW,
+    );
+    expect(priceBreakdown(partial.today[0], 71)).toBeNull();
+  });
+
+  it('level and cheapest window follow the active view', () => {
+    const m = buildV2(attrs, '1.0', NOW, 'spot', 71);
+    // current hour 60 vs today avg 80 → ratio 0.75 < 0.85 → låg
+    expect(m.level).toBe('låg');
+  });
+});
+
 describe('buildEnergyModel — degraded inputs', () => {
   it('returns an empty model when the series is unavailable', () => {
     const m = buildEnergyModel(attrs, 'unavailable', NOW);

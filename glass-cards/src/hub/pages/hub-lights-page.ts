@@ -3,9 +3,11 @@ import { property, state } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import { icons } from '../widgets/icons.js';
-import type { HubConfig, HubRoom, HubRoomLight, HubRoomScene } from '../hub-config.js';
+import type { HubConfig, HubRoom } from '../hub-config.js';
 import type { HassEntity } from '../../types.js';
-import '../../cards/glass-light-slider.js';
+import { isDrag } from '../swipe.js';
+import { roomTapPlan } from '../light-actions.js';
+import '../widgets/hub-light-tile.js';
 
 type StateMap = Record<string, HassEntity | undefined>;
 
@@ -65,6 +67,10 @@ export class HubLightsPage extends GlassBaseElement {
   @state() private _flash = false;
   private _armTimer?: number;
   private _flashTimer?: number;
+  private _headPressTimer?: number;
+  private _headLongPressed = false;
+  private _headDownX = 0;
+  private _headDownY = 0;
 
   static styles = [
     hubTokens,
@@ -157,143 +163,57 @@ export class HubLightsPage extends GlassBaseElement {
         color: var(--hub-green);
       }
 
-      /* ── Rooms grid ─────────────────────────────────────── */
+      /* ── Room sections in a 3-column flow ─────────────────── */
       .body {
         flex: 1;
         min-height: 0;
-        overflow-y: auto;
+        overflow-y: auto; /* emergency fallback only — content must fit 1280×800 */
         overscroll-behavior: contain;
         padding-bottom: 56px;
         -webkit-overflow-scrolling: touch;
+        columns: 3;
+        column-gap: var(--hub-gap);
       }
-      .rooms {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        align-content: start;
-        gap: var(--hub-gap);
-      }
-      @media (max-width: 900px) {
-        .rooms {
-          grid-template-columns: 1fr;
+      @media (max-width: 1100px) {
+        .body {
+          columns: 2;
         }
       }
 
-      .room {
-        box-sizing: border-box;
-        border-radius: var(--hub-radius);
-        padding: 16px;
-        background: var(--hub-card);
-        border: 1px solid var(--hub-card-border);
-        box-shadow: var(--hub-shadow);
+      .section {
+        break-inside: avoid;
+        margin-bottom: 16px;
+      }
+      .sec-head {
         display: flex;
-        flex-direction: column;
-        gap: 12px;
-        transition: border-color var(--hub-fade) ease, box-shadow var(--hub-fade) ease;
+        align-items: baseline;
+        gap: 8px;
+        padding: 2px 4px 8px;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
       }
-      .room.active {
-        border-color: var(--hub-amber-border);
-        box-shadow: var(--hub-amber-glow);
-      }
-      .room-head {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .room-ic {
-        width: 32px;
-        height: 32px;
-        flex-shrink: 0;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--hub-icon-chip-bg);
-        color: var(--hub-icon-chip-color);
-        transition: background var(--hub-fade) ease, color var(--hub-fade) ease;
-      }
-      .room-ic svg {
-        width: 16px;
-        height: 16px;
-      }
-      .room.active .room-ic {
-        background: var(--hub-amber);
-        color: var(--hub-surface);
-      }
-      .room-name {
+      .sec-name {
         font: 600 15px var(--hub-font-body);
-        color: var(--hub-text-muted);
-        display: block;
+        color: var(--hub-text);
       }
-      .room.active .room-name {
+      .sec-head.active .sec-name {
         color: var(--hub-amber-text);
       }
-      .room-meta {
-        display: block;
-        margin-top: 1px;
-        font: 500 11.5px var(--hub-font-body);
-        color: var(--hub-text-dim);
-      }
-      .room.active .room-meta {
-        color: var(--hub-amber-muted);
-      }
-
-      .lights {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      glass-light-slider {
-        display: block;
-      }
-
-      /* Unavailable / missing lights are quiet, non-interactive rows. */
-      .dead-row {
-        box-sizing: border-box;
-        min-height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 0 16px;
-        border-radius: var(--hub-radius-sm, 12px);
-        background: var(--hub-icon-chip-bg);
-        border: 1px solid var(--hub-card-border);
-      }
-      .dead-name {
-        font: 500 14px var(--hub-font-body);
-        color: var(--hub-text-dim);
-      }
-      .dead-state {
+      .sec-meta {
         font: 500 12px var(--hub-font-body);
         color: var(--hub-text-dim);
       }
-
-      /* ── Per-room scene chips ───────────────────────────── */
-      .scenes {
+      .sec-head.active .sec-meta {
+        color: var(--hub-amber-muted);
+      }
+      .tiles {
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding-top: 2px;
+        flex-direction: column;
+        gap: 6px;
       }
-      .scene-chip {
-        min-height: 48px;
-        padding: 0 14px;
-        border-radius: var(--hub-radius-pill);
-        border: 1px solid var(--hub-chip-border);
-        background: var(--hub-chip-bg);
-        color: var(--hub-text-muted);
-        font: 500 12.5px var(--hub-font-body);
-        white-space: nowrap;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 120ms ease, background 160ms ease, border-color 160ms ease,
-          color 160ms ease;
-      }
-      .scene-chip:active {
-        transform: scale(0.95);
-        background: var(--hub-amber-bg);
-        border-color: var(--hub-amber-border);
-        color: var(--hub-amber-text);
+      hub-light-tile {
+        display: block;
       }
     `,
   ];
@@ -312,6 +232,7 @@ export class HubLightsPage extends GlassBaseElement {
     // next single tap would fire light.turn_off all with no confirmation.
     this._armed = false;
     this._flash = false;
+    this._cancelHeadPress();
   }
 
   // ── Whole-home "Allt släckt" — arm then fire ──────────────
@@ -343,49 +264,67 @@ export class HubLightsPage extends GlassBaseElement {
   }
 
   // ── Render ────────────────────────────────────────────────
-  private _lightRow(l: HubRoomLight): TemplateResult {
-    const st = this.hass.states[l.entity];
-    if (!isLightLive(st)) {
-      return html`
-        <div class="dead-row">
-          <span class="dead-name">${l.name}</span>
-          <span class="dead-state">Ej tillgänglig</span>
-        </div>
-      `;
+  private _onHeadDown(e: PointerEvent, room: HubRoom): void {
+    this._headLongPressed = false;
+    this._headDownX = e.clientX;
+    this._headDownY = e.clientY;
+    this._headPressTimer = window.setTimeout(() => {
+      this._headLongPressed = true;
+      this.dispatchEvent(
+        new CustomEvent('hub-room-open', {
+          detail: { roomId: room.id },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }, 500);
+  }
+
+  private _onHeadMove = (e: PointerEvent): void => {
+    if (this._headPressTimer === undefined) return;
+    if (isDrag(e.clientX - this._headDownX) || isDrag(e.clientY - this._headDownY)) {
+      this._cancelHeadPress();
     }
-    return html`
-      <glass-light-slider
-        .hass=${this.hass}
-        ._config=${{ type: 'glass-light-slider', entity: l.entity, name: l.name }}
-      ></glass-light-slider>
-    `;
+  };
+
+  private _cancelHeadPress = (): void => {
+    if (this._headPressTimer !== undefined) {
+      clearTimeout(this._headPressTimer);
+      this._headPressTimer = undefined;
+    }
+  };
+
+  private _onHeadClick(room: HubRoom): void {
+    if (this._headLongPressed) {
+      this._headLongPressed = false;
+      return;
+    }
+    const plan = roomTapPlan(room, this.hass.states);
+    this.callService('light', plan.service, { entity_id: plan.entities });
   }
 
-  private _sceneChip(s: HubRoomScene): TemplateResult {
-    return html`
-      <button class="scene-chip" @click=${() => this._activateScene(s.entity)}>
-        ${s.name}
-      </button>
-    `;
-  }
-
-  private _roomCard(room: HubRoom): TemplateResult {
+  private _section(room: HubRoom): TemplateResult {
     const summary = roomLightSummary(room, this.hass.states);
     const active = summary.onCount > 0;
-    const ic = icons[room.icon];
     return html`
-      <div class="room ${active ? 'active' : ''}">
-        <div class="room-head">
-          <span class="room-ic">${ic ?? ''}</span>
-          <div>
-            <b class="room-name">${room.name}</b>
-            <small class="room-meta">${summary.label}</small>
-          </div>
+      <div class="section">
+        <div
+          class="sec-head ${active ? 'active' : ''}"
+          @pointerdown=${(e: PointerEvent) => this._onHeadDown(e, room)}
+          @pointermove=${this._onHeadMove}
+          @pointerup=${this._cancelHeadPress}
+          @pointercancel=${this._cancelHeadPress}
+          @pointerleave=${this._cancelHeadPress}
+          @click=${() => this._onHeadClick(room)}
+        >
+          <span class="sec-name">${room.name}</span>
+          <span class="sec-meta">${summary.label}</span>
         </div>
-        <div class="lights">${room.lights.map((l) => this._lightRow(l))}</div>
-        ${room.scenes?.length
-          ? html`<div class="scenes">${room.scenes.map((s) => this._sceneChip(s))}</div>`
-          : nothing}
+        <div class="tiles">
+          ${room.lights.map(
+            (l) => html`<hub-light-tile .hass=${this.hass} .light=${l}></hub-light-tile>`,
+          )}
+        </div>
       </div>
     `;
   }
@@ -430,9 +369,7 @@ export class HubLightsPage extends GlassBaseElement {
         </div>
 
         <div class="body">
-          <div class="rooms">
-            ${(cfg.rooms ?? []).map((r) => this._roomCard(r))}
-          </div>
+          ${(cfg.rooms ?? []).map((r) => this._section(r))}
         </div>
       </div>
     `;

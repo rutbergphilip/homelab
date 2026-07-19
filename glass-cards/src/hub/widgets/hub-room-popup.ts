@@ -1,4 +1,4 @@
-import { html, css, svg } from 'lit';
+import { html, css, svg, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
@@ -102,6 +102,32 @@ export class HubRoomPopup extends GlassBaseElement {
       glass-light-slider {
         display: block;
       }
+      .scenes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .scene-chip {
+        min-height: 48px;
+        padding: 0 14px;
+        border-radius: var(--hub-radius-pill);
+        border: 1px solid var(--hub-chip-border);
+        background: var(--hub-chip-bg);
+        color: var(--hub-text-muted);
+        font: 500 12.5px var(--hub-font-body);
+        white-space: nowrap;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 120ms ease, background 160ms ease, border-color 160ms ease,
+          color 160ms ease;
+      }
+      .scene-chip:active {
+        transform: scale(0.95);
+        background: var(--hub-amber-bg);
+        border-color: var(--hub-amber-border);
+        color: var(--hub-amber-text);
+      }
     `,
   ];
 
@@ -114,6 +140,10 @@ export class HubRoomPopup extends GlassBaseElement {
   private _onScrim = (e: Event): void => {
     if (e.target === e.currentTarget) this._close();
   };
+
+  private _activateScene(entity: string): void {
+    this.callService('scene', 'turn_on', undefined, entity);
+  }
 
   render() {
     if (!this.room || !this.hass) return html``;
@@ -137,6 +167,17 @@ export class HubRoomPopup extends GlassBaseElement {
               `,
             )}
           </div>
+          ${room.scenes?.length
+            ? html`<div class="scenes">
+                ${room.scenes.map(
+                  (s) => html`
+                    <button class="scene-chip" @click=${() => this._activateScene(s.entity)}>
+                      ${s.name}
+                    </button>
+                  `,
+                )}
+              </div>`
+            : nothing}
         </div>
       </div>
     `;

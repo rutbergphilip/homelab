@@ -216,7 +216,11 @@ export class HubHomePage extends GlassBaseElement {
         : nothing}
       <div class="page">
         <div class="top">
-          <hub-clock .hass=${this.hass} .weatherEntity=${cfg.weather_entity}></hub-clock>
+          <hub-clock
+            .hass=${this.hass}
+            .weatherEntity=${cfg.weather_entity}
+            .bgActive=${this.weatherBg}
+          ></hub-clock>
           <div class="chips">
             ${this._chips.map(
               (c) => html`

@@ -33,6 +33,7 @@ function capitalize(s: string): string {
  */
 export class HubClock extends GlassBaseElement {
   @property({ attribute: false }) weatherEntity!: string;
+  @property({ type: Boolean, reflect: true, attribute: 'bg-active' }) bgActive = false;
 
   @state() private _now = new Date();
   @state() private _hours: ForecastHour[] = [];
@@ -92,6 +93,17 @@ export class HubClock extends GlassBaseElement {
         margin-top: 5px;
         font: 500 12.5px var(--hub-font-body);
         color: var(--hub-teal);
+      }
+      :host([bg-active]) .time,
+      :host([bg-active]) .wx-temp {
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.22);
+      }
+      :host([bg-active]) .date,
+      :host([bg-active]) .wx-range,
+      :host([bg-active]) .hint {
+        color: var(--hub-text);
+        opacity: 0.82;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
       }
     `,
   ];

@@ -1,9 +1,9 @@
-function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPropertyDescriptor(e,i):a;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(t,e,i,a);else for(var o=t.length-1;o>=0;o--)(s=t[o])&&(n=(r<3?s(n):r>3?s(e,i,n):s(e,i))||n);return r>3&&n&&Object.defineProperty(e,i,n),n}"function"==typeof SuppressedError&&SuppressedError;const e=globalThis,i=e.ShadowRoot&&(void 0===e.ShadyCSS||e.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,a=Symbol(),s=new WeakMap;let r=class{constructor(t,e,i){if(this._$cssResult$=!0,i!==a)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o;const e=this.t;if(i&&void 0===t){const i=void 0!==e&&1===e.length;i&&(t=s.get(e)),void 0===t&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),i&&s.set(e,t))}return t}toString(){return this.cssText}};const n=(t,...e)=>{const i=1===t.length?t[0]:e.reduce((e,i,a)=>e+(t=>{if(!0===t._$cssResult$)return t.cssText;if("number"==typeof t)return t;throw Error("Value passed to 'css' function must be a 'css' function result: "+t+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+t[a+1],t[0]);return new r(i,t,a)},o=i?t=>t:t=>t instanceof CSSStyleSheet?(t=>{let e="";for(const i of t.cssRules)e+=i.cssText;return(t=>new r("string"==typeof t?t:t+"",void 0,a))(e)})(t):t,{is:l,defineProperty:h,getOwnPropertyDescriptor:c,getOwnPropertyNames:d,getOwnPropertySymbols:p,getPrototypeOf:u}=Object,g=globalThis,b=g.trustedTypes,m=b?b.emptyScript:"",v=g.reactiveElementPolyfillSupport,f=(t,e)=>t,x={toAttribute(t,e){switch(e){case Boolean:t=t?m:null;break;case Object:case Array:t=null==t?t:JSON.stringify(t)}return t},fromAttribute(t,e){let i=t;switch(e){case Boolean:i=null!==t;break;case Number:i=null===t?null:Number(t);break;case Object:case Array:try{i=JSON.parse(t)}catch(t){i=null}}return i}},y=(t,e)=>!l(t,e),_={attribute:!0,type:String,converter:x,reflect:!1,useDefault:!1,hasChanged:y};Symbol.metadata??=Symbol("metadata"),g.litPropertyMetadata??=new WeakMap;let w=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=_){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){const i=Symbol(),a=this.getPropertyDescriptor(t,i,e);void 0!==a&&h(this.prototype,t,a)}}static getPropertyDescriptor(t,e,i){const{get:a,set:s}=c(this.prototype,t)??{get(){return this[e]},set(t){this[e]=t}};return{get:a,set(e){const r=a?.call(this);s?.call(this,e),this.requestUpdate(t,r,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??_}static _$Ei(){if(this.hasOwnProperty(f("elementProperties")))return;const t=u(this);t.finalize(),void 0!==t.l&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(f("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(f("properties"))){const t=this.properties,e=[...d(t),...p(t)];for(const i of e)this.createProperty(i,t[i])}const t=this[Symbol.metadata];if(null!==t){const e=litPropertyMetadata.get(t);if(void 0!==e)for(const[t,i]of e)this.elementProperties.set(t,i)}this._$Eh=new Map;for(const[t,e]of this.elementProperties){const i=this._$Eu(t,e);void 0!==i&&this._$Eh.set(i,t)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){const e=[];if(Array.isArray(t)){const i=new Set(t.flat(1/0).reverse());for(const t of i)e.unshift(o(t))}else void 0!==t&&e.push(o(t));return e}static _$Eu(t,e){const i=e.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof t?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),void 0!==this.renderRoot&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){const t=new Map,e=this.constructor.elementProperties;for(const i of e.keys())this.hasOwnProperty(i)&&(t.set(i,this[i]),delete this[i]);t.size>0&&(this._$Ep=t)}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return((t,a)=>{if(i)t.adoptedStyleSheets=a.map(t=>t instanceof CSSStyleSheet?t:t.styleSheet);else for(const i of a){const a=document.createElement("style"),s=e.litNonce;void 0!==s&&a.setAttribute("nonce",s),a.textContent=i.cssText,t.appendChild(a)}})(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,i){this._$AK(t,i)}_$ET(t,e){const i=this.constructor.elementProperties.get(t),a=this.constructor._$Eu(t,i);if(void 0!==a&&!0===i.reflect){const s=(void 0!==i.converter?.toAttribute?i.converter:x).toAttribute(e,i.type);this._$Em=t,null==s?this.removeAttribute(a):this.setAttribute(a,s),this._$Em=null}}_$AK(t,e){const i=this.constructor,a=i._$Eh.get(t);if(void 0!==a&&this._$Em!==a){const t=i.getPropertyOptions(a),s="function"==typeof t.converter?{fromAttribute:t.converter}:void 0!==t.converter?.fromAttribute?t.converter:x;this._$Em=a;const r=s.fromAttribute(e,t.type);this[a]=r??this._$Ej?.get(a)??r,this._$Em=null}}requestUpdate(t,e,i,a=!1,s){if(void 0!==t){const r=this.constructor;if(!1===a&&(s=this[t]),i??=r.getPropertyOptions(t),!((i.hasChanged??y)(s,e)||i.useDefault&&i.reflect&&s===this._$Ej?.get(t)&&!this.hasAttribute(r._$Eu(t,i))))return;this.C(t,e,i)}!1===this.isUpdatePending&&(this._$ES=this._$EP())}C(t,e,{useDefault:i,reflect:a,wrapped:s},r){i&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??e??this[t]),!0!==s||void 0!==r)||(this._$AL.has(t)||(this.hasUpdated||i||(e=void 0),this._$AL.set(t,e)),!0===a&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(t){Promise.reject(t)}const t=this.scheduleUpdate();return null!=t&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[t,e]of this._$Ep)this[t]=e;this._$Ep=void 0}const t=this.constructor.elementProperties;if(t.size>0)for(const[e,i]of t){const{wrapped:t}=i,a=this[e];!0!==t||this._$AL.has(e)||void 0===a||this.C(e,void 0,i,a)}}let t=!1;const e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(t=>t.hostUpdate?.()),this.update(e)):this._$EM()}catch(e){throw t=!1,this._$EM(),e}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(t=>t.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(t=>this._$ET(t,this[t])),this._$EM()}updated(t){}firstUpdated(t){}};w.elementStyles=[],w.shadowRootOptions={mode:"open"},w[f("elementProperties")]=new Map,w[f("finalized")]=new Map,v?.({ReactiveElement:w}),(g.reactiveElementVersions??=[]).push("2.1.2");const k=globalThis,$=t=>t,E=k.trustedTypes,C=E?E.createPolicy("lit-html",{createHTML:t=>t}):void 0,M="$lit$",S=`lit$${Math.random().toFixed(9).slice(2)}$`,A="?"+S,T=`<${A}>`,P=document,N=()=>P.createComment(""),z=t=>null===t||"object"!=typeof t&&"function"!=typeof t,F=Array.isArray,D="[ \t\n\f\r]",B=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,O=/-->/g,j=/>/g,I=RegExp(`>|${D}(?:([^\\s"'>=/]+)(${D}*=${D}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),H=/'/g,L=/"/g,R=/^(?:script|style|textarea|title)$/i,U=t=>(e,...i)=>({_$litType$:t,strings:e,values:i}),V=U(1),X=U(2),W=Symbol.for("lit-noChange"),q=Symbol.for("lit-nothing"),G=new WeakMap,Y=P.createTreeWalker(P,129);function K(t,e){if(!F(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==C?C.createHTML(e):e}const Z=(t,e)=>{const i=t.length-1,a=[];let s,r=2===e?"<svg>":3===e?"<math>":"",n=B;for(let e=0;e<i;e++){const i=t[e];let o,l,h=-1,c=0;for(;c<i.length&&(n.lastIndex=c,l=n.exec(i),null!==l);)c=n.lastIndex,n===B?"!--"===l[1]?n=O:void 0!==l[1]?n=j:void 0!==l[2]?(R.test(l[2])&&(s=RegExp("</"+l[2],"g")),n=I):void 0!==l[3]&&(n=I):n===I?">"===l[0]?(n=s??B,h=-1):void 0===l[1]?h=-2:(h=n.lastIndex-l[2].length,o=l[1],n=void 0===l[3]?I:'"'===l[3]?L:H):n===L||n===H?n=I:n===O||n===j?n=B:(n=I,s=void 0);const d=n===I&&t[e+1].startsWith("/>")?" ":"";r+=n===B?i+T:h>=0?(a.push(o),i.slice(0,h)+M+i.slice(h)+S+d):i+S+(-2===h?e:d)}return[K(t,r+(t[i]||"<?>")+(2===e?"</svg>":3===e?"</math>":"")),a]};let Q=class t{constructor({strings:e,_$litType$:i},a){let s;this.parts=[];let r=0,n=0;const o=e.length-1,l=this.parts,[h,c]=Z(e,i);if(this.el=t.createElement(h,a),Y.currentNode=this.el.content,2===i||3===i){const t=this.el.content.firstChild;t.replaceWith(...t.childNodes)}for(;null!==(s=Y.nextNode())&&l.length<o;){if(1===s.nodeType){if(s.hasAttributes())for(const t of s.getAttributeNames())if(t.endsWith(M)){const e=c[n++],i=s.getAttribute(t).split(S),a=/([.?@])?(.*)/.exec(e);l.push({type:1,index:r,name:a[2],strings:i,ctor:"."===a[1]?at:"?"===a[1]?st:"@"===a[1]?rt:it}),s.removeAttribute(t)}else t.startsWith(S)&&(l.push({type:6,index:r}),s.removeAttribute(t));if(R.test(s.tagName)){const t=s.textContent.split(S),e=t.length-1;if(e>0){s.textContent=E?E.emptyScript:"";for(let i=0;i<e;i++)s.append(t[i],N()),Y.nextNode(),l.push({type:2,index:++r});s.append(t[e],N())}}}else if(8===s.nodeType)if(s.data===A)l.push({type:2,index:r});else{let t=-1;for(;-1!==(t=s.data.indexOf(S,t+1));)l.push({type:7,index:r}),t+=S.length-1}r++}}static createElement(t,e){const i=P.createElement("template");return i.innerHTML=t,i}};function J(t,e,i=t,a){if(e===W)return e;let s=void 0!==a?i._$Co?.[a]:i._$Cl;const r=z(e)?void 0:e._$litDirective$;return s?.constructor!==r&&(s?._$AO?.(!1),void 0===r?s=void 0:(s=new r(t),s._$AT(t,i,a)),void 0!==a?(i._$Co??=[])[a]=s:i._$Cl=s),void 0!==s&&(e=J(t,s._$AS(t,e.values),s,a)),e}class tt{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:e},parts:i}=this._$AD,a=(t?.creationScope??P).importNode(e,!0);Y.currentNode=a;let s=Y.nextNode(),r=0,n=0,o=i[0];for(;void 0!==o;){if(r===o.index){let e;2===o.type?e=new et(s,s.nextSibling,this,t):1===o.type?e=new o.ctor(s,o.name,o.strings,this,t):6===o.type&&(e=new nt(s,this,t)),this._$AV.push(e),o=i[++n]}r!==o?.index&&(s=Y.nextNode(),r++)}return Y.currentNode=P,a}p(t){let e=0;for(const i of this._$AV)void 0!==i&&(void 0!==i.strings?(i._$AI(t,i,e),e+=i.strings.length-2):i._$AI(t[e])),e++}}class et{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,i,a){this.type=2,this._$AH=q,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=i,this.options=a,this._$Cv=a?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode;const e=this._$AM;return void 0!==e&&11===t?.nodeType&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=J(this,t,e),z(t)?t===q||null==t||""===t?(this._$AH!==q&&this._$AR(),this._$AH=q):t!==this._$AH&&t!==W&&this._(t):void 0!==t._$litType$?this.$(t):void 0!==t.nodeType?this.T(t):(t=>F(t)||"function"==typeof t?.[Symbol.iterator])(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==q&&z(this._$AH)?this._$AA.nextSibling.data=t:this.T(P.createTextNode(t)),this._$AH=t}$(t){const{values:e,_$litType$:i}=t,a="number"==typeof i?this._$AC(t):(void 0===i.el&&(i.el=Q.createElement(K(i.h,i.h[0]),this.options)),i);if(this._$AH?._$AD===a)this._$AH.p(e);else{const t=new tt(a,this),i=t.u(this.options);t.p(e),this.T(i),this._$AH=t}}_$AC(t){let e=G.get(t.strings);return void 0===e&&G.set(t.strings,e=new Q(t)),e}k(t){F(this._$AH)||(this._$AH=[],this._$AR());const e=this._$AH;let i,a=0;for(const s of t)a===e.length?e.push(i=new et(this.O(N()),this.O(N()),this,this.options)):i=e[a],i._$AI(s),a++;a<e.length&&(this._$AR(i&&i._$AB.nextSibling,a),e.length=a)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){const e=$(t).nextSibling;$(t).remove(),t=e}}setConnected(t){void 0===this._$AM&&(this._$Cv=t,this._$AP?.(t))}}class it{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,i,a,s){this.type=1,this._$AH=q,this._$AN=void 0,this.element=t,this.name=e,this._$AM=a,this.options=s,i.length>2||""!==i[0]||""!==i[1]?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=q}_$AI(t,e=this,i,a){const s=this.strings;let r=!1;if(void 0===s)t=J(this,t,e,0),r=!z(t)||t!==this._$AH&&t!==W,r&&(this._$AH=t);else{const a=t;let n,o;for(t=s[0],n=0;n<s.length-1;n++)o=J(this,a[i+n],e,n),o===W&&(o=this._$AH[n]),r||=!z(o)||o!==this._$AH[n],o===q?t=q:t!==q&&(t+=(o??"")+s[n+1]),this._$AH[n]=o}r&&!a&&this.j(t)}j(t){t===q?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}}class at extends it{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===q?void 0:t}}class st extends it{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==q)}}class rt extends it{constructor(t,e,i,a,s){super(t,e,i,a,s),this.type=5}_$AI(t,e=this){if((t=J(this,t,e,0)??q)===W)return;const i=this._$AH,a=t===q&&i!==q||t.capture!==i.capture||t.once!==i.once||t.passive!==i.passive,s=t!==q&&(i===q||a);a&&this.element.removeEventListener(this.name,this,i),s&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){"function"==typeof this._$AH?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}}class nt{constructor(t,e,i){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(t){J(this,t)}}const ot=k.litHtmlPolyfillSupport;ot?.(Q,et),(k.litHtmlVersions??=[]).push("3.3.2");const lt=globalThis;class ht extends w{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=((t,e,i)=>{const a=i?.renderBefore??e;let s=a._$litPart$;if(void 0===s){const t=i?.renderBefore??null;a._$litPart$=s=new et(e.insertBefore(N(),t),t,void 0,i??{})}return s._$AI(t),s})(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return W}}ht._$litElement$=!0,ht.finalized=!0,lt.litElementHydrateSupport?.({LitElement:ht});const ct=lt.litElementPolyfillSupport;ct?.({LitElement:ht}),(lt.litElementVersions??=[]).push("4.2.2");const dt=t=>(e,i)=>{void 0!==i?i.addInitializer(()=>{customElements.define(t,e)}):customElements.define(t,e)},pt={attribute:!0,type:String,converter:x,reflect:!1,hasChanged:y},ut=(t=pt,e,i)=>{const{kind:a,metadata:s}=i;let r=globalThis.litPropertyMetadata.get(s);if(void 0===r&&globalThis.litPropertyMetadata.set(s,r=new Map),"setter"===a&&((t=Object.create(t)).wrapped=!0),r.set(i.name,t),"accessor"===a){const{name:a}=i;return{set(i){const s=e.get.call(this);e.set.call(this,i),this.requestUpdate(a,s,t,!0,i)},init(e){return void 0!==e&&this.C(a,void 0,t,e),e}}}if("setter"===a){const{name:a}=i;return function(i){const s=this[a];e.call(this,i),this.requestUpdate(a,s,t,!0,i)}}throw Error("Unsupported decorator location: "+a)};function gt(t){return(e,i)=>"object"==typeof i?ut(t,e,i):((t,e,i)=>{const a=e.hasOwnProperty(i);return e.constructor.createProperty(i,t),a?Object.getOwnPropertyDescriptor(e,i):void 0})(t,e,i)}function bt(t){return gt({...t,state:!0,attribute:!1})}let mt=class extends ht{constructor(){super(...arguments),this._cards=[],this._activeView=null,this._cardConfigs=[],this._boundHashChange=this._onHashChange.bind(this)}connectedCallback(){super.connectedCallback(),window.addEventListener("hashchange",this._boundHashChange),this._activeView=this._getViewFromHash()??this._config?.default_view??null}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("hashchange",this._boundHashChange)}_onHashChange(){const t=this._getViewFromHash();null!==t&&(this._activeView=t),location.hash&&"#"!==location.hash||(this._activeView=this._config?.default_view??null)}_getViewFromHash(){const t=location.hash.replace("#","");if(!t)return null;return(this._config?.views??[]).includes(t)?t:null}setConfig(t){this._config=t,this._activeView=this._getViewFromHash()??t.default_view??null,this._createCards()}set hass(t){this._hass=t,this._cards.forEach(e=>{e.hass=t})}get hass(){return this._hass}_createCards(){this._config.cards&&(this._cardConfigs=this._config.cards,this._cards=this._config.cards.map(t=>{const e=t.type?.startsWith("custom:")?t.type.replace("custom:",""):`hui-${t.type}-card`,i=document.createElement(e);return"function"==typeof i.setConfig&&i.setConfig(t),i}),this.requestUpdate())}render(){const t=this._cards.filter((t,e)=>{const i=this._cardConfigs[e];return!i||!i.view||i.view===this._activeView});return V`
+function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPropertyDescriptor(e,i):a;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(t,e,i,a);else for(var o=t.length-1;o>=0;o--)(s=t[o])&&(n=(r<3?s(n):r>3?s(e,i,n):s(e,i))||n);return r>3&&n&&Object.defineProperty(e,i,n),n}"function"==typeof SuppressedError&&SuppressedError;const e=globalThis,i=e.ShadowRoot&&(void 0===e.ShadyCSS||e.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,a=Symbol(),s=new WeakMap;let r=class{constructor(t,e,i){if(this._$cssResult$=!0,i!==a)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o;const e=this.t;if(i&&void 0===t){const i=void 0!==e&&1===e.length;i&&(t=s.get(e)),void 0===t&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),i&&s.set(e,t))}return t}toString(){return this.cssText}};const n=(t,...e)=>{const i=1===t.length?t[0]:e.reduce((e,i,a)=>e+(t=>{if(!0===t._$cssResult$)return t.cssText;if("number"==typeof t)return t;throw Error("Value passed to 'css' function must be a 'css' function result: "+t+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+t[a+1],t[0]);return new r(i,t,a)},o=i?t=>t:t=>t instanceof CSSStyleSheet?(t=>{let e="";for(const i of t.cssRules)e+=i.cssText;return(t=>new r("string"==typeof t?t:t+"",void 0,a))(e)})(t):t,{is:l,defineProperty:h,getOwnPropertyDescriptor:c,getOwnPropertyNames:d,getOwnPropertySymbols:p,getPrototypeOf:u}=Object,g=globalThis,b=g.trustedTypes,v=b?b.emptyScript:"",m=g.reactiveElementPolyfillSupport,f=(t,e)=>t,x={toAttribute(t,e){switch(e){case Boolean:t=t?v:null;break;case Object:case Array:t=null==t?t:JSON.stringify(t)}return t},fromAttribute(t,e){let i=t;switch(e){case Boolean:i=null!==t;break;case Number:i=null===t?null:Number(t);break;case Object:case Array:try{i=JSON.parse(t)}catch(t){i=null}}return i}},y=(t,e)=>!l(t,e),_={attribute:!0,type:String,converter:x,reflect:!1,useDefault:!1,hasChanged:y};Symbol.metadata??=Symbol("metadata"),g.litPropertyMetadata??=new WeakMap;let w=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=_){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){const i=Symbol(),a=this.getPropertyDescriptor(t,i,e);void 0!==a&&h(this.prototype,t,a)}}static getPropertyDescriptor(t,e,i){const{get:a,set:s}=c(this.prototype,t)??{get(){return this[e]},set(t){this[e]=t}};return{get:a,set(e){const r=a?.call(this);s?.call(this,e),this.requestUpdate(t,r,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??_}static _$Ei(){if(this.hasOwnProperty(f("elementProperties")))return;const t=u(this);t.finalize(),void 0!==t.l&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(f("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(f("properties"))){const t=this.properties,e=[...d(t),...p(t)];for(const i of e)this.createProperty(i,t[i])}const t=this[Symbol.metadata];if(null!==t){const e=litPropertyMetadata.get(t);if(void 0!==e)for(const[t,i]of e)this.elementProperties.set(t,i)}this._$Eh=new Map;for(const[t,e]of this.elementProperties){const i=this._$Eu(t,e);void 0!==i&&this._$Eh.set(i,t)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){const e=[];if(Array.isArray(t)){const i=new Set(t.flat(1/0).reverse());for(const t of i)e.unshift(o(t))}else void 0!==t&&e.push(o(t));return e}static _$Eu(t,e){const i=e.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof t?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),void 0!==this.renderRoot&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){const t=new Map,e=this.constructor.elementProperties;for(const i of e.keys())this.hasOwnProperty(i)&&(t.set(i,this[i]),delete this[i]);t.size>0&&(this._$Ep=t)}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return((t,a)=>{if(i)t.adoptedStyleSheets=a.map(t=>t instanceof CSSStyleSheet?t:t.styleSheet);else for(const i of a){const a=document.createElement("style"),s=e.litNonce;void 0!==s&&a.setAttribute("nonce",s),a.textContent=i.cssText,t.appendChild(a)}})(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,i){this._$AK(t,i)}_$ET(t,e){const i=this.constructor.elementProperties.get(t),a=this.constructor._$Eu(t,i);if(void 0!==a&&!0===i.reflect){const s=(void 0!==i.converter?.toAttribute?i.converter:x).toAttribute(e,i.type);this._$Em=t,null==s?this.removeAttribute(a):this.setAttribute(a,s),this._$Em=null}}_$AK(t,e){const i=this.constructor,a=i._$Eh.get(t);if(void 0!==a&&this._$Em!==a){const t=i.getPropertyOptions(a),s="function"==typeof t.converter?{fromAttribute:t.converter}:void 0!==t.converter?.fromAttribute?t.converter:x;this._$Em=a;const r=s.fromAttribute(e,t.type);this[a]=r??this._$Ej?.get(a)??r,this._$Em=null}}requestUpdate(t,e,i,a=!1,s){if(void 0!==t){const r=this.constructor;if(!1===a&&(s=this[t]),i??=r.getPropertyOptions(t),!((i.hasChanged??y)(s,e)||i.useDefault&&i.reflect&&s===this._$Ej?.get(t)&&!this.hasAttribute(r._$Eu(t,i))))return;this.C(t,e,i)}!1===this.isUpdatePending&&(this._$ES=this._$EP())}C(t,e,{useDefault:i,reflect:a,wrapped:s},r){i&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??e??this[t]),!0!==s||void 0!==r)||(this._$AL.has(t)||(this.hasUpdated||i||(e=void 0),this._$AL.set(t,e)),!0===a&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(t){Promise.reject(t)}const t=this.scheduleUpdate();return null!=t&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[t,e]of this._$Ep)this[t]=e;this._$Ep=void 0}const t=this.constructor.elementProperties;if(t.size>0)for(const[e,i]of t){const{wrapped:t}=i,a=this[e];!0!==t||this._$AL.has(e)||void 0===a||this.C(e,void 0,i,a)}}let t=!1;const e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(t=>t.hostUpdate?.()),this.update(e)):this._$EM()}catch(e){throw t=!1,this._$EM(),e}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(t=>t.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(t=>this._$ET(t,this[t])),this._$EM()}updated(t){}firstUpdated(t){}};w.elementStyles=[],w.shadowRootOptions={mode:"open"},w[f("elementProperties")]=new Map,w[f("finalized")]=new Map,m?.({ReactiveElement:w}),(g.reactiveElementVersions??=[]).push("2.1.2");const k=globalThis,$=t=>t,E=k.trustedTypes,C=E?E.createPolicy("lit-html",{createHTML:t=>t}):void 0,M="$lit$",S=`lit$${Math.random().toFixed(9).slice(2)}$`,A="?"+S,T=`<${A}>`,P=document,N=()=>P.createComment(""),z=t=>null===t||"object"!=typeof t&&"function"!=typeof t,F=Array.isArray,D="[ \t\n\f\r]",j=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,B=/-->/g,O=/>/g,I=RegExp(`>|${D}(?:([^\\s"'>=/]+)(${D}*=${D}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),H=/'/g,L=/"/g,R=/^(?:script|style|textarea|title)$/i,U=t=>(e,...i)=>({_$litType$:t,strings:e,values:i}),V=U(1),X=U(2),W=Symbol.for("lit-noChange"),q=Symbol.for("lit-nothing"),G=new WeakMap,Y=P.createTreeWalker(P,129);function K(t,e){if(!F(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==C?C.createHTML(e):e}const Z=(t,e)=>{const i=t.length-1,a=[];let s,r=2===e?"<svg>":3===e?"<math>":"",n=j;for(let e=0;e<i;e++){const i=t[e];let o,l,h=-1,c=0;for(;c<i.length&&(n.lastIndex=c,l=n.exec(i),null!==l);)c=n.lastIndex,n===j?"!--"===l[1]?n=B:void 0!==l[1]?n=O:void 0!==l[2]?(R.test(l[2])&&(s=RegExp("</"+l[2],"g")),n=I):void 0!==l[3]&&(n=I):n===I?">"===l[0]?(n=s??j,h=-1):void 0===l[1]?h=-2:(h=n.lastIndex-l[2].length,o=l[1],n=void 0===l[3]?I:'"'===l[3]?L:H):n===L||n===H?n=I:n===B||n===O?n=j:(n=I,s=void 0);const d=n===I&&t[e+1].startsWith("/>")?" ":"";r+=n===j?i+T:h>=0?(a.push(o),i.slice(0,h)+M+i.slice(h)+S+d):i+S+(-2===h?e:d)}return[K(t,r+(t[i]||"<?>")+(2===e?"</svg>":3===e?"</math>":"")),a]};class Q{constructor({strings:t,_$litType$:e},i){let a;this.parts=[];let s=0,r=0;const n=t.length-1,o=this.parts,[l,h]=Z(t,e);if(this.el=Q.createElement(l,i),Y.currentNode=this.el.content,2===e||3===e){const t=this.el.content.firstChild;t.replaceWith(...t.childNodes)}for(;null!==(a=Y.nextNode())&&o.length<n;){if(1===a.nodeType){if(a.hasAttributes())for(const t of a.getAttributeNames())if(t.endsWith(M)){const e=h[r++],i=a.getAttribute(t).split(S),n=/([.?@])?(.*)/.exec(e);o.push({type:1,index:s,name:n[2],strings:i,ctor:"."===n[1]?at:"?"===n[1]?st:"@"===n[1]?rt:it}),a.removeAttribute(t)}else t.startsWith(S)&&(o.push({type:6,index:s}),a.removeAttribute(t));if(R.test(a.tagName)){const t=a.textContent.split(S),e=t.length-1;if(e>0){a.textContent=E?E.emptyScript:"";for(let i=0;i<e;i++)a.append(t[i],N()),Y.nextNode(),o.push({type:2,index:++s});a.append(t[e],N())}}}else if(8===a.nodeType)if(a.data===A)o.push({type:2,index:s});else{let t=-1;for(;-1!==(t=a.data.indexOf(S,t+1));)o.push({type:7,index:s}),t+=S.length-1}s++}}static createElement(t,e){const i=P.createElement("template");return i.innerHTML=t,i}}function J(t,e,i=t,a){if(e===W)return e;let s=void 0!==a?i._$Co?.[a]:i._$Cl;const r=z(e)?void 0:e._$litDirective$;return s?.constructor!==r&&(s?._$AO?.(!1),void 0===r?s=void 0:(s=new r(t),s._$AT(t,i,a)),void 0!==a?(i._$Co??=[])[a]=s:i._$Cl=s),void 0!==s&&(e=J(t,s._$AS(t,e.values),s,a)),e}class tt{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:e},parts:i}=this._$AD,a=(t?.creationScope??P).importNode(e,!0);Y.currentNode=a;let s=Y.nextNode(),r=0,n=0,o=i[0];for(;void 0!==o;){if(r===o.index){let e;2===o.type?e=new et(s,s.nextSibling,this,t):1===o.type?e=new o.ctor(s,o.name,o.strings,this,t):6===o.type&&(e=new nt(s,this,t)),this._$AV.push(e),o=i[++n]}r!==o?.index&&(s=Y.nextNode(),r++)}return Y.currentNode=P,a}p(t){let e=0;for(const i of this._$AV)void 0!==i&&(void 0!==i.strings?(i._$AI(t,i,e),e+=i.strings.length-2):i._$AI(t[e])),e++}}class et{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,i,a){this.type=2,this._$AH=q,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=i,this.options=a,this._$Cv=a?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode;const e=this._$AM;return void 0!==e&&11===t?.nodeType&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=J(this,t,e),z(t)?t===q||null==t||""===t?(this._$AH!==q&&this._$AR(),this._$AH=q):t!==this._$AH&&t!==W&&this._(t):void 0!==t._$litType$?this.$(t):void 0!==t.nodeType?this.T(t):(t=>F(t)||"function"==typeof t?.[Symbol.iterator])(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==q&&z(this._$AH)?this._$AA.nextSibling.data=t:this.T(P.createTextNode(t)),this._$AH=t}$(t){const{values:e,_$litType$:i}=t,a="number"==typeof i?this._$AC(t):(void 0===i.el&&(i.el=Q.createElement(K(i.h,i.h[0]),this.options)),i);if(this._$AH?._$AD===a)this._$AH.p(e);else{const t=new tt(a,this),i=t.u(this.options);t.p(e),this.T(i),this._$AH=t}}_$AC(t){let e=G.get(t.strings);return void 0===e&&G.set(t.strings,e=new Q(t)),e}k(t){F(this._$AH)||(this._$AH=[],this._$AR());const e=this._$AH;let i,a=0;for(const s of t)a===e.length?e.push(i=new et(this.O(N()),this.O(N()),this,this.options)):i=e[a],i._$AI(s),a++;a<e.length&&(this._$AR(i&&i._$AB.nextSibling,a),e.length=a)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){const e=$(t).nextSibling;$(t).remove(),t=e}}setConnected(t){void 0===this._$AM&&(this._$Cv=t,this._$AP?.(t))}}class it{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,i,a,s){this.type=1,this._$AH=q,this._$AN=void 0,this.element=t,this.name=e,this._$AM=a,this.options=s,i.length>2||""!==i[0]||""!==i[1]?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=q}_$AI(t,e=this,i,a){const s=this.strings;let r=!1;if(void 0===s)t=J(this,t,e,0),r=!z(t)||t!==this._$AH&&t!==W,r&&(this._$AH=t);else{const a=t;let n,o;for(t=s[0],n=0;n<s.length-1;n++)o=J(this,a[i+n],e,n),o===W&&(o=this._$AH[n]),r||=!z(o)||o!==this._$AH[n],o===q?t=q:t!==q&&(t+=(o??"")+s[n+1]),this._$AH[n]=o}r&&!a&&this.j(t)}j(t){t===q?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}}class at extends it{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===q?void 0:t}}class st extends it{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==q)}}class rt extends it{constructor(t,e,i,a,s){super(t,e,i,a,s),this.type=5}_$AI(t,e=this){if((t=J(this,t,e,0)??q)===W)return;const i=this._$AH,a=t===q&&i!==q||t.capture!==i.capture||t.once!==i.once||t.passive!==i.passive,s=t!==q&&(i===q||a);a&&this.element.removeEventListener(this.name,this,i),s&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){"function"==typeof this._$AH?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}}class nt{constructor(t,e,i){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(t){J(this,t)}}const ot=k.litHtmlPolyfillSupport;ot?.(Q,et),(k.litHtmlVersions??=[]).push("3.3.2");const lt=globalThis;class ht extends w{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=((t,e,i)=>{const a=i?.renderBefore??e;let s=a._$litPart$;if(void 0===s){const t=i?.renderBefore??null;a._$litPart$=s=new et(e.insertBefore(N(),t),t,void 0,i??{})}return s._$AI(t),s})(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return W}}ht._$litElement$=!0,ht.finalized=!0,lt.litElementHydrateSupport?.({LitElement:ht});const ct=lt.litElementPolyfillSupport;ct?.({LitElement:ht}),(lt.litElementVersions??=[]).push("4.2.2");const dt=t=>(e,i)=>{void 0!==i?i.addInitializer(()=>{customElements.define(t,e)}):customElements.define(t,e)},pt={attribute:!0,type:String,converter:x,reflect:!1,hasChanged:y},ut=(t=pt,e,i)=>{const{kind:a,metadata:s}=i;let r=globalThis.litPropertyMetadata.get(s);if(void 0===r&&globalThis.litPropertyMetadata.set(s,r=new Map),"setter"===a&&((t=Object.create(t)).wrapped=!0),r.set(i.name,t),"accessor"===a){const{name:a}=i;return{set(i){const s=e.get.call(this);e.set.call(this,i),this.requestUpdate(a,s,t,!0,i)},init(e){return void 0!==e&&this.C(a,void 0,t,e),e}}}if("setter"===a){const{name:a}=i;return function(i){const s=this[a];e.call(this,i),this.requestUpdate(a,s,t,!0,i)}}throw Error("Unsupported decorator location: "+a)};function gt(t){return(e,i)=>"object"==typeof i?ut(t,e,i):((t,e,i)=>{const a=e.hasOwnProperty(i);return e.constructor.createProperty(i,t),a?Object.getOwnPropertyDescriptor(e,i):void 0})(t,e,i)}function bt(t){return gt({...t,state:!0,attribute:!1})}let vt=class extends ht{constructor(){super(...arguments),this._cards=[],this._activeView=null,this._cardConfigs=[],this._boundHashChange=this._onHashChange.bind(this)}connectedCallback(){super.connectedCallback(),window.addEventListener("hashchange",this._boundHashChange),this._activeView=this._getViewFromHash()??this._config?.default_view??null}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("hashchange",this._boundHashChange)}_onHashChange(){const t=this._getViewFromHash();null!==t&&(this._activeView=t),location.hash&&"#"!==location.hash||(this._activeView=this._config?.default_view??null)}_getViewFromHash(){const t=location.hash.replace("#","");if(!t)return null;return(this._config?.views??[]).includes(t)?t:null}setConfig(t){this._config=t,this._activeView=this._getViewFromHash()??t.default_view??null,this._createCards()}set hass(t){this._hass=t,this._cards.forEach(e=>{e.hass=t})}get hass(){return this._hass}_createCards(){this._config.cards&&(this._cardConfigs=this._config.cards,this._cards=this._config.cards.map(t=>{const e=t.type?.startsWith("custom:")?t.type.replace("custom:",""):`hui-${t.type}-card`,i=document.createElement(e);return"function"==typeof i.setConfig&&i.setConfig(t),i}),this.requestUpdate())}render(){const t=this._cards.filter((t,e)=>{const i=this._cardConfigs[e];return!i||!i.view||i.view===this._activeView});return V`
       <div class="background"></div>
       <div class="content">
         ${t.map(t=>t)}
       </div>
-    `}getCardSize(){return 6}};mt.styles=[n`
+    `}getCardSize(){return 6}};vt.styles=[n`
       :host {
         display: block;
         min-height: 100vh;
@@ -59,7 +59,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           grid-template-columns: 1fr 1fr 1fr;
         }
       }
-    `],t([gt({attribute:!1})],mt.prototype,"_config",void 0),t([gt({attribute:!1})],mt.prototype,"_cards",void 0),t([bt()],mt.prototype,"_activeView",void 0),mt=t([dt("glass-background")],mt);class vt extends ht{constructor(){super(...arguments),this._trackedEntities=[],this._previousStates={}}setConfig(t){this._config=t}setTrackedEntities(t){this._trackedEntities=t.filter(Boolean)}shouldUpdate(){if(!this.hass)return!1;if(0===this._trackedEntities.length)return!0;let t=!1;for(const e of this._trackedEntities){const i=this.hass.states[e]?.state;this._previousStates[e]!==i&&(this._previousStates[e]=i,t=!0)}return t}getEntity(t){return this.hass?.states[t]}getState(t){return this.hass?.states[t]?.state??"unavailable"}getEntityAttribute(t,e){return this.hass?.states[t]?.attributes[e]}isOn(t){return"on"===this.getState(t)}callService(t,e,i,a){this.hass?.callService(t,e,i,a?{entity_id:a}:void 0)}toggle(t){const[e]=t.split(".");this.callService(e,"toggle",void 0,t)}getCardSize(){return 1}static get glassStyles(){return n`
+    `],t([gt({attribute:!1})],vt.prototype,"_config",void 0),t([gt({attribute:!1})],vt.prototype,"_cards",void 0),t([bt()],vt.prototype,"_activeView",void 0),vt=t([dt("glass-background")],vt);class mt extends ht{constructor(){super(...arguments),this._trackedEntities=[],this._previousStates={}}setConfig(t){this._config=t}setTrackedEntities(t){this._trackedEntities=t.filter(Boolean)}shouldUpdate(){if(!this.hass)return!1;if(0===this._trackedEntities.length)return!0;let t=!1;for(const e of this._trackedEntities){const i=this.hass.states[e]?.state;this._previousStates[e]!==i&&(this._previousStates[e]=i,t=!0)}return t}getEntity(t){return this.hass?.states[t]}getState(t){return this.hass?.states[t]?.state??"unavailable"}getEntityAttribute(t,e){return this.hass?.states[t]?.attributes[e]}isOn(t){return"on"===this.getState(t)}callService(t,e,i,a){this.hass?.callService(t,e,i,a?{entity_id:a}:void 0)}toggle(t){const[e]=t.split(".");this.callService(e,"toggle",void 0,t)}getCardSize(){return 1}static get glassStyles(){return n`
       :host {
         --glass-bg: rgba(255, 255, 255, 0.06);
         --glass-bg-hover: rgba(255, 255, 255, 0.10);
@@ -108,7 +108,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           0 0 20px var(--glass-accent-glow),
           0 0 60px rgba(79, 195, 247, 0.1);
       }
-    `}}t([gt({attribute:!1})],vt.prototype,"hass",void 0),t([gt({attribute:!1})],vt.prototype,"_config",void 0);let ft=class extends vt{get _buttonConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleTap(){const t=this._buttonConfig.tap_action?.action??"toggle";"toggle"===t&&this._config.entity?this.toggle(this._config.entity):"navigate"===t&&this._buttonConfig.tap_action?.navigation_path&&(window.location.hash=this._buttonConfig.tap_action.navigation_path)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=!!t&&this.isOn(this._config.entity),i=this._config.name??t?.attributes.friendly_name??"",a=this._config.icon??t?.attributes.icon??"mdi:help-circle";let s="";if(!1!==this._buttonConfig.show_state&&t){const e=t.attributes.unit_of_measurement;s=e?`${t.state} ${e}`:"on"===t.state?"Pa":"off"===t.state?"Av":t.state}return V`
+    `}}t([gt({attribute:!1})],mt.prototype,"hass",void 0),t([gt({attribute:!1})],mt.prototype,"_config",void 0);let ft=class extends mt{get _buttonConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleTap(){const t=this._buttonConfig.tap_action?.action??"toggle";"toggle"===t&&this._config.entity?this.toggle(this._config.entity):"navigate"===t&&this._buttonConfig.tap_action?.navigation_path&&(window.location.hash=this._buttonConfig.tap_action.navigation_path)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=!!t&&this.isOn(this._config.entity),i=this._config.name??t?.attributes.friendly_name??"",a=this._config.icon??t?.attributes.icon??"mdi:help-circle";let s="";if(!1!==this._buttonConfig.show_state&&t){const e=t.attributes.unit_of_measurement;s=e?`${t.state} ${e}`:"on"===t.state?"Pa":"off"===t.state?"Av":t.state}return V`
       <div class="glass button ${e?"active":""}" @click=${this._handleTap}>
         <div class="icon-wrap">
           <ha-icon .icon=${a}></ha-icon>
@@ -118,7 +118,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ${s?V`<div class="state">${s}</div>`:""}
         </div>
       </div>
-    `}};ft.styles=[vt.glassStyles,n`
+    `}};ft.styles=[mt.glassStyles,n`
       :host { display: block; }
       .button {
         display: flex;
@@ -171,12 +171,12 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         text-overflow: ellipsis;
       }
       .active .state { color: var(--glass-text-secondary); }
-    `],ft=t([dt("glass-button")],ft);let xt=class extends vt{setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}get _chipConfig(){return this._config}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._chipConfig.chip_type??"custom";let i=this._config.icon??"",a="",s=!1;switch(e){case"person":{const e=t?.attributes.friendly_name??"",r=t?.state??"";i=i||"mdi:account",a=`${e} · ${"home"===r?"Hemma":"Borta"}`,s="home"===r;break}case"battery":{const e=t?.state??"?";i=i||"mdi:cellphone",a=`${e} %`,s=Number(e)>20;break}case"lights":{const e=t?.state??"0";i=i||"mdi:lightbulb-group",a=`${e} st`,s=Number(e)>0;break}default:i=i||"mdi:information",a=this._chipConfig.content??t?.state??""}return V`
+    `],ft=t([dt("glass-button")],ft);let xt=class extends mt{setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}get _chipConfig(){return this._config}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._chipConfig.chip_type??"custom";let i=this._config.icon??"",a="",s=!1;switch(e){case"person":{const e=t?.attributes.friendly_name??"",r=t?.state??"";i=i||"mdi:account",a=`${e} · ${"home"===r?"Hemma":"Borta"}`,s="home"===r;break}case"battery":{const e=t?.state??"?";i=i||"mdi:cellphone",a=`${e} %`,s=Number(e)>20;break}case"lights":{const e=t?.state??"0";i=i||"mdi:lightbulb-group",a=`${e} st`,s=Number(e)>0;break}default:i=i||"mdi:information",a=this._chipConfig.content??t?.state??""}return V`
       <div class="chip ${s?"active":""}">
         <ha-icon .icon=${i}></ha-icon>
         <span class="value">${a}</span>
       </div>
-    `}};xt.styles=[vt.glassStyles,n`
+    `}};xt.styles=[mt.glassStyles,n`
       .chip {
         display: inline-flex;
         align-items: center;
@@ -206,7 +206,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       .chip .value {
         font-variant-numeric: tabular-nums;
       }
-    `],xt=t([dt("glass-chip")],xt);let yt=class extends vt{get _headerConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.weather_entity&&e.push(t.weather_entity),t.chips&&t.chips.forEach(t=>{t.entity&&e.push(t.entity)}),this.setTrackedEntities(e)}_renderChip(t){const e=this.getEntity(t.entity);if(!e)return V``;let i=t.icon??"",a="",s=!1;switch(t.chip_type){case"person":i=i||"mdi:account";a=`${e.attributes.friendly_name??""} · ${"home"===e.state?"Hemma":"Borta"}`,s="home"===e.state;break;case"battery":i=i||"mdi:cellphone",a=`${e.state} %`,s=Number(e.state)>20;break;case"lights":i=i||"mdi:lightbulb-group",a=`${e.state} st`,s=Number(e.state)>0;break;default:i=i||"mdi:information",a=e.state}return V`
+    `],xt=t([dt("glass-chip")],xt);let yt=class extends mt{get _headerConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.weather_entity&&e.push(t.weather_entity),t.chips&&t.chips.forEach(t=>{t.entity&&e.push(t.entity)}),this.setTrackedEntities(e)}_renderChip(t){const e=this.getEntity(t.entity);if(!e)return V``;let i=t.icon??"",a="",s=!1;switch(t.chip_type){case"person":i=i||"mdi:account";a=`${e.attributes.friendly_name??""} · ${"home"===e.state?"Hemma":"Borta"}`,s="home"===e.state;break;case"battery":i=i||"mdi:cellphone",a=`${e.state} %`,s=Number(e.state)>20;break;case"lights":i=i||"mdi:lightbulb-group",a=`${e.state} st`,s=Number(e.state)>0;break;default:i=i||"mdi:information",a=e.state}return V`
       <div class="chip ${s?"active":""}">
         <ha-icon .icon=${i}></ha-icon>
         <span>${a}</span>
@@ -233,7 +233,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           </div>
         `:""}
       </div>
-    `}};yt.styles=[vt.glassStyles,n`
+    `}};yt.styles=[mt.glassStyles,n`
       :host { display: block; }
       .header { padding: 12px 14px; }
       .top-row {
@@ -303,7 +303,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         --mdc-icon-size: 16px;
         display: flex;
       }
-    `],yt=t([dt("glass-header")],yt);let _t=class extends vt{get _roomConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.sub_buttons&&t.sub_buttons.forEach(t=>e.push(t.entity)),this.setTrackedEntities(e)}_handleCardTap(){this._roomConfig.popup_id&&(window.location.hash=this._roomConfig.popup_id)}_handleSubButtonTap(t,e){t.stopPropagation(),this.toggle(e)}render(){if(!this.hass||!this._config)return V``;const t=this._roomConfig.sub_buttons??[],e=t.map(t=>t.entity);this._config.entity&&!e.includes(this._config.entity)&&e.unshift(this._config.entity);const i=e.some(t=>this.isOn(t)),a=function(t,e){const i=function(t,e){return e.filter(e=>"on"===t[e]?.state).length}(t,e);return 0===i?"Av":1===i?"Pa":`${i} lampor pa`}(this.hass.states,e),s=this._config.icon??"mdi:home",r=this._config.name??"";return V`
+    `],yt=t([dt("glass-header")],yt);let _t=class extends mt{get _roomConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.sub_buttons&&t.sub_buttons.forEach(t=>e.push(t.entity)),this.setTrackedEntities(e)}_handleCardTap(){this._roomConfig.popup_id&&(window.location.hash=this._roomConfig.popup_id)}_handleSubButtonTap(t,e){t.stopPropagation(),this.toggle(e)}render(){if(!this.hass||!this._config)return V``;const t=this._roomConfig.sub_buttons??[],e=t.map(t=>t.entity);this._config.entity&&!e.includes(this._config.entity)&&e.unshift(this._config.entity);const i=e.some(t=>this.isOn(t)),a=function(t,e){const i=function(t,e){return e.filter(e=>"on"===t[e]?.state).length}(t,e);return 0===i?"Av":1===i?"Pa":`${i} lampor pa`}(this.hass.states,e),s=this._config.icon??"mdi:home",r=this._config.name??"";return V`
       <div class="glass room-card ${i?"active":""}" @click=${this._handleCardTap}>
         <div class="top">
           <div class="room-icon">
@@ -328,7 +328,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           </div>
         `:""}
       </div>
-    `}};_t.styles=[vt.glassStyles,n`
+    `}};_t.styles=[mt.glassStyles,n`
       :host { display: block; }
       .room-card {
         padding: 12px;
@@ -405,7 +405,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         color: var(--glass-text-dim);
       }
       .sub-btn.on ha-icon { color: var(--glass-accent); }
-    `],_t=t([dt("glass-room-card")],_t);let wt=class extends vt{constructor(){super(...arguments),this._dragging=!1,this._dragValue=0,this._stopEvent=t=>{t.stopPropagation()},this._toggleLight=t=>{t.stopPropagation(),this._config?.entity&&this.toggle(this._config.entity)}}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleSliderInteraction(t){if(!this._config.entity)return;const e=this.getEntity(this._config.entity);if(!e||"off"===e.state)return void this.callService("light","turn_on",{brightness_pct:100},this._config.entity);const i=t.currentTarget.getBoundingClientRect(),a=t=>{const e=Math.max(0,Math.min(t-i.left,i.width)),a=Math.round(e/i.width*100);this._dragValue=Math.max(1,Math.min(100,a))},s="touches"in t?t.touches[0].clientX:t.clientX;a(s),this._dragging=!0;const r=t=>{const e="touches"in t?t.touches[0].clientX:t.clientX;a(e)},n=()=>{this._dragging=!1,this.callService("light","turn_on",{brightness_pct:this._dragValue},this._config.entity),document.removeEventListener("mousemove",r),document.removeEventListener("mouseup",n),document.removeEventListener("touchmove",r),document.removeEventListener("touchend",n)};document.addEventListener("mousemove",r),document.addEventListener("mouseup",n),document.addEventListener("touchmove",r,{passive:!0}),document.addEventListener("touchend",n)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e="on"===t.state,i=this._dragging?this._dragValue:function(t){if(!t||"on"!==t.state)return 0;const e=t.attributes.brightness;return e?Math.round(e/255*100):100}(t),a=this._config.name??t.attributes.friendly_name??"",s=this._config.icon??t.attributes.icon??"mdi:lightbulb";return V`
+    `],_t=t([dt("glass-room-card")],_t);let wt=class extends mt{constructor(){super(...arguments),this._dragging=!1,this._dragValue=0,this._stopEvent=t=>{t.stopPropagation()},this._toggleLight=t=>{t.stopPropagation(),this._config?.entity&&this.toggle(this._config.entity)}}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_handleSliderInteraction(t){if(!this._config.entity)return;const e=this.getEntity(this._config.entity);if(!e||"off"===e.state)return void this.callService("light","turn_on",{brightness_pct:100},this._config.entity);const i=t.currentTarget.getBoundingClientRect(),a=t=>{const e=Math.max(0,Math.min(t-i.left,i.width)),a=Math.round(e/i.width*100);this._dragValue=Math.max(1,Math.min(100,a))},s="touches"in t?t.touches[0].clientX:t.clientX;a(s),this._dragging=!0;const r=t=>{const e="touches"in t?t.touches[0].clientX:t.clientX;a(e)},n=()=>{this._dragging=!1,this.callService("light","turn_on",{brightness_pct:this._dragValue},this._config.entity),document.removeEventListener("mousemove",r),document.removeEventListener("mouseup",n),document.removeEventListener("touchmove",r),document.removeEventListener("touchend",n)};document.addEventListener("mousemove",r),document.addEventListener("mouseup",n),document.addEventListener("touchmove",r,{passive:!0}),document.addEventListener("touchend",n)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e="on"===t.state,i=this._dragging?this._dragValue:function(t){if(!t||"on"!==t.state)return 0;const e=t.attributes.brightness;return e?Math.round(e/255*100):100}(t),a=this._config.name??t.attributes.friendly_name??"",s=this._config.icon??t.attributes.icon??"mdi:lightbulb";return V`
       <div class="glass slider-card ${e?"on":"off"}">
         <div class="slider-header">
           <div class="slider-left">
@@ -438,7 +438,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           `}
         </div>
       </div>
-    `}};wt.styles=[vt.glassStyles,n`
+    `}};wt.styles=[mt.glassStyles,n`
       :host { display: block; }
       .slider-card { padding: 16px; }
       .slider-header {
@@ -762,7 +762,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       transition: color 0.25s ease;
     }
     .nav-item.active .nav-label { color: rgba(255, 255, 255, 0.85); }
-  `,t([gt({attribute:!1})],Et.prototype,"hass",void 0),t([gt({attribute:!1})],Et.prototype,"_config",void 0),t([bt()],Et.prototype,"_activeHash",void 0),Et=t([dt("glass-nav-bar")],Et);let Ct=class extends vt{get _vacuumConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getStatusText(t){return{cleaning:"Stader",docked:"Dockad",paused:"Pausad",returning:"Atergar",idle:"Inaktiv",error:"Fel",unavailable:"Otillganglig"}[t]??t}_start(){this._config.entity&&this.callService("vacuum","start",void 0,this._config.entity)}_stop(){this._config.entity&&this.callService("vacuum","return_to_base",void 0,this._config.entity)}_cleanRoom(t){this._config.entity&&null!=t.room_id&&this.callService("vacuum","send_command",{command:"app_segment_clean",params:[t.room_id]},this._config.entity)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e=t.state,i="cleaning"===e,a="error"===e,s=t.attributes.battery_level,r=this._config.name??t.attributes.friendly_name??"Vacuum",n=this._config.icon??"mdi:robot-vacuum";return V`
+  `,t([gt({attribute:!1})],Et.prototype,"hass",void 0),t([gt({attribute:!1})],Et.prototype,"_config",void 0),t([bt()],Et.prototype,"_activeHash",void 0),Et=t([dt("glass-nav-bar")],Et);let Ct=class extends mt{get _vacuumConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getStatusText(t){return{cleaning:"Stader",docked:"Dockad",paused:"Pausad",returning:"Atergar",idle:"Inaktiv",error:"Fel",unavailable:"Otillganglig"}[t]??t}_start(){this._config.entity&&this.callService("vacuum","start",void 0,this._config.entity)}_stop(){this._config.entity&&this.callService("vacuum","return_to_base",void 0,this._config.entity)}_cleanRoom(t){this._config.entity&&null!=t.room_id&&this.callService("vacuum","send_command",{command:"app_segment_clean",params:[t.room_id]},this._config.entity)}render(){if(!this.hass||!this._config?.entity)return V``;const t=this.getEntity(this._config.entity);if(!t)return V``;const e=t.state,i="cleaning"===e,a="error"===e,s=t.attributes.battery_level,r=this._config.name??t.attributes.friendly_name??"Vacuum",n=this._config.icon??"mdi:robot-vacuum";return V`
       <div
         class="glass vacuum-card ${i?"cleaning":""} ${a?"error":""}"
       >
@@ -801,7 +801,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               </div>
             `:""}
       </div>
-    `}};Ct.styles=[vt.glassStyles,n`
+    `}};Ct.styles=[mt.glassStyles,n`
       :host {
         display: block;
       }
@@ -927,7 +927,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       .room-btn:active {
         transform: scale(0.96);
       }
-    `],Ct=t([dt("glass-vacuum-card")],Ct);let Mt=class extends vt{get _infoConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.secondary_entity&&e.push(t.secondary_entity),t.badge_entity&&e.push(t.badge_entity),this.setTrackedEntities(e)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._config.name??t?.attributes.friendly_name??"",i=this._config.icon??t?.attributes.icon??"mdi:information";let a=t?.state??"";const s=t?.attributes.unit_of_measurement;s&&(a=`${a} ${s}`);const r=this._infoConfig.badge_entity?this.getEntity(this._infoConfig.badge_entity):void 0;return V`
+    `],Ct=t([dt("glass-vacuum-card")],Ct);let Mt=class extends mt{get _infoConfig(){return this._config}setConfig(t){super.setConfig(t);const e=[];t.entity&&e.push(t.entity),t.secondary_entity&&e.push(t.secondary_entity),t.badge_entity&&e.push(t.badge_entity),this.setTrackedEntities(e)}render(){if(!this.hass||!this._config)return V``;const t=this._config.entity?this.getEntity(this._config.entity):void 0,e=this._config.name??t?.attributes.friendly_name??"",i=this._config.icon??t?.attributes.icon??"mdi:information";let a=t?.state??"";const s=t?.attributes.unit_of_measurement;s&&(a=`${a} ${s}`);const r=this._infoConfig.badge_entity?this.getEntity(this._infoConfig.badge_entity):void 0;return V`
       <div class="glass info-card">
         <div class="info-icon">
           <ha-icon .icon=${i}></ha-icon>
@@ -945,7 +945,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               </div>
             `:""}
       </div>
-    `}};Mt.styles=[vt.glassStyles,n`
+    `}};Mt.styles=[mt.glassStyles,n`
       :host {
         display: block;
       }
@@ -1027,7 +1027,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       --mdc-icon-size: 14px;
       color: rgba(255, 255, 255, 0.25);
     }
-  `,t([gt({attribute:!1})],St.prototype,"_config",void 0),St=t([dt("glass-section")],St);let At=class extends vt{get _departureConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getDepartures(){if(!this._config?.entity)return[];return this.getEntityAttribute(this._config.entity,"departures")??[]}_isDelayed(t){if(!t.scheduled||!t.expected)return!1;const e=new Date(t.scheduled).getTime();return new Date(t.expected).getTime()-e>6e4}_isSoon(t){const e=t.display?.toLowerCase()??"",i=e.match(/^(\d+)\s*min/);return i?parseInt(i[1],10)<=5:"nu"===e}_getTimeClass(t){return this._isDelayed(t)?"time delayed":this._isSoon(t)?"time soon":"time"}getCardSize(){return 3}render(){if(!this.hass||!this._config?.entity)return V``;const t=this._getDepartures(),e=this._departureConfig.max_departures??6,i=t.slice(0,e),a=this._departureConfig.station_name??this._departureConfig.name??(t.length>0?t[0].stop_area?.name:void 0)??"Avgångar",s=this._departureConfig.icon??"mdi:train";return V`
+  `,t([gt({attribute:!1})],St.prototype,"_config",void 0),St=t([dt("glass-section")],St);let At=class extends mt{get _departureConfig(){return this._config}setConfig(t){super.setConfig(t),t.entity&&this.setTrackedEntities([t.entity])}_getDepartures(){if(!this._config?.entity)return[];return this.getEntityAttribute(this._config.entity,"departures")??[]}_isDelayed(t){if(!t.scheduled||!t.expected)return!1;const e=new Date(t.scheduled).getTime();return new Date(t.expected).getTime()-e>6e4}_isSoon(t){const e=t.display?.toLowerCase()??"",i=e.match(/^(\d+)\s*min/);return i?parseInt(i[1],10)<=5:"nu"===e}_getTimeClass(t){return this._isDelayed(t)?"time delayed":this._isSoon(t)?"time soon":"time"}getCardSize(){return 3}render(){if(!this.hass||!this._config?.entity)return V``;const t=this._getDepartures(),e=this._departureConfig.max_departures??6,i=t.slice(0,e),a=this._departureConfig.station_name??this._departureConfig.name??(t.length>0?t[0].stop_area?.name:void 0)??"Avgångar",s=this._departureConfig.icon??"mdi:train";return V`
       <div class="glass departure-card">
         <div class="departure-header">
           <div class="departure-icon">
@@ -1049,7 +1049,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               </div>
             `}
       </div>
-    `}};At.styles=[vt.glassStyles,n`
+    `}};At.styles=[mt.glassStyles,n`
       :host {
         display: block;
       }
@@ -1216,96 +1216,96 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
     --hub-nav-h: calc(64px + env(safe-area-inset-bottom, 0px));
     --hub-fade: 600ms;
   }
-`,Pt="glass-hub-theme";const Nt="glass-hub-weather-bg";function zt(){return"off"!==localStorage.getItem(Nt)}function Ft(t){localStorage.setItem(Nt,t?"on":"off")}let Dt=null;function Bt(){return Dt}function Ot(t,e=8){return Math.abs(t)>e}const jt=t=>X`
+`,Pt="glass-hub-theme";const Nt="glass-hub-weather-bg";function zt(){return"off"!==localStorage.getItem(Nt)}function Ft(t){localStorage.setItem(Nt,t?"on":"off")}let Dt=null;function jt(){return Dt}function Bt(t,e=8){return Math.abs(t)>e}const Ot=t=>X`
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     ${t}
   </svg>
-`,It={lamp:jt(X`
+`,It={lamp:Ot(X`
     <path d="M12 3a6 6 0 0 0-4 10.4c.6.6 1 1.4 1 2.3v.3h6v-.3c0-.9.4-1.7 1-2.3A6 6 0 0 0 12 3z"></path>
     <path d="M10 19h4M10.5 21.5h3"></path>
-  `),bolt:jt(X`
+  `),bolt:Ot(X`
     <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path>
-  `),home:jt(X`
+  `),home:Ot(X`
     <path d="M3 11.5 12 4l9 7.5"></path>
     <path d="M5.5 10v9.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V10"></path>
-  `),vacuum:jt(X`
+  `),vacuum:Ot(X`
     <circle cx="12" cy="12" r="8"></circle>
     <circle cx="12" cy="12" r="2.2"></circle>
     <path d="M12 4v2M4 12h2M18 12h2M12 20v-2"></path>
-  `),train:jt(X`
+  `),train:Ot(X`
     <rect x="5" y="4" width="14" height="13" rx="4"></rect>
     <path d="M5 12h14"></path>
     <path d="M8 20l-1.5 2M16 20l1.5 2"></path>
     <circle cx="9" cy="17.5" r="0.9" fill="currentColor" stroke="none"></circle>
     <circle cx="15" cy="17.5" r="0.9" fill="currentColor" stroke="none"></circle>
-  `),bus:jt(X`
+  `),bus:Ot(X`
     <rect x="4" y="4" width="16" height="13" rx="2.5"></rect>
     <path d="M4 12h16"></path>
     <path d="M4 8.5h16"></path>
     <path d="M7 20l-1 2M17 20l1 2"></path>
     <circle cx="8" cy="14.5" r="0.9" fill="currentColor" stroke="none"></circle>
     <circle cx="16" cy="14.5" r="0.9" fill="currentColor" stroke="none"></circle>
-  `),note:jt(X`
+  `),note:Ot(X`
     <circle cx="7" cy="18" r="2.3"></circle>
     <circle cx="16" cy="16" r="2.3"></circle>
     <path d="M9.3 18V5.5L18.3 4v11.5"></path>
-  `),ring:jt(X`
+  `),ring:Ot(X`
     <path d="M14.7 4.5A8 8 0 0 1 12 20 8 8 0 0 1 9.3 4.5"></path>
-  `),sun:jt(X`
+  `),sun:Ot(X`
     <circle cx="12" cy="12" r="4"></circle>
     <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path>
-  `),moon:jt(X`
+  `),moon:Ot(X`
     <path d="M20 14.5A8 8 0 0 1 9.5 4 6.5 6.5 0 1 0 20 14.5z"></path>
-  `),power:jt(X`
+  `),power:Ot(X`
     <path d="M12 3v8.5"></path>
     <path d="M6.7 6.9a8 8 0 1 0 10.6 0"></path>
-  `),play:jt(X`
+  `),play:Ot(X`
     <path d="M7 4.5v15l13-7.5-13-7.5z"></path>
-  `),pause:jt(X`
+  `),pause:Ot(X`
     <rect x="7" y="5" width="3.5" height="14" rx="1"></rect>
     <rect x="13.5" y="5" width="3.5" height="14" rx="1"></rect>
-  `),prev:jt(X`
+  `),prev:Ot(X`
     <path d="M18.5 5.5v13L9 12l9.5-6.5z"></path>
     <path d="M6 5v14"></path>
-  `),next:jt(X`
+  `),next:Ot(X`
     <path d="M5.5 5.5v13L15 12 5.5 5.5z"></path>
     <path d="M18 5v14"></path>
-  `),speaker:jt(X`
+  `),speaker:Ot(X`
     <rect x="6" y="3" width="12" height="18" rx="3"></rect>
     <circle cx="12" cy="14" r="3.2"></circle>
     <circle cx="12" cy="6.5" r="0.9" fill="currentColor" stroke="none"></circle>
-  `),sofa:jt(X`
+  `),sofa:Ot(X`
     <path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"></path>
     <rect x="3" y="11" width="18" height="6" rx="2"></rect>
     <path d="M5 17v2M19 17v2"></path>
-  `),pot:jt(X`
+  `),pot:Ot(X`
     <path d="M4 10h16"></path>
     <path d="M5 10v6a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-6"></path>
     <path d="M2 10h2M20 10h2"></path>
     <path d="M9 10V7a3 3 0 0 1 6 0v3"></path>
-  `),bed:jt(X`
+  `),bed:Ot(X`
     <path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"></path>
     <path d="M3 15h18"></path>
     <path d="M3 18v2M21 18v2"></path>
     <rect x="5" y="10" width="6" height="4" rx="1"></rect>
-  `),door:jt(X`
+  `),door:Ot(X`
     <rect x="6" y="3" width="12" height="18" rx="1"></rect>
     <circle cx="14.5" cy="12" r="0.8" fill="currentColor" stroke="none"></circle>
-  `),desk:jt(X`
+  `),desk:Ot(X`
     <path d="M3 7h18v3H3z"></path>
     <path d="M5 10v9M19 10v9"></path>
-  `),shower:jt(X`
+  `),shower:Ot(X`
     <path d="M8 4a5 5 0 0 1 9 3"></path>
     <path d="M5 9h14"></path>
     <path d="M7 12v2M11 12v2M15 12v2M19 12v2"></path>
     <path d="M7 17v2M11 17v2M15 17v2"></path>
-  `),leaf:jt(X`
+  `),leaf:Ot(X`
     <path d="M4 20c0-8 6-14 16-15C19 13 13 20 5 20a4 4 0 0 1-1 0z"></path>
     <path d="M4 20c3-5 7-8 12-9.5"></path>
-  `),clock:jt(X`
+  `),clock:Ot(X`
     <circle cx="12" cy="12" r="8.5"></circle>
     <path d="M12 7.5V12l3 2"></path>
-  `),calendar:jt(X`
+  `),calendar:Ot(X`
     <rect x="4" y="5.5" width="16" height="14.5" rx="2"></rect>
     <path d="M4 10h16"></path>
     <path d="M8 3.5v3"></path>
@@ -1313,17 +1313,17 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
     <path d="M8.5 14h2"></path>
     <path d="M13.5 14h2"></path>
     <path d="M8.5 17h2"></path>
-  `),expand:jt(X`
+  `),expand:Ot(X`
     <path d="M8 4H5a1 1 0 0 0-1 1v3"></path>
     <path d="M16 4h3a1 1 0 0 1 1 1v3"></path>
     <path d="M8 20H5a1 1 0 0 1-1-1v-3"></path>
     <path d="M16 20h3a1 1 0 0 0 1-1v-3"></path>
-  `),compress:jt(X`
+  `),compress:Ot(X`
     <path d="M4 8h3a1 1 0 0 0 1-1V4"></path>
     <path d="M20 8h-3a1 1 0 0 1-1-1V4"></path>
     <path d="M4 16h3a1 1 0 0 1 1 1v3"></path>
     <path d="M20 16h-3a1 1 0 0 1-1 1v3"></path>
-  `)},Ht={sunny:{sky:"clear",clouds:0,sun:!0,stars:!0,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},"clear-night":{sky:"clear",clouds:0,sun:!1,stars:!0,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},partlycloudy:{sky:"partly",clouds:.35,sun:!0,stars:!0,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},cloudy:{sky:"overcast",clouds:.85,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},rainy:{sky:"storm",clouds:.7,sun:!1,stars:!1,rain:110,snow:0,hail:0,lightning:!1,fog:!1,wind:1.2},pouring:{sky:"storm",clouds:.9,sun:!1,stars:!1,rain:260,snow:0,hail:0,lightning:!1,fog:!1,wind:1.5},snowy:{sky:"overcast",clouds:.7,sun:!1,stars:!1,rain:0,snow:70,hail:0,lightning:!1,fog:!1,wind:1},"snowy-rainy":{sky:"storm",clouds:.8,sun:!1,stars:!1,rain:70,snow:45,hail:0,lightning:!1,fog:!1,wind:1.2},lightning:{sky:"storm",clouds:.9,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!0,fog:!1,wind:1.4},"lightning-rainy":{sky:"storm",clouds:.9,sun:!1,stars:!1,rain:170,snow:0,hail:0,lightning:!0,fog:!1,wind:1.6},fog:{sky:"fog",clouds:.45,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!0,wind:.5},hail:{sky:"storm",clouds:.8,sun:!1,stars:!1,rain:40,snow:0,hail:120,lightning:!1,fog:!1,wind:1.3},windy:{sky:"partly",clouds:.5,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:2.6},"windy-variant":{sky:"partly",clouds:.5,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:2.6}};function Lt(t){return Ht[t]??Ht.cloudy}function Rt(t){return null===t?"night":t>10?"day":t>-4?"golden":"night"}const Ut={clear:["#04060C","#070B14","#0B1220"],partly:["#05060B","#090C12","#10141C"],overcast:["#060708","#0A0B0D","#101214"],storm:["#050607","#0A0B0E","#12141A"],fog:["#08090B","#0E1013","#16181C"]},Vt={day:{clear:["#4A85C7","#8CB8E3","#D6E7F4"],partly:["#5E8FC0","#93B7DB","#D3E2EE"],overcast:["#8A97A5","#AEB8C2","#D5DADF"],storm:["#4E5A68","#6E7B89","#9AA5B0"],fog:["#A8AFB5","#C2C7CB","#DCDFE1"]},golden:{clear:["#3E6CA8","#C98A5E","#F2C98E"],partly:["#4A6E9E","#B98963","#E8C393"],overcast:["#77808D","#9C9997","#C4B4A4"],storm:["#45505E","#6B6E75","#8F8578"],fog:["#9AA0A8","#B8B4AE","#D6CDC0"]},night:{clear:["#101B30","#1A2A47","#2A3C5C"],partly:["#12192A","#1C2740","#2B3852"],overcast:["#1A1E26","#242A34","#323844"],storm:["#151820","#20242E","#2E323E"],fog:["#1D2026","#282C33","#383C44"]}};function Xt(t){const e="string"==typeof t.datetime?Date.parse(t.datetime):NaN;return Number.isNaN(e)?NaN:e}function Wt(t){if(!Array.isArray(t))return[];const e=[];for(const i of t){if(!i||"object"!=typeof i)continue;const t=Xt(i);Number.isNaN(t)||"number"!=typeof i.temperature||e.push({ts:t,temp:i.temperature,condition:"string"==typeof i.condition?i.condition:"cloudy",precip:"number"==typeof i.precipitation?i.precipitation:0,precipProb:"number"==typeof i.precipitation_probability?i.precipitation_probability:null})}return e.sort((t,e)=>t.ts-e.ts)}function qt(t){if(!Array.isArray(t))return[];const e=[];for(const i of t){if(!i||"object"!=typeof i)continue;const t=Xt(i);Number.isNaN(t)||"number"!=typeof i.temperature||e.push({ts:t,condition:"string"==typeof i.condition?i.condition:"cloudy",high:i.temperature,low:"number"==typeof i.templow?i.templow:null,precipProb:"number"==typeof i.precipitation_probability?i.precipitation_probability:null})}return e.sort((t,e)=>t.ts-e.ts)}const Gt=new Set(["rainy","pouring","snowy","snowy-rainy","lightning-rainy","hail"]),Yt=new Set(["snowy","snowy-rainy"]);function Kt(t){return Gt.has(t)}function Zt(t){return`${String(new Date(t).getHours()).padStart(2,"0")}:00`}const Qt=[{scale:.55,alpha:.3,speed:.6},{scale:.8,alpha:.55,speed:.85},{scale:1.15,alpha:.9,speed:1.15}];class Jt extends vt{constructor(){super(...arguments),this.theme="natt",this.active=!1,this._skyA="",this._skyB="",this._frontA=!0,this._w=0,this._h=0,this._dpr=1,this._running=!1,this._raf=0,this._last=0,this._t=0,this._scene=Lt("cloudy"),this._sceneKey="",this._drops=[],this._flakes=[],this._stones=[],this._splashes=[],this._clouds=[],this._stars=[],this._fogOffsets=[0,0,0],this._flash=0,this._nextFlash=0,this._onVisibility=()=>this._maybeRun(),this._onForce=()=>this.requestUpdate(),this._frame=t=>{if(!this._running)return;const e=Math.min((t-this._last)/1e3,.05);this._last=t,this._t+=e,this._draw(e),this._raf=requestAnimationFrame(this._frame)}}connectedCallback(){super.connectedCallback(),document.addEventListener("visibilitychange",this._onVisibility),window.addEventListener("hub-weather-force",this._onForce)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("visibilitychange",this._onVisibility),window.removeEventListener("hub-weather-force",this._onForce),this._ro?.disconnect(),this._ro=void 0,this._stopLoop()}firstUpdated(){this._canvas=this.renderRoot.querySelector("canvas")??void 0,this._ctx=this._canvas?.getContext("2d")??void 0,this._ro=new ResizeObserver(()=>this._resize()),this._ro.observe(this),this._resize()}updated(t){this._syncScene(),t.has("active")&&this._maybeRun()}get _condition(){return Bt()??this.getEntity(this.entity)?.state??"cloudy"}get _elevation(){const t=this.hass?.states["sun.sun"]?.attributes?.elevation;return"number"==typeof t?t:null}_syncScene(){const t=Rt(this._elevation),e=this._condition,i=`${e}|${this.theme}|${t}`;if(i===this._sceneKey)return;this._sceneKey=i,this._scene=Lt(e);const[a,s,r]=function(t,e,i){return"natt"===e?Ut[t]:Vt[i][t]}(this._scene.sky,this.theme,t),n=`background:linear-gradient(180deg, ${a} 0%, ${s} 55%, ${r} 100%)`;this._frontA?(this._skyB=n,this._frontA=!1):(this._skyA=n,this._frontA=!0),this._buildSprites(),this._buildParticles(),this._nextFlash=this._t+2+5*Math.random(),this._maybeRun()}_resize(){this._canvas&&(this._w=this.offsetWidth,this._h=this.offsetHeight,this._dpr=Math.min(window.devicePixelRatio||1,1.5),this._canvas.width=Math.max(1,Math.round(this._w*this._dpr)),this._canvas.height=Math.max(1,Math.round(this._h*this._dpr)),this._buildParticles())}get _isNightBand(){return"night"===Rt(this._elevation)}_perMp(t){return Math.round(t*this._w*this._h/1e6)}_buildParticles(){const t=this._scene,e=this._w,i=this._h;if(0===e||0===i)return;const a=Math.random;this._drops=Array.from({length:this._perMp(t.rain)},()=>({x:a()*e,y:a()*i,layer:Math.floor(a()*Qt.length)})),this._flakes=Array.from({length:this._perMp(t.snow)},()=>({x:a()*e,y:a()*i,r:1.5+2.5*a(),phase:a()*Math.PI*2,rot:a()*Math.PI*2,rotSpd:1.2*(a()-.5),layer:Math.floor(a()*Qt.length)})),this._stones=Array.from({length:this._perMp(t.hail)},()=>({x:a()*e,y:a()*i,vy:700+300*a(),vx:60*(a()-.5),r:1.2+1.6*a(),bounced:!1}));const s=t.clouds>0?Math.round(2+5*t.clouds):0;this._clouds=Array.from({length:s},(t,r)=>({x:a()*e*1.4-.2*e,y:r/Math.max(s,1)*i*.38+30*a(),scale:.7+.9*a(),spd:6+10*a(),alpha:.5+.5*a()})),this._stars=t.stars?Array.from({length:90},()=>({x:a()*e,y:a()*i*.7,r:.5+1.1*a(),phase:a()*Math.PI*2})):[],this._splashes=[]}_buildSprites(){const t=document.createElement("canvas");t.width=512,t.height=256;const e=t.getContext("2d"),i="natt"===this.theme,a="storm"===this._scene.sky,[s,r,n]=i?[26,30,40]:a?[120,130,142]:[255,255,255];for(let t=0;t<9;t++){const t=80+352*Math.random(),a=90+80*Math.random(),o=55+70*Math.random(),l=e.createRadialGradient(t,a,0,t,a,o);l.addColorStop(0,`rgba(${s},${r},${n},${i?.5:.55})`),l.addColorStop(1,`rgba(${s},${r},${n},0)`),e.fillStyle=l,e.fillRect(0,0,512,256)}this._cloudSprite=t;const o=document.createElement("canvas");o.width=32,o.height=32;const l=o.getContext("2d"),h=l.createRadialGradient(16,16,0,16,16,14);h.addColorStop(0,"rgba(255,255,255,0.9)"),h.addColorStop(.5,"rgba(255,255,255,0.35)"),h.addColorStop(1,"rgba(255,255,255,0)"),l.fillStyle=h,l.fillRect(0,0,32,32),l.strokeStyle="rgba(255,255,255,0.5)",l.lineWidth=1.2;for(let t=0;t<3;t++)l.save(),l.translate(16,16),l.rotate(t*Math.PI/3),l.beginPath(),l.moveTo(-7,0),l.lineTo(7,0),l.stroke(),l.restore();this._flakeSprite=o}_maybeRun(){const t=this._scene.rain>0||this._scene.snow>0||this._scene.hail>0||this._scene.clouds>0||this._scene.stars||this._scene.sun||this._scene.fog||this._scene.lightning,e=this.active&&t&&this.isConnected&&"visible"===document.visibilityState;e&&!this._running?(this._running=!0,this._last=performance.now(),console.debug("[weather-bg] start"),this._raf=requestAnimationFrame(this._frame)):!e&&this._running&&this._stopLoop()}_stopLoop(){this._running&&(this._running=!1,cancelAnimationFrame(this._raf),console.debug("[weather-bg] stop"))}_draw(t){const e=this._ctx;if(!e)return;const i=this._w,a=this._h;e.setTransform(this._dpr,0,0,this._dpr,0,0),e.clearRect(0,0,i,a),this._stars.length&&this._isNightBand&&this._drawStars(e),this._scene.sun&&!this._isNightBand&&"dag"===this.theme&&this._drawSun(e,i,a),this._updateFlash(t),this._clouds.length&&this._drawClouds(e,t,i,a),this._scene.fog&&this._drawFog(e,t,i,a),this._drops.length&&this._drawRain(e,t,i,a),this._flakes.length&&this._drawSnow(e,t,i,a),this._stones.length&&this._drawHail(e,t,i,a),this._splashes.length&&this._drawSplashes(e,t),this._flash>.01&&(e.fillStyle=`rgba(215,225,255,${this._flash*("natt"===this.theme?.22:.3)})`,e.fillRect(0,0,i,a))}_drawStars(t){for(const e of this._stars){const i=.25+.5*Math.abs(Math.sin(.5*this._t+e.phase));t.fillStyle=`rgba(200,215,255,${i})`,t.beginPath(),t.arc(e.x,e.y,e.r,0,2*Math.PI),t.fill()}}_drawSun(t,e,i){const a=.76*e,s=.2*i,r="golden"===Rt(this._elevation),n=.5*Math.min(e,i),o=.9+.1*Math.sin(.3*this._t),l=t.createRadialGradient(a,s,0,a,s,n);l.addColorStop(0,r?`rgba(255,170,90,${.5*o})`:`rgba(255,214,120,${.55*o})`),l.addColorStop(.25,r?"rgba(255,170,90,0.18)":"rgba(255,214,120,0.2)"),l.addColorStop(1,"rgba(255,214,120,0)"),t.fillStyle=l,t.fillRect(0,0,e,i),t.save(),t.translate(a,s),t.rotate(.02*this._t),t.fillStyle=r?"rgba(255,170,90,0.05)":"rgba(255,214,120,0.06)";for(let e=0;e<8;e++)t.rotate(Math.PI/4),t.beginPath(),t.moveTo(0,0),t.lineTo(1.1*n,.045*-n),t.lineTo(1.1*n,.045*n),t.closePath(),t.fill();t.restore()}_drawClouds(t,e,i,a){const s=this._cloudSprite;if(!s)return;const r=this._scene.wind;for(const a of this._clouds){a.x+=a.spd*r*e;const n=512*a.scale*.9;a.x-n/2>i&&(a.x=-n/2),t.globalAlpha=a.alpha*(.35+.5*this._scene.clouds)+.3*this._flash,t.drawImage(s,a.x-n/2,a.y-128*a.scale/2,n,256*a.scale*.9)}t.globalAlpha=1}_drawFog(t,e,i,a){const s="natt"===this.theme,[r,n,o]=s?[40,44,52]:[225,228,230],l=s?[.1,.14,.18]:[.16,.22,.28];for(let s=0;s<3;s++){const h=s%2==0?1:-1;this._fogOffsets[s]=(this._fogOffsets[s]+h*(4+3*s)*e+i)%i;const c=a*(.35+.22*s),d=t.createLinearGradient(0,c-70,0,c+70);d.addColorStop(0,`rgba(${r},${n},${o},0)`),d.addColorStop(.5,`rgba(${r},${n},${o},${l[s]})`),d.addColorStop(1,`rgba(${r},${n},${o},0)`),t.fillStyle=d,t.fillRect(this._fogOffsets[s]-i,c-70,i,140),t.fillRect(this._fogOffsets[s],c-70,i,140)}}_drawRain(t,e,i,a){const s=this._scene.wind,r="natt"===this.theme,n=this._scene.rain>150?1500:1150,o=this._scene.rain>150?30:20;t.lineCap="round";for(const l of this._drops){const h=Qt[l.layer],c=n*h.speed,d=60*s*h.speed;l.y+=c*e,l.x+=d*e,l.y>a&&(l.y=-o,l.x=Math.random()*i,2===l.layer&&Math.random()<.25&&this._splashes.push({x:l.x,y:a-4-8*Math.random(),r:1,life:1})),l.x>i&&(l.x-=i);const p=o*h.scale,u=d/c*p;t.strokeStyle=r?`rgba(150,170,200,${.45*h.alpha})`:`rgba(235,242,250,${.6*h.alpha})`,t.lineWidth=1*h.scale,t.beginPath(),t.moveTo(l.x,l.y),t.lineTo(l.x-u,l.y-p),t.stroke()}}_drawSnow(t,e,i,a){const s=this._flakeSprite;if(!s)return;const r=this._scene.wind;for(const n of this._flakes){const o=Qt[n.layer];n.y+=55*o.speed*e,n.x+=20*Math.sin(n.phase+.8*this._t)*r*e,n.rot+=n.rotSpd*e,n.y>a+6&&(n.y=-6,n.x=Math.random()*i),n.x>i+6&&(n.x=-6),n.x<-6&&(n.x=i+6);const l=4*n.r*o.scale;t.save(),t.globalAlpha=o.alpha*("natt"===this.theme?.7:.95),t.translate(n.x,n.y),t.rotate(n.rot),t.drawImage(s,-l/2,-l/2,l,l),t.restore()}t.globalAlpha=1}_drawHail(t,e,i,a){const s="natt"===this.theme;t.fillStyle=s?"rgba(190,205,225,0.7)":"rgba(250,252,255,0.9)";for(const s of this._stones)s.y+=s.vy*e,s.x+=s.vx*e,s.y>a?!s.bounced&&Math.random()<.5?(s.bounced=!0,s.vy=.35*-s.vy,s.y=a):(s.y=-4,s.x=Math.random()*i,s.vy=700+300*Math.random(),s.bounced=!1):s.bounced&&(s.vy+=1600*e),t.beginPath(),t.arc(s.x,s.y,s.r,0,2*Math.PI),t.fill()}_drawSplashes(t,e){const i="natt"===this.theme;for(const a of this._splashes)a.r+=50*e,a.life-=5*e,a.life<=0||(t.strokeStyle=i?`rgba(150,170,200,${.2*a.life})`:`rgba(235,242,250,${.3*a.life})`,t.lineWidth=1,t.beginPath(),t.ellipse(a.x,a.y,a.r,.35*a.r,0,0,2*Math.PI),t.stroke());this._splashes=this._splashes.filter(t=>t.life>0)}_updateFlash(t){this._scene.lightning?this._t>=this._nextFlash?(this._flash=1,this._nextFlash=this._t+(Math.random()<.3?.15:4+8*Math.random())):this._flash=Math.max(0,this._flash-t/.4)**1.5:this._flash=0}render(){return V`
+  `)},Ht={sunny:{sky:"clear",clouds:0,sun:!0,stars:!0,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},"clear-night":{sky:"clear",clouds:0,sun:!1,stars:!0,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},partlycloudy:{sky:"partly",clouds:.35,sun:!0,stars:!0,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},cloudy:{sky:"overcast",clouds:.85,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:1},rainy:{sky:"storm",clouds:.7,sun:!1,stars:!1,rain:110,snow:0,hail:0,lightning:!1,fog:!1,wind:1.2},pouring:{sky:"storm",clouds:.9,sun:!1,stars:!1,rain:260,snow:0,hail:0,lightning:!1,fog:!1,wind:1.5},snowy:{sky:"overcast",clouds:.7,sun:!1,stars:!1,rain:0,snow:70,hail:0,lightning:!1,fog:!1,wind:1},"snowy-rainy":{sky:"storm",clouds:.8,sun:!1,stars:!1,rain:70,snow:45,hail:0,lightning:!1,fog:!1,wind:1.2},lightning:{sky:"storm",clouds:.9,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!0,fog:!1,wind:1.4},"lightning-rainy":{sky:"storm",clouds:.9,sun:!1,stars:!1,rain:170,snow:0,hail:0,lightning:!0,fog:!1,wind:1.6},fog:{sky:"fog",clouds:.45,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!0,wind:.5},hail:{sky:"storm",clouds:.8,sun:!1,stars:!1,rain:40,snow:0,hail:120,lightning:!1,fog:!1,wind:1.3},windy:{sky:"partly",clouds:.5,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:2.6},"windy-variant":{sky:"partly",clouds:.5,sun:!1,stars:!1,rain:0,snow:0,hail:0,lightning:!1,fog:!1,wind:2.6}};function Lt(t){return Ht[t]??Ht.cloudy}function Rt(t){return null===t?"night":t>10?"day":t>-4?"golden":"night"}const Ut={clear:["#04060C","#070B14","#0B1220"],partly:["#05060B","#090C12","#10141C"],overcast:["#060708","#0A0B0D","#101214"],storm:["#050607","#0A0B0E","#12141A"],fog:["#08090B","#0E1013","#16181C"]},Vt={day:{clear:["#4A85C7","#8CB8E3","#D6E7F4"],partly:["#5E8FC0","#93B7DB","#D3E2EE"],overcast:["#8A97A5","#AEB8C2","#D5DADF"],storm:["#4E5A68","#6E7B89","#9AA5B0"],fog:["#A8AFB5","#C2C7CB","#DCDFE1"]},golden:{clear:["#3E6CA8","#C98A5E","#F2C98E"],partly:["#4A6E9E","#B98963","#E8C393"],overcast:["#77808D","#9C9997","#C4B4A4"],storm:["#45505E","#6B6E75","#8F8578"],fog:["#9AA0A8","#B8B4AE","#D6CDC0"]},night:{clear:["#101B30","#1A2A47","#2A3C5C"],partly:["#12192A","#1C2740","#2B3852"],overcast:["#1A1E26","#242A34","#323844"],storm:["#151820","#20242E","#2E323E"],fog:["#1D2026","#282C33","#383C44"]}};function Xt(t){const e="string"==typeof t.datetime?Date.parse(t.datetime):NaN;return Number.isNaN(e)?NaN:e}function Wt(t){if(!Array.isArray(t))return[];const e=[];for(const i of t){if(!i||"object"!=typeof i)continue;const t=Xt(i);Number.isNaN(t)||"number"!=typeof i.temperature||e.push({ts:t,temp:i.temperature,condition:"string"==typeof i.condition?i.condition:"cloudy",precip:"number"==typeof i.precipitation?i.precipitation:0,precipProb:"number"==typeof i.precipitation_probability?i.precipitation_probability:null})}return e.sort((t,e)=>t.ts-e.ts)}function qt(t){if(!Array.isArray(t))return[];const e=[];for(const i of t){if(!i||"object"!=typeof i)continue;const t=Xt(i);Number.isNaN(t)||"number"!=typeof i.temperature||e.push({ts:t,condition:"string"==typeof i.condition?i.condition:"cloudy",high:i.temperature,low:"number"==typeof i.templow?i.templow:null,precipProb:"number"==typeof i.precipitation_probability?i.precipitation_probability:null})}return e.sort((t,e)=>t.ts-e.ts)}const Gt=new Set(["rainy","pouring","snowy","snowy-rainy","lightning-rainy","hail"]),Yt=new Set(["snowy","snowy-rainy"]);function Kt(t){return Gt.has(t)}function Zt(t){return`${String(new Date(t).getHours()).padStart(2,"0")}:00`}const Qt=[{scale:.55,alpha:.3,speed:.6},{scale:.8,alpha:.55,speed:.85},{scale:1.15,alpha:.9,speed:1.15}];class Jt extends mt{constructor(){super(...arguments),this.theme="natt",this.active=!1,this._skyA="",this._skyB="",this._frontA=!0,this._w=0,this._h=0,this._dpr=1,this._running=!1,this._raf=0,this._last=0,this._t=0,this._scene=Lt("cloudy"),this._sceneKey="",this._drops=[],this._flakes=[],this._stones=[],this._splashes=[],this._clouds=[],this._stars=[],this._fogOffsets=[0,0,0],this._flash=0,this._nextFlash=0,this._onVisibility=()=>this._maybeRun(),this._onForce=()=>this.requestUpdate(),this._frame=t=>{if(!this._running)return;const e=Math.min((t-this._last)/1e3,.05);this._last=t,this._t+=e,this._draw(e),this._raf=requestAnimationFrame(this._frame)}}connectedCallback(){super.connectedCallback(),document.addEventListener("visibilitychange",this._onVisibility),window.addEventListener("hub-weather-force",this._onForce)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("visibilitychange",this._onVisibility),window.removeEventListener("hub-weather-force",this._onForce),this._ro?.disconnect(),this._ro=void 0,this._stopLoop()}firstUpdated(){this._canvas=this.renderRoot.querySelector("canvas")??void 0,this._ctx=this._canvas?.getContext("2d")??void 0,this._ro=new ResizeObserver(()=>this._resize()),this._ro.observe(this),this._resize()}updated(t){this._syncScene(),t.has("active")&&this._maybeRun()}get _condition(){return jt()??this.getEntity(this.entity)?.state??"cloudy"}get _elevation(){const t=this.hass?.states["sun.sun"]?.attributes?.elevation;return"number"==typeof t?t:null}_syncScene(){const t=Rt(this._elevation),e=this._condition,i=`${e}|${this.theme}|${t}`;if(i===this._sceneKey)return;this._sceneKey=i,this._scene=Lt(e);const[a,s,r]=function(t,e,i){return"natt"===e?Ut[t]:Vt[i][t]}(this._scene.sky,this.theme,t),n=`background:linear-gradient(180deg, ${a} 0%, ${s} 55%, ${r} 100%)`;this._frontA?(this._skyB=n,this._frontA=!1):(this._skyA=n,this._frontA=!0),this._buildSprites(),this._buildParticles(),this._nextFlash=this._t+2+5*Math.random(),this._maybeRun()}_resize(){this._canvas&&(this._w=this.offsetWidth,this._h=this.offsetHeight,this._dpr=Math.min(window.devicePixelRatio||1,1.5),this._canvas.width=Math.max(1,Math.round(this._w*this._dpr)),this._canvas.height=Math.max(1,Math.round(this._h*this._dpr)),this._buildParticles())}get _isNightBand(){return"night"===Rt(this._elevation)}_perMp(t){return Math.round(t*this._w*this._h/1e6)}_buildParticles(){const t=this._scene,e=this._w,i=this._h;if(0===e||0===i)return;const a=Math.random;this._drops=Array.from({length:this._perMp(t.rain)},()=>({x:a()*e,y:a()*i,layer:Math.floor(a()*Qt.length)})),this._flakes=Array.from({length:this._perMp(t.snow)},()=>({x:a()*e,y:a()*i,r:1.5+2.5*a(),phase:a()*Math.PI*2,rot:a()*Math.PI*2,rotSpd:1.2*(a()-.5),layer:Math.floor(a()*Qt.length)})),this._stones=Array.from({length:this._perMp(t.hail)},()=>({x:a()*e,y:a()*i,vy:700+300*a(),vx:60*(a()-.5),r:1.2+1.6*a(),bounced:!1}));const s=t.clouds>0?Math.round(2+5*t.clouds):0;this._clouds=Array.from({length:s},(t,r)=>({x:a()*e*1.4-.2*e,y:r/Math.max(s,1)*i*.38+30*a(),scale:.7+.9*a(),spd:6+10*a(),alpha:.5+.5*a()})),this._stars=t.stars?Array.from({length:90},()=>({x:a()*e,y:a()*i*.7,r:.5+1.1*a(),phase:a()*Math.PI*2})):[],this._splashes=[]}_buildSprites(){const t=document.createElement("canvas");t.width=512,t.height=256;const e=t.getContext("2d"),i="natt"===this.theme,a="storm"===this._scene.sky,[s,r,n]=i?[26,30,40]:a?[120,130,142]:[255,255,255];for(let t=0;t<9;t++){const t=80+352*Math.random(),a=90+80*Math.random(),o=55+70*Math.random(),l=e.createRadialGradient(t,a,0,t,a,o);l.addColorStop(0,`rgba(${s},${r},${n},${i?.5:.55})`),l.addColorStop(1,`rgba(${s},${r},${n},0)`),e.fillStyle=l,e.fillRect(0,0,512,256)}this._cloudSprite=t;const o=document.createElement("canvas");o.width=32,o.height=32;const l=o.getContext("2d"),h=l.createRadialGradient(16,16,0,16,16,14);h.addColorStop(0,"rgba(255,255,255,0.9)"),h.addColorStop(.5,"rgba(255,255,255,0.35)"),h.addColorStop(1,"rgba(255,255,255,0)"),l.fillStyle=h,l.fillRect(0,0,32,32),l.strokeStyle="rgba(255,255,255,0.5)",l.lineWidth=1.2;for(let t=0;t<3;t++)l.save(),l.translate(16,16),l.rotate(t*Math.PI/3),l.beginPath(),l.moveTo(-7,0),l.lineTo(7,0),l.stroke(),l.restore();this._flakeSprite=o}_maybeRun(){const t=this._scene.rain>0||this._scene.snow>0||this._scene.hail>0||this._scene.clouds>0||this._scene.stars||this._scene.sun||this._scene.fog||this._scene.lightning,e=this.active&&t&&this.isConnected&&"visible"===document.visibilityState;e&&!this._running?(this._running=!0,this._last=performance.now(),console.debug("[weather-bg] start"),this._raf=requestAnimationFrame(this._frame)):!e&&this._running&&this._stopLoop()}_stopLoop(){this._running&&(this._running=!1,cancelAnimationFrame(this._raf),console.debug("[weather-bg] stop"))}_draw(t){const e=this._ctx;if(!e)return;const i=this._w,a=this._h;e.setTransform(this._dpr,0,0,this._dpr,0,0),e.clearRect(0,0,i,a),this._stars.length&&this._isNightBand&&this._drawStars(e),this._scene.sun&&!this._isNightBand&&"dag"===this.theme&&this._drawSun(e,i,a),this._updateFlash(t),this._clouds.length&&this._drawClouds(e,t,i,a),this._scene.fog&&this._drawFog(e,t,i,a),this._drops.length&&this._drawRain(e,t,i,a),this._flakes.length&&this._drawSnow(e,t,i,a),this._stones.length&&this._drawHail(e,t,i,a),this._splashes.length&&this._drawSplashes(e,t),this._flash>.01&&(e.fillStyle=`rgba(215,225,255,${this._flash*("natt"===this.theme?.22:.3)})`,e.fillRect(0,0,i,a))}_drawStars(t){for(const e of this._stars){const i=.25+.5*Math.abs(Math.sin(.5*this._t+e.phase));t.fillStyle=`rgba(200,215,255,${i})`,t.beginPath(),t.arc(e.x,e.y,e.r,0,2*Math.PI),t.fill()}}_drawSun(t,e,i){const a=.76*e,s=.2*i,r="golden"===Rt(this._elevation),n=.5*Math.min(e,i),o=.9+.1*Math.sin(.3*this._t),l=t.createRadialGradient(a,s,0,a,s,n);l.addColorStop(0,r?`rgba(255,170,90,${.5*o})`:`rgba(255,214,120,${.55*o})`),l.addColorStop(.25,r?"rgba(255,170,90,0.18)":"rgba(255,214,120,0.2)"),l.addColorStop(1,"rgba(255,214,120,0)"),t.fillStyle=l,t.fillRect(0,0,e,i),t.save(),t.translate(a,s),t.rotate(.02*this._t),t.fillStyle=r?"rgba(255,170,90,0.05)":"rgba(255,214,120,0.06)";for(let e=0;e<8;e++)t.rotate(Math.PI/4),t.beginPath(),t.moveTo(0,0),t.lineTo(1.1*n,.045*-n),t.lineTo(1.1*n,.045*n),t.closePath(),t.fill();t.restore()}_drawClouds(t,e,i,a){const s=this._cloudSprite;if(!s)return;const r=this._scene.wind;for(const a of this._clouds){a.x+=a.spd*r*e;const n=512*a.scale*.9;a.x-n/2>i&&(a.x=-n/2),t.globalAlpha=a.alpha*(.35+.5*this._scene.clouds)+.3*this._flash,t.drawImage(s,a.x-n/2,a.y-128*a.scale/2,n,256*a.scale*.9)}t.globalAlpha=1}_drawFog(t,e,i,a){const s="natt"===this.theme,[r,n,o]=s?[40,44,52]:[225,228,230],l=s?[.1,.14,.18]:[.16,.22,.28];for(let s=0;s<3;s++){const h=s%2==0?1:-1;this._fogOffsets[s]=(this._fogOffsets[s]+h*(4+3*s)*e+i)%i;const c=a*(.35+.22*s),d=t.createLinearGradient(0,c-70,0,c+70);d.addColorStop(0,`rgba(${r},${n},${o},0)`),d.addColorStop(.5,`rgba(${r},${n},${o},${l[s]})`),d.addColorStop(1,`rgba(${r},${n},${o},0)`),t.fillStyle=d,t.fillRect(this._fogOffsets[s]-i,c-70,i,140),t.fillRect(this._fogOffsets[s],c-70,i,140)}}_drawRain(t,e,i,a){const s=this._scene.wind,r="natt"===this.theme,n=this._scene.rain>150?1500:1150,o=this._scene.rain>150?30:20;t.lineCap="round";for(const l of this._drops){const h=Qt[l.layer],c=n*h.speed,d=60*s*h.speed;l.y+=c*e,l.x+=d*e,l.y>a&&(l.y=-o,l.x=Math.random()*i,2===l.layer&&Math.random()<.25&&this._splashes.push({x:l.x,y:a-4-8*Math.random(),r:1,life:1})),l.x>i&&(l.x-=i);const p=o*h.scale,u=d/c*p;t.strokeStyle=r?`rgba(150,170,200,${.45*h.alpha})`:`rgba(235,242,250,${.6*h.alpha})`,t.lineWidth=1*h.scale,t.beginPath(),t.moveTo(l.x,l.y),t.lineTo(l.x-u,l.y-p),t.stroke()}}_drawSnow(t,e,i,a){const s=this._flakeSprite;if(!s)return;const r=this._scene.wind;for(const n of this._flakes){const o=Qt[n.layer];n.y+=55*o.speed*e,n.x+=20*Math.sin(n.phase+.8*this._t)*r*e,n.rot+=n.rotSpd*e,n.y>a+6&&(n.y=-6,n.x=Math.random()*i),n.x>i+6&&(n.x=-6),n.x<-6&&(n.x=i+6);const l=4*n.r*o.scale;t.save(),t.globalAlpha=o.alpha*("natt"===this.theme?.7:.95),t.translate(n.x,n.y),t.rotate(n.rot),t.drawImage(s,-l/2,-l/2,l,l),t.restore()}t.globalAlpha=1}_drawHail(t,e,i,a){const s="natt"===this.theme;t.fillStyle=s?"rgba(190,205,225,0.7)":"rgba(250,252,255,0.9)";for(const s of this._stones)s.y+=s.vy*e,s.x+=s.vx*e,s.y>a?!s.bounced&&Math.random()<.5?(s.bounced=!0,s.vy=.35*-s.vy,s.y=a):(s.y=-4,s.x=Math.random()*i,s.vy=700+300*Math.random(),s.bounced=!1):s.bounced&&(s.vy+=1600*e),t.beginPath(),t.arc(s.x,s.y,s.r,0,2*Math.PI),t.fill()}_drawSplashes(t,e){const i="natt"===this.theme;for(const a of this._splashes)a.r+=50*e,a.life-=5*e,a.life<=0||(t.strokeStyle=i?`rgba(150,170,200,${.2*a.life})`:`rgba(235,242,250,${.3*a.life})`,t.lineWidth=1,t.beginPath(),t.ellipse(a.x,a.y,a.r,.35*a.r,0,0,2*Math.PI),t.stroke());this._splashes=this._splashes.filter(t=>t.life>0)}_updateFlash(t){this._scene.lightning?this._t>=this._nextFlash?(this._flash=1,this._nextFlash=this._t+(Math.random()<.3?.15:4+8*Math.random())):this._flash=Math.max(0,this._flash-t/.4)**1.5:this._flash=0}render(){return V`
       <div class="sky" style="${this._skyA};opacity:${this._frontA?1:0}"></div>
       <div class="sky" style="${this._skyB};opacity:${this._frontA?0:1}"></div>
       <canvas></canvas>
@@ -1346,56 +1346,56 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       width: 100%;
       height: 100%;
     }
-  `,t([gt({attribute:!1})],Jt.prototype,"entity",void 0),t([gt({attribute:!1})],Jt.prototype,"theme",void 0),t([gt({attribute:!1})],Jt.prototype,"active",void 0),t([bt()],Jt.prototype,"_skyA",void 0),t([bt()],Jt.prototype,"_skyB",void 0),t([bt()],Jt.prototype,"_frontA",void 0),customElements.define("hub-weather-bg",Jt);const te='fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"',ee=X`<svg viewBox="0 0 24 24" ${te}>
+  `,t([gt({attribute:!1})],Jt.prototype,"entity",void 0),t([gt({attribute:!1})],Jt.prototype,"theme",void 0),t([gt({attribute:!1})],Jt.prototype,"active",void 0),t([bt()],Jt.prototype,"_skyA",void 0),t([bt()],Jt.prototype,"_skyB",void 0),t([bt()],Jt.prototype,"_frontA",void 0),customElements.define("hub-weather-bg",Jt);const te=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <circle cx="12" cy="12" r="4.2"></circle>
   <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4L19 19M5 19l1.6-1.6M17.4 6.6L19 5"></path>
-</svg>`,ie=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,ee=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M19.5 14.2A7.8 7.8 0 0 1 9.8 4.5a7.8 7.8 0 1 0 9.7 9.7z"></path>
-</svg>`,ae=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,ie=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 17.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6 4 4 0 0 1-1.5.3z"></path>
-</svg>`,se=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,ae=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <circle cx="17" cy="7" r="2.8"></circle>
   <path d="M17 2.6v1M21.4 7h1M20.1 3.9l-.7.7M20.1 10.1l-.7-.7"></path>
   <path d="M5.8 19a3.6 3.6 0 0 1-.3-7.2 4.7 4.7 0 0 1 9.1-1.1 3.5 3.5 0 0 1 1.2 6.9 3.6 3.6 0 0 1-1.4.3z"></path>
-</svg>`,re=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,se=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M20.6 8.6a4 4 0 0 1-5-5 4 4 0 1 0 5 5z"></path>
   <path d="M5.8 19a3.6 3.6 0 0 1-.3-7.2 4.7 4.7 0 0 1 9.1-1.1 3.5 3.5 0 0 1 1.2 6.9 3.6 3.6 0 0 1-1.4.3z"></path>
-</svg>`,ne=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,re=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 14.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6 4 4 0 0 1-1.5.3z"></path>
   <path d="M8 17.5l-1 2.5M12.5 17.5l-1 2.5M17 17.5l-1 2.5"></path>
-</svg>`,oe=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,ne=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 13.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6 4 4 0 0 1-1.5.3z"></path>
   <path d="M7 16l-1.4 3.6M10.5 16l-1.4 3.6M14 16l-1.4 3.6M17.5 16l-1.4 3.6"></path>
-</svg>`,le=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,oe=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 14.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6 4 4 0 0 1-1.5.3z"></path>
   <path d="M8 18.2v.01M12 19.6v.01M16 18.2v.01M10 21v.01M14 21v.01" stroke-width="2.4"></path>
-</svg>`,he=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,le=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 14.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6 4 4 0 0 1-1.5.3z"></path>
   <path d="M8 17.5l-1 2.5M15.5 17.5l-1 2.5"></path>
   <path d="M11.8 20v.01M17.5 20v.01" stroke-width="2.4"></path>
-</svg>`,ce=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,he=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 13.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6"></path>
   <path d="M12.5 12l-2.5 4.5h3L10.5 21"></path>
-</svg>`,de=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,ce=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 13.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6"></path>
   <path d="M12.5 12l-2.5 4.5h3L10.5 21"></path>
   <path d="M6.6 16.5l-.9 2.3M17 16.5l-.9 2.3"></path>
-</svg>`,pe=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,de=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 12.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.4 7.4"></path>
   <path d="M4.5 15.5h15M6.5 18.5h11M8.5 21.5h7"></path>
-</svg>`,ue=X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,pe=X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M3.5 9h11a2.6 2.6 0 1 0-2.6-2.6"></path>
   <path d="M3.5 13.5h15.2a2.6 2.6 0 1 1-2.6 2.6"></path>
   <path d="M3.5 18h7.4a2.2 2.2 0 1 1-2.2 2.2"></path>
-</svg>`,ge={sunny:{day:ee,night:ie},"clear-night":{day:ie},partlycloudy:{day:se,night:re},cloudy:{day:ae},rainy:{day:ne},pouring:{day:oe},snowy:{day:le},"snowy-rainy":{day:he},lightning:{day:ce},"lightning-rainy":{day:de},fog:{day:pe},hail:{day:X`<svg viewBox="0 0 24 24" ${te}>
+</svg>`,ue={sunny:{day:te,night:ee},"clear-night":{day:ee},partlycloudy:{day:ae,night:se},cloudy:{day:ie},rainy:{day:re},pouring:{day:ne},snowy:{day:oe},"snowy-rainy":{day:le},lightning:{day:he},"lightning-rainy":{day:ce},fog:{day:de},hail:{day:X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M6.5 14.5a4 4 0 0 1-.4-8 5.2 5.2 0 0 1 10.1-1.2 3.9 3.9 0 0 1 1.3 7.6 4 4 0 0 1-1.5.3z"></path>
   <path d="M8 18v.01M12 18v.01M16 18v.01M10 21v.01M14 21v.01" stroke-width="2.6"></path>
-</svg>`},windy:{day:ue},"windy-variant":{day:ue}};function be(t,e){const i=ge[t]??ge.cloudy;return e&&i.night?i.night:i.day}const me=new Map;async function ve(t,e,i){const a=`${e}:${i}`,s=me.get(a);if(s&&Date.now()-s.at<9e5)return s.data;try{const s=await t.callWS({type:"call_service",domain:"weather",service:"get_forecasts",service_data:{type:i},target:{entity_id:e},return_response:!0}),r=s?.response?.[e]?.forecast??[];return me.set(a,{at:Date.now(),data:r}),r}catch{return null}}const fe=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"});class xe extends vt{constructor(){super(...arguments),this._now=new Date,this._hours=[],this._days=[],this._fetchedFor="",this._onForce=()=>{this.requestUpdate()},this._open=()=>{this.dispatchEvent(new CustomEvent("hub-weather-open",{bubbles:!0,composed:!0}))}}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},3e4),this._forecastTimer=window.setInterval(()=>this._loadForecasts(),9e5),this.addEventListener("click",this._open),window.addEventListener("hub-weather-force",this._onForce)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&clearInterval(this._interval),void 0!==this._forecastTimer&&clearInterval(this._forecastTimer),this._interval=this._forecastTimer=void 0,this.removeEventListener("click",this._open),window.removeEventListener("hub-weather-force",this._onForce)}updated(t){(t.has("hass")||t.has("weatherEntity"))&&this.hass&&this.weatherEntity&&this._fetchedFor!==this.weatherEntity&&(this._fetchedFor=this.weatherEntity,this._loadForecasts())}async _loadForecasts(){if(!this.hass||!this.weatherEntity)return;const[t,e]=await Promise.all([ve(this.hass,this.weatherEntity,"hourly"),ve(this.hass,this.weatherEntity,"daily")]);t&&(this._hours=Wt(t)),e&&(this._days=qt(e))}get _timeStr(){return`${String(this._now.getHours()).padStart(2,"0")}:${String(this._now.getMinutes()).padStart(2,"0")}`}get _isNight(){return"below_horizon"===this.hass?.states["sun.sun"]?.state}render(){const t=this.weatherEntity?this.getEntity(this.weatherEntity):void 0,e=Bt()??t?.state??"",i=t?.attributes.temperature,a=function(t){const e=t[0];return e&&null!==e.low?{low:e.low,high:e.high}:null}(this._days),s=function(t,e){const i=t.filter(t=>t.ts>=e&&t.ts<=e+432e5);if(0===i.length)return null;if(Kt(i[0].condition)){const t=i.find(t=>!Kt(t.condition));return t?`Uppehåll ~${Zt(t.ts)}`:null}const a=i.find(t=>Kt(t.condition));return a?`${Yt.has(a.condition)?"Snö":"Regn"} börjar ~${Zt(a.ts)}`:null}(this._hours,this._now.getTime());return V`
+</svg>`},windy:{day:pe},"windy-variant":{day:pe}};function ge(t,e){const i=ue[t]??ue.cloudy;return e&&i.night?i.night:i.day}const be=new Map;async function ve(t,e,i){const a=`${e}:${i}`,s=be.get(a);if(s&&Date.now()-s.at<9e5)return s.data;try{const s=await t.callWS({type:"call_service",domain:"weather",service:"get_forecasts",service_data:{type:i},target:{entity_id:e},return_response:!0}),r=s?.response?.[e]?.forecast??[];return be.set(a,{at:Date.now(),data:r}),r}catch{return null}}const me=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"});class fe extends mt{constructor(){super(...arguments),this.bgActive=!1,this._now=new Date,this._hours=[],this._days=[],this._fetchedFor="",this._onForce=()=>{this.requestUpdate()},this._open=()=>{this.dispatchEvent(new CustomEvent("hub-weather-open",{bubbles:!0,composed:!0}))}}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},3e4),this._forecastTimer=window.setInterval(()=>this._loadForecasts(),9e5),this.addEventListener("click",this._open),window.addEventListener("hub-weather-force",this._onForce)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&clearInterval(this._interval),void 0!==this._forecastTimer&&clearInterval(this._forecastTimer),this._interval=this._forecastTimer=void 0,this.removeEventListener("click",this._open),window.removeEventListener("hub-weather-force",this._onForce)}updated(t){(t.has("hass")||t.has("weatherEntity"))&&this.hass&&this.weatherEntity&&this._fetchedFor!==this.weatherEntity&&(this._fetchedFor=this.weatherEntity,this._loadForecasts())}async _loadForecasts(){if(!this.hass||!this.weatherEntity)return;const[t,e]=await Promise.all([ve(this.hass,this.weatherEntity,"hourly"),ve(this.hass,this.weatherEntity,"daily")]);t&&(this._hours=Wt(t)),e&&(this._days=qt(e))}get _timeStr(){return`${String(this._now.getHours()).padStart(2,"0")}:${String(this._now.getMinutes()).padStart(2,"0")}`}get _isNight(){return"below_horizon"===this.hass?.states["sun.sun"]?.state}render(){const t=this.weatherEntity?this.getEntity(this.weatherEntity):void 0,e=jt()??t?.state??"",i=t?.attributes.temperature,a=function(t){const e=t[0];return e&&null!==e.low?{low:e.low,high:e.high}:null}(this._days),s=function(t,e){const i=t.filter(t=>t.ts>=e&&t.ts<=e+432e5);if(0===i.length)return null;if(Kt(i[0].condition)){const t=i.find(t=>!Kt(t.condition));return t?`Uppehåll ~${Zt(t.ts)}`:null}const a=i.find(t=>Kt(t.condition));return a?`${Yt.has(a.condition)?"Snö":"Regn"} börjar ~${Zt(a.ts)}`:null}(this._hours,this._now.getTime());return V`
       <div class="time">${this._timeStr}</div>
-      <div class="date">${function(t){return t.length?t.charAt(0).toUpperCase()+t.slice(1):t}(fe.format(this._now))}</div>
+      <div class="date">${function(t){return t.length?t.charAt(0).toUpperCase()+t.slice(1):t}(me.format(this._now))}</div>
       ${t&&"number"==typeof i?V`
             <div class="wx">
-              ${be(e,this._isNight)}
+              ${ge(e,this._isNight)}
               <span class="wx-temp">${Math.round(i)}°</span>
               ${a?V`<span class="wx-range">
                     <span>↑ ${Math.round(a.high)}°</span>
@@ -1404,7 +1404,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
             </div>
             ${s?V`<div class="hint">${s}</div>`:q}
           `:q}
-    `}}xe.styles=[Tt,n`
+    `}}fe.styles=[Tt,n`
       :host {
         display: block;
         cursor: pointer;
@@ -1453,12 +1453,23 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         font: 500 12.5px var(--hub-font-body);
         color: var(--hub-teal);
       }
-    `],t([gt({attribute:!1})],xe.prototype,"weatherEntity",void 0),t([bt()],xe.prototype,"_now",void 0),t([bt()],xe.prototype,"_hours",void 0),t([bt()],xe.prototype,"_days",void 0),customElements.define("hub-clock",xe);class ye extends ht{constructor(){super(...arguments),this.icon="",this.label="",this.tone="neutral",this.active=!1}render(){const t=It[this.icon];return V`
+      :host([bg-active]) .time,
+      :host([bg-active]) .wx-temp {
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.22);
+      }
+      :host([bg-active]) .date,
+      :host([bg-active]) .wx-range,
+      :host([bg-active]) .hint {
+        color: var(--hub-text);
+        opacity: 0.82;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
+      }
+    `],t([gt({attribute:!1})],fe.prototype,"weatherEntity",void 0),t([gt({type:Boolean,reflect:!0,attribute:"bg-active"})],fe.prototype,"bgActive",void 0),t([bt()],fe.prototype,"_now",void 0),t([bt()],fe.prototype,"_hours",void 0),t([bt()],fe.prototype,"_days",void 0),customElements.define("hub-clock",fe);class xe extends ht{constructor(){super(...arguments),this.icon="",this.label="",this.tone="neutral",this.active=!1}render(){const t=It[this.icon];return V`
       <span class="chip tone-${this.tone} ${this.active?"active":""}">
         ${t?V`<span class="icon">${t}</span>`:""}
         <span class="label">${this.label}</span>
       </span>
-    `}}function _e(t,e){const i=t.lights.some(t=>"on"===e[t.entity]?.state);if(i)return{service:"turn_off",entities:t.lights.map(t=>t.entity)};return{service:"turn_on",entities:t.default_lights?.length?t.default_lights:[t.main_entity]}}ye.styles=[Tt,n`
+    `}}function ye(t,e){const i=t.lights.some(t=>"on"===e[t.entity]?.state);if(i)return{service:"turn_off",entities:t.lights.map(t=>t.entity)};return{service:"turn_on",entities:t.default_lights?.length?t.default_lights:[t.main_entity]}}xe.styles=[Tt,n`
       :host {
         display: inline-flex;
       }
@@ -1514,7 +1525,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         border-color: var(--hub-chip-border);
         color: var(--hub-text-muted);
       }
-    `],t([gt({attribute:!1})],ye.prototype,"icon",void 0),t([gt({attribute:!1})],ye.prototype,"label",void 0),t([gt({attribute:!1})],ye.prototype,"tone",void 0),t([gt({type:Boolean})],ye.prototype,"active",void 0),customElements.define("hub-status-chip",ye);class we extends vt{constructor(){super(...arguments),this._longPressed=!1,this._downX=0,this._downY=0,this._flash=!1,this._onPointerDown=t=>{this._longPressed=!1,this._downX=t.clientX,this._downY=t.clientY,this._pressTimer=window.setTimeout(()=>{this._longPressed=!0,this.dispatchEvent(new CustomEvent("hub-room-open",{detail:{roomId:this.room.id},bubbles:!0,composed:!0}))},500)},this._onPointerMove=t=>{void 0!==this._pressTimer&&(Ot(t.clientX-this._downX)||Ot(t.clientY-this._downY))&&this._cancelPress()},this._cancelPress=()=>{void 0!==this._pressTimer&&(clearTimeout(this._pressTimer),this._pressTimer=void 0)},this._onClick=()=>{if(this._longPressed)return void(this._longPressed=!1);const t=_e(this.room,this.hass.states);this.callService("light",t.service,{entity_id:t.entities}),this._flash=!0,void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)}}disconnectedCallback(){super.disconnectedCallback(),this._cancelPress(),void 0!==this._flashTimer&&(clearTimeout(this._flashTimer),this._flashTimer=void 0)}get _lightsOn(){return this.room.lights.filter(t=>this.isOn(t.entity)).length}get _brightnessPct(){const t=this.getEntityAttribute(this.room.main_entity,"brightness");return"number"==typeof t?Math.round(t/255*100):null}get _subtitle(){const t=this._lightsOn;if(0===t)return"Släckt";const e=1===t?"1 lampa":`${t} lampor`,i=this._brightnessPct;return null!==i?`${e} · ${i} %`:e}render(){if(!this.hass||!this.room)return V``;const t=this._lightsOn>0,e=It[this.room.icon];return V`
+    `],t([gt({attribute:!1})],xe.prototype,"icon",void 0),t([gt({attribute:!1})],xe.prototype,"label",void 0),t([gt({attribute:!1})],xe.prototype,"tone",void 0),t([gt({type:Boolean})],xe.prototype,"active",void 0),customElements.define("hub-status-chip",xe);class _e extends mt{constructor(){super(...arguments),this._longPressed=!1,this._downX=0,this._downY=0,this._flash=!1,this._onPointerDown=t=>{this._longPressed=!1,this._downX=t.clientX,this._downY=t.clientY,this._pressTimer=window.setTimeout(()=>{this._longPressed=!0,this.dispatchEvent(new CustomEvent("hub-room-open",{detail:{roomId:this.room.id},bubbles:!0,composed:!0}))},500)},this._onPointerMove=t=>{void 0!==this._pressTimer&&(Bt(t.clientX-this._downX)||Bt(t.clientY-this._downY))&&this._cancelPress()},this._cancelPress=()=>{void 0!==this._pressTimer&&(clearTimeout(this._pressTimer),this._pressTimer=void 0)},this._onClick=()=>{if(this._longPressed)return void(this._longPressed=!1);const t=ye(this.room,this.hass.states);this.callService("light",t.service,{entity_id:t.entities}),this._flash=!0,void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)}}disconnectedCallback(){super.disconnectedCallback(),this._cancelPress(),void 0!==this._flashTimer&&(clearTimeout(this._flashTimer),this._flashTimer=void 0)}get _lightsOn(){return this.room.lights.filter(t=>this.isOn(t.entity)).length}get _brightnessPct(){const t=this.getEntityAttribute(this.room.main_entity,"brightness");return"number"==typeof t?Math.round(t/255*100):null}get _subtitle(){const t=this._lightsOn;if(0===t)return"Släckt";const e=1===t?"1 lampa":`${t} lampor`,i=this._brightnessPct;return null!==i?`${e} · ${i} %`:e}render(){if(!this.hass||!this.room)return V``;const t=this._lightsOn>0,e=It[this.room.icon];return V`
       <div
         class="tile ${t?"active":""} ${this._flash?"flash":""}"
         @pointerdown=${this._onPointerDown}
@@ -1530,7 +1541,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           <small class="subtitle">${this._subtitle}</small>
         </div>
       </div>
-    `}}we.styles=[Tt,n`
+    `}}_e.styles=[Tt,n`
       :host {
         display: block;
       }
@@ -1595,12 +1606,12 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       .tile.active .subtitle {
         color: var(--hub-amber-muted);
       }
-    `],t([gt({attribute:!1})],we.prototype,"room",void 0),t([bt()],we.prototype,"_flash",void 0),customElements.define("hub-room-tile",we);const ke=new Set(["off","unavailable","unknown","standby","idle"]);function $e(t,e){for(const i of e){const e=t[i.entity];if(e&&"playing"===e.state)return{entity:e,name:i.name}}for(const i of e){const e=t[i.entity];if(e&&!ke.has(e.state))return{entity:e,name:i.name}}return null}function Ee(t,e){if(!t)return 0;const i=t.attributes,a="number"==typeof i.media_duration?i.media_duration:0;if(a<=0)return 0;let s="number"==typeof i.media_position?i.media_position:0;const r="string"==typeof i.media_position_updated_at?Date.parse(i.media_position_updated_at):NaN;return"playing"!==t.state||Number.isNaN(r)||(s+=(e-r)/1e3),Math.max(0,Math.min(100,s/a*100))}class Ce extends vt{constructor(){super(...arguments),this.players=[],this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_goto(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"media"},bubbles:!0,composed:!0}))}_togglePlay(t,e){t.stopPropagation(),this.callService("media_player","media_play_pause",void 0,e)}render(){if(!this.hass)return V``;const t=$e(this.hass.states,this.players??[]);if(!t)return V`
+    `],t([gt({attribute:!1})],_e.prototype,"room",void 0),t([bt()],_e.prototype,"_flash",void 0),customElements.define("hub-room-tile",_e);const we=new Set(["off","unavailable","unknown","standby","idle"]);function ke(t,e){for(const i of e){const e=t[i.entity];if(e&&"playing"===e.state)return{entity:e,name:i.name}}for(const i of e){const e=t[i.entity];if(e&&!we.has(e.state))return{entity:e,name:i.name}}return null}function $e(t,e){if(!t)return 0;const i=t.attributes,a="number"==typeof i.media_duration?i.media_duration:0;if(a<=0)return 0;let s="number"==typeof i.media_position?i.media_position:0;const r="string"==typeof i.media_position_updated_at?Date.parse(i.media_position_updated_at):NaN;return"playing"!==t.state||Number.isNaN(r)||(s+=(e-r)/1e3),Math.max(0,Math.min(100,s/a*100))}class Ee extends mt{constructor(){super(...arguments),this.players=[],this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_goto(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"media"},bubbles:!0,composed:!0}))}_togglePlay(t,e){t.stopPropagation(),this.callService("media_player","media_play_pause",void 0,e)}render(){if(!this.hass)return V``;const t=ke(this.hass.states,this.players??[]);if(!t)return V`
         <div class="np idle" @click=${this._goto}>
           <span class="idle-ic">${It.note}</span>
           <b class="title dim">Ingenting spelas</b>
         </div>
-      `;const e=t.entity,i="playing"===e.state,a=e.attributes.media_title||t.name,s=e.attributes.media_artist||t.name,r=e.attributes.entity_picture,n=Ee(e,this._now);return V`
+      `;const e=t.entity,i="playing"===e.state,a=e.attributes.media_title||t.name,s=e.attributes.media_artist||t.name,r=e.attributes.entity_picture,n=$e(e,this._now);return V`
       <div class="np ${i?"playing":""}" @click=${this._goto}>
         <div
           class="art"
@@ -1619,7 +1630,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           <span class="ppic">${i?It.pause:It.play}</span>
         </button>
       </div>
-    `}}Ce.styles=[Tt,n`
+    `}}Ee.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -1740,25 +1751,25 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         color: var(--hub-text-dim);
         font-weight: 500;
       }
-    `],t([gt({attribute:!1})],Ce.prototype,"players",void 0),t([bt()],Ce.prototype,"_now",void 0),customElements.define("hub-now-playing",Ce);const Me=new Intl.NumberFormat("sv-SE");function Se(t,e){return e>0?Math.max(0,Math.min(100,t/e*100)):0}class Ae extends vt{_goto(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"kcal"},bubbles:!0,composed:!0}))}render(){if(!this.hass)return V``;const t=this.todayEntity?this.getEntity(this.todayEntity):void 0,e=t?Number(t.state):NaN;if(!t||"unavailable"===t.state||"unknown"===t.state||Number.isNaN(e))return V`
+    `],t([gt({attribute:!1})],Ee.prototype,"players",void 0),t([bt()],Ee.prototype,"_now",void 0),customElements.define("hub-now-playing",Ee);const Ce=new Intl.NumberFormat("sv-SE");function Me(t,e){return e>0?Math.max(0,Math.min(100,t/e*100)):0}class Se extends mt{_goto(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"kcal"},bubbles:!0,composed:!0}))}render(){if(!this.hass)return V``;const t=this.todayEntity?this.getEntity(this.todayEntity):void 0,e=t?Number(t.state):NaN;if(!t||"unavailable"===t.state||"unknown"===t.state||Number.isNaN(e))return V`
         <div class="kc offline" @click=${this._goto}>
           <div class="ring" style="--pct:0"></div>
           <div class="meta"><b class="val">Kcal · offline</b></div>
         </div>
-      `;const i="number"==typeof t.attributes.kcal_target?t.attributes.kcal_target:0,a=Se(e,i),s=function(t){const e=t.protein_g;return"number"==typeof e?`${Math.round(e)} g protein`:""}(t.attributes);return V`
+      `;const i="number"==typeof t.attributes.kcal_target?t.attributes.kcal_target:0,a=Me(e,i),s=function(t){const e=t.protein_g;return"number"==typeof e?`${Math.round(e)} g protein`:""}(t.attributes);return V`
       <div class="kc" @click=${this._goto}>
         <div class="ring" style="--pct:${a}"></div>
         <div class="meta">
           <b class="val">
-            ${Me.format(Math.round(e))}
+            ${Ce.format(Math.round(e))}
             <span class="target">
-              ${i>0?`/ ${Me.format(i)} kcal`:"kcal"}
+              ${i>0?`/ ${Ce.format(i)} kcal`:"kcal"}
             </span>
           </b>
           ${s?V`<small class="sub">${s}</small>`:q}
         </div>
       </div>
-    `}}Ae.styles=[Tt,n`
+    `}}Se.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -1824,7 +1835,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         overflow: hidden;
         text-overflow: ellipsis;
       }
-    `],t([gt({attribute:!1})],Ae.prototype,"todayEntity",void 0),customElements.define("hub-kcal-ring",Ae);const Te={frukost:"Frukost",lunch:"Lunch",middag:"Middag",mellis:"Mellis"},Pe=["frukost","lunch","middag","mellis"],Ne={gymdag:"G",vilodag:"V",flexdag:"F"};const ze=/^\d{4}-\d{2}-\d{2}$/;function Fe(t){if(!t||"object"!=typeof t)return null;const e=t;if("frukost"!==(i=e.slot)&&"lunch"!==i&&"middag"!==i&&"mellis"!==i||"string"!=typeof e.name||""===e.name)return null;var i;const a=t=>"number"==typeof t&&Number.isFinite(t)?t:0;return{slot:e.slot,name:e.name,kcal:a(e.kcal),protein:a(e.protein),fat:a(e.fat),carbs:a(e.carbs),logged:!0===e.logged}}function De(t){if(!t||"object"!=typeof t)return null;const e=t;if("string"!=typeof e.date||!ze.test(e.date))return null;const i=Array.isArray(e.meals)?e.meals.map(Fe).filter(t=>null!==t):[];return{date:e.date,weekday:"string"==typeof e.weekday?e.weekday:"",day_type:"string"==typeof e.day_type?e.day_type:"vilodag",confirmed:!0===e.confirmed,meals:i,total_kcal:"number"==typeof e.total_kcal?e.total_kcal:0,target_kcal:"number"==typeof e.target_kcal?e.target_kcal:0,protein_ok:!0===e.protein_ok,kcal_ok:!1!==e.kcal_ok}}function Be(t){if(!t)return null;const{week_start:e,today:i,days:a}=t;if("string"!=typeof e||!ze.test(e))return null;if(!Array.isArray(a))return null;const s=a.map(De).filter(t=>null!==t);return 0===s.length?null:{weekStart:e,today:"string"==typeof i&&ze.test(i)?i:e,confirmedDays:s.filter(t=>t.confirmed).length,days:s}}function Oe(t){const e=t=>Pe.flatMap(e=>t.meals.filter(t=>t.slot===e&&!t.logged)),i=t.days.find(e=>e.date===t.today);if(i){const t=e(i);if(t.length>0)return{dayLabel:"Idag",day:i,meals:t}}const a=t.days.find(e=>e.date===function(t,e){const[i,a,s]=t.split("-").map(Number);return new Date(Date.UTC(i,a-1,s+e)).toISOString().slice(0,10)}(t.today,1));if(a){const t=e(a);if(t.length>0)return{dayLabel:"Imorgon",day:a,meals:t}}return null}const je=new Intl.NumberFormat("sv-SE");class Ie extends vt{_model(){if(!this.plannerEntity)return null;const t=this.getEntity(this.plannerEntity);return t&&"unavailable"!==t.state&&"unknown"!==t.state?Be(t.attributes):null}_open(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"vecka"},bubbles:!0,composed:!0}))}render(){if(!this.hass||!this.plannerEntity)return q;const t=this._model(),e=t?Oe(t):null;return V`
+    `],t([gt({attribute:!1})],Se.prototype,"todayEntity",void 0),customElements.define("hub-kcal-ring",Se);const Ae={frukost:"Frukost",lunch:"Lunch",middag:"Middag",mellis:"Mellis"},Te=["frukost","lunch","middag","mellis"],Pe={gymdag:"G",vilodag:"V",flexdag:"F"};const Ne=/^\d{4}-\d{2}-\d{2}$/;function ze(t){if(!t||"object"!=typeof t)return null;const e=t;if("frukost"!==(i=e.slot)&&"lunch"!==i&&"middag"!==i&&"mellis"!==i||"string"!=typeof e.name||""===e.name)return null;var i;const a=t=>"number"==typeof t&&Number.isFinite(t)?t:0;return{slot:e.slot,name:e.name,kcal:a(e.kcal),protein:a(e.protein),fat:a(e.fat),carbs:a(e.carbs),logged:!0===e.logged}}function Fe(t){if(!t||"object"!=typeof t)return null;const e=t;if("string"!=typeof e.date||!Ne.test(e.date))return null;const i=Array.isArray(e.meals)?e.meals.map(ze).filter(t=>null!==t):[];return{date:e.date,weekday:"string"==typeof e.weekday?e.weekday:"",day_type:"string"==typeof e.day_type?e.day_type:"vilodag",confirmed:!0===e.confirmed,meals:i,total_kcal:"number"==typeof e.total_kcal?e.total_kcal:0,target_kcal:"number"==typeof e.target_kcal?e.target_kcal:0,protein_ok:!0===e.protein_ok,kcal_ok:!1!==e.kcal_ok}}function De(t){if(!t)return null;const{week_start:e,today:i,days:a}=t;if("string"!=typeof e||!Ne.test(e))return null;if(!Array.isArray(a))return null;const s=a.map(Fe).filter(t=>null!==t);return 0===s.length?null:{weekStart:e,today:"string"==typeof i&&Ne.test(i)?i:e,confirmedDays:s.filter(t=>t.confirmed).length,days:s}}function je(t){const e=t=>Te.flatMap(e=>t.meals.filter(t=>t.slot===e&&!t.logged)),i=t.days.find(e=>e.date===t.today);if(i){const t=e(i);if(t.length>0)return{dayLabel:"Idag",day:i,meals:t}}const a=t.days.find(e=>e.date===function(t,e){const[i,a,s]=t.split("-").map(Number);return new Date(Date.UTC(i,a-1,s+e)).toISOString().slice(0,10)}(t.today,1));if(a){const t=e(a);if(t.length>0)return{dayLabel:"Imorgon",day:a,meals:t}}return null}const Be=new Intl.NumberFormat("sv-SE");class Oe extends mt{_model(){if(!this.plannerEntity)return null;const t=this.getEntity(this.plannerEntity);return t&&"unavailable"!==t.state&&"unknown"!==t.state?De(t.attributes):null}_open(){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"vecka"},bubbles:!0,composed:!0}))}render(){if(!this.hass||!this.plannerEntity)return q;const t=this._model(),e=t?je(t):null;return V`
       <div class="card${e?"":" empty"}" @click=${this._open}>
         <div class="head">
           <span class="eyebrow">Matsedel</span>
@@ -1835,15 +1846,15 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               <div class="meals">
                 ${e.meals.map(t=>V`
                     <div class="meal">
-                      <span class="slot">${Te[t.slot]}</span>
+                      <span class="slot">${Ae[t.slot]}</span>
                       <span class="name">${t.name}</span>
-                      <span class="kcal">${je.format(t.kcal)}</span>
+                      <span class="kcal">${Be.format(t.kcal)}</span>
                     </div>
                   `)}
               </div>
             `:V`<div class="none">${t?"Inget planerat ännu":"Vecka · offline"}</div>`}
       </div>
-    `}}function He(t){const e=Date.parse(t.expected??t.scheduled??"");return Number.isNaN(e)?Number.POSITIVE_INFINITY:e}function Le(t,e,i){if(!Array.isArray(t))return[];const a=i?new RegExp(i,"i"):null;return t.filter(t=>t?.line?.designation===e).filter(t=>!(a&&t.destination&&a.test(t.destination))).sort((t,e)=>He(t)-He(e))}Ie.styles=[Tt,n`
+    `}}function Ie(t){const e=Date.parse(t.expected??t.scheduled??"");return Number.isNaN(e)?Number.POSITIVE_INFINITY:e}function He(t,e,i){if(!Array.isArray(t))return[];const a=i?new RegExp(i,"i"):null;return t.filter(t=>t?.line?.designation===e).filter(t=>!(a&&t.destination&&a.test(t.destination))).sort((t,e)=>Ie(t)-Ie(e))}Oe.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -1936,12 +1947,12 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         font: 400 13px var(--hub-font-body);
         color: var(--hub-text-dim);
       }
-    `],t([gt({attribute:!1})],Ie.prototype,"plannerEntity",void 0),customElements.define("hub-meal-card",Ie);function Re(t){if(!Array.isArray(t))return[];const e=new Map;for(const i of t){if(!i||"object"!=typeof i)continue;const t=i;if("string"!=typeof t.header||0===t.header.length)continue;const a="number"==typeof t.priority?t.priority:0,s=Array.isArray(t.lines)?t.lines.map(t=>t&&"object"==typeof t?t.designation:null).filter(t=>"string"==typeof t&&t.length>0):[],r="string"==typeof t.details&&t.details.length>0?t.details:void 0,n="string"==typeof t.scope&&t.scope.length>0?t.scope:void 0,o=e.get(t.header);if(o){for(const t of s)o.badges.add(t);o.priority=Math.max(o.priority,a),!o.details&&r&&(o.details=r),!o.scope&&n&&(o.scope=n)}else e.set(t.header,{badges:new Set(s),priority:a,details:r,scope:n})}return[...e.entries()].sort((t,e)=>e[1].priority-t[1].priority).slice(0,5).map(([t,e])=>({badges:[...e.badges].sort(),header:t,...void 0!==e.details?{details:e.details}:{},...void 0!==e.scope?{scope:e.scope}:{}}))}const Ue=new Set(["unavailable","unknown",""]);function Ve(t){if(!t||Ue.has(t))return null;const e=new Date(t);if(Number.isNaN(e.getTime()))return null;return`${String(e.getHours()).padStart(2,"0")}:${String(e.getMinutes()).padStart(2,"0")}`}class Xe extends vt{constructor(){super(...arguments),this._open=()=>{this.dispatchEvent(new CustomEvent("hub-transit-open",{bubbles:!0,composed:!0}))}}_pendeltag(){const t=this.config.transit?.pendeltag;if(!t)return V`<span class="sub dim">–</span>`;const e=this.getEntity(t.next_entity),i=Ve(e?.state);if(!i)return V`<span class="sub dim">–</span>`;const a=this.getEntity(t.count_entity),s=a&&!Number.isNaN(Number(a.state))?Number(a.state):null;return V`<span class="sub">Nästa ${i}${null===s?"":` · ${s} ${1===s?"avgång":"avgångar"}`}</span>`}_bus(){const t=this.config.transit?.bus;if(!t)return V`<span class="sub dim">Inga avgångar idag</span>`;const e=this.getEntity(t.entity),i=Le(e?.attributes.departures??[],t.line,t.exclude_destination).slice(0,3);return 0===i.length?V`<span class="sub dim">Inga avgångar idag</span>`:V`<span class="sub"
+    `],t([gt({attribute:!1})],Oe.prototype,"plannerEntity",void 0),customElements.define("hub-meal-card",Oe);function Le(t){if(!Array.isArray(t))return[];const e=new Map;for(const i of t){if(!i||"object"!=typeof i)continue;const t=i;if("string"!=typeof t.header||0===t.header.length)continue;const a="number"==typeof t.priority?t.priority:0,s=Array.isArray(t.lines)?t.lines.map(t=>t&&"object"==typeof t?t.designation:null).filter(t=>"string"==typeof t&&t.length>0):[],r="string"==typeof t.details&&t.details.length>0?t.details:void 0,n="string"==typeof t.scope&&t.scope.length>0?t.scope:void 0,o=e.get(t.header);if(o){for(const t of s)o.badges.add(t);o.priority=Math.max(o.priority,a),!o.details&&r&&(o.details=r),!o.scope&&n&&(o.scope=n)}else e.set(t.header,{badges:new Set(s),priority:a,details:r,scope:n})}return[...e.entries()].sort((t,e)=>e[1].priority-t[1].priority).slice(0,5).map(([t,e])=>({badges:[...e.badges].sort(),header:t,...void 0!==e.details?{details:e.details}:{},...void 0!==e.scope?{scope:e.scope}:{}}))}const Re=new Set(["unavailable","unknown",""]);function Ue(t){if(!t||Re.has(t))return null;const e=new Date(t);if(Number.isNaN(e.getTime()))return null;return`${String(e.getHours()).padStart(2,"0")}:${String(e.getMinutes()).padStart(2,"0")}`}class Ve extends mt{constructor(){super(...arguments),this._open=()=>{this.dispatchEvent(new CustomEvent("hub-transit-open",{bubbles:!0,composed:!0}))}}_pendeltag(){const t=this.config.transit?.pendeltag;if(!t)return V`<span class="sub dim">–</span>`;const e=this.getEntity(t.next_entity),i=Ue(e?.state);if(!i)return V`<span class="sub dim">–</span>`;const a=this.getEntity(t.count_entity),s=a&&!Number.isNaN(Number(a.state))?Number(a.state):null;return V`<span class="sub">Nästa ${i}${null===s?"":` · ${s} ${1===s?"avgång":"avgångar"}`}</span>`}_bus(){const t=this.config.transit?.bus;if(!t)return V`<span class="sub dim">Inga avgångar idag</span>`;const e=this.getEntity(t.entity),i=He(e?.attributes.departures??[],t.line,t.exclude_destination).slice(0,3);return 0===i.length?V`<span class="sub dim">Inga avgångar idag</span>`:V`<span class="sub"
       >${i.map((t,e)=>V`${e>0?V`<span class="sep">·</span>`:""}<span
             class="dep ${t.state&&"EXPECTED"!==t.state?"delayed":""}"
             >${t.display??"–"}</span
           >`)}</span
-    >`}_shaped(){const t=this.config.disturbances_entity?this.getEntity(this.config.disturbances_entity):void 0;return t&&"unavailable"!==t.state&&"unknown"!==t.state?Re(t.attributes.deviations):[]}_alerts(t){if(0===t.length)return q;if(1===t.length){const e=t[0];return V`<div class="alerts">
+    >`}_shaped(){const t=this.config.disturbances_entity?this.getEntity(this.config.disturbances_entity):void 0;return t&&"unavailable"!==t.state&&"unknown"!==t.state?Le(t.attributes.deviations):[]}_alerts(t){if(0===t.length)return q;if(1===t.length){const e=t[0];return V`<div class="alerts">
         <div class="alert">
           ${e.badges.map(t=>V`<span class="badge">${t}</span>`)}
           <span class="alert-text">${e.header}</span>
@@ -1975,7 +1986,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         </div>
         ${this._alerts(e)}
       </div>
-    `}}Xe.styles=[Tt,n`
+    `}}Ve.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -2115,7 +2126,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         overflow: hidden;
         text-overflow: ellipsis;
       }
-    `],t([gt({attribute:!1})],Xe.prototype,"config",void 0),customElements.define("hub-transit-card",Xe);const We=36e5,qe=new Set(["unavailable","unknown","none",""]);function Ge(t,e,i){if(!Array.isArray(t))return[];const a=[];for(const s of t){if(!s||"object"!=typeof s)continue;const t=s,r="number"==typeof t.total?t.total:Number(t.total);if(!Number.isFinite(r)||"string"!=typeof t.startsAt)continue;const n=new Date(t.startsAt);if(Number.isNaN(n.getTime()))continue;const o="number"==typeof t.energy?t.energy:Number(t.energy),l=Number.isFinite(o)?100*o:null,h=100*r,c="spot"===e&&null!==l?l:h+("allin"===e?i:0);a.push({start:n,ore:c,totalOre:h,spotOre:l})}return a.sort((t,e)=>t.start.getTime()-e.start.getTime())}function Ye(t){if(t.length<3)return null;let e=1/0,i=-1;for(let a=0;a+3<=t.length;a++){let s=!0,r=t[a].ore;for(let e=a+1;e<a+3;e++){if(t[e].start.getTime()-t[e-1].start.getTime()!==We){s=!1;break}r+=t[e].ore}s&&r<e&&(e=r,i=a)}return i<0?null:{start:t[i].start,end:new Date(t[i+3-1].start.getTime()+We)}}function Ke(t,e,i,a="allin",s=0){if(qe.has(String(e??"").toLowerCase()))return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const r=Ge(t?.today,a,s),n=Ge(t?.tomorrow,a,s);if(0===r.length&&0===n.length)return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const o=[...r,...n].sort((t,e)=>t.start.getTime()-e.start.getTime()),l=i.getTime(),h=o.find(t=>t.start.getTime()<=l&&l<t.start.getTime()+We)??null;let c="normal";if(h&&r.length){const t=r.reduce((t,e)=>t+e.ore,0)/r.length;if(t>0){const e=h.ore/t;e<.85?c="låg":e>1.15&&(c="hög")}}const d=o.filter(t=>t.start.getTime()+We>l);return{now:h,level:c,today:r,tomorrow:n,cheapestWindow:Ye(d)}}function Ze(t){const e=[...t.today,...t.tomorrow];return e.length>0&&e.every(t=>null!==t.spotOre)}const Qe="glass-hub-price-view";function Je(){try{return"spot"===localStorage.getItem(Qe)?"spot":"allin"}catch{return"allin"}}function ti(t){return(t?.grid?.overforing_ore??0)+(t?.grid?.energiskatt_ore??0)}const ei={"låg":"lågt",normal:"normalt","hög":"högt"};class ii extends vt{constructor(){super(...arguments),this._now=new Date,this._open=()=>{this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"energi"},bubbles:!0,composed:!0}))}}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;if(!t)return null;const e=Je(),i=t.attributes,a=Ke(i,t.state,this._now,e,"allin"===e?ti(this.config):0);return"spot"===e&&a.today.length&&a.today.some(t=>null===t.spotOre)?Ke(i,t.state,this._now,"allin",ti(this.config)):a}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_bars(t){const e=function(t,e){const i=[...t.today,...t.tomorrow].sort((t,e)=>t.start.getTime()-e.start.getTime()),a=e.getTime(),s=t.cheapestWindow,r=s?s.start.getTime():null,n=s?s.end.getTime():null;return i.filter(t=>t.start.getTime()+We>a).slice(0,12).map(t=>{const e=t.start.getTime();return{start:t.start,ore:t.ore,current:e<=a&&a<e+We,cheap:null!==r&&e>=r&&e<n}})}(t,this._now);if(0===e.length)return V`<div class="waiting">Väntar på prisdata</div>`;const i=e.map(t=>t.ore),a=Math.min(...i),s=Math.max(...i)-a;return V`<div class="bars">
+    `],t([gt({attribute:!1})],Ve.prototype,"config",void 0),customElements.define("hub-transit-card",Ve);const Xe=36e5,We=new Set(["unavailable","unknown","none",""]);function qe(t,e,i){if(!Array.isArray(t))return[];const a=[];for(const s of t){if(!s||"object"!=typeof s)continue;const t=s,r="number"==typeof t.total?t.total:Number(t.total);if(!Number.isFinite(r)||"string"!=typeof t.startsAt)continue;const n=new Date(t.startsAt);if(Number.isNaN(n.getTime()))continue;const o="number"==typeof t.energy?t.energy:Number(t.energy),l=Number.isFinite(o)?100*o:null,h=100*r,c="spot"===e&&null!==l?l:h+("allin"===e?i:0);a.push({start:n,ore:c,totalOre:h,spotOre:l})}return a.sort((t,e)=>t.start.getTime()-e.start.getTime())}function Ge(t){if(t.length<3)return null;let e=1/0,i=-1;for(let a=0;a+3<=t.length;a++){let s=!0,r=t[a].ore;for(let e=a+1;e<a+3;e++){if(t[e].start.getTime()-t[e-1].start.getTime()!==Xe){s=!1;break}r+=t[e].ore}s&&r<e&&(e=r,i=a)}return i<0?null:{start:t[i].start,end:new Date(t[i+3-1].start.getTime()+Xe)}}function Ye(t,e,i,a="allin",s=0){if(We.has(String(e??"").toLowerCase()))return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const r=qe(t?.today,a,s),n=qe(t?.tomorrow,a,s);if(0===r.length&&0===n.length)return{now:null,level:"normal",today:[],tomorrow:[],cheapestWindow:null};const o=[...r,...n].sort((t,e)=>t.start.getTime()-e.start.getTime()),l=i.getTime(),h=o.find(t=>t.start.getTime()<=l&&l<t.start.getTime()+Xe)??null;let c="normal";if(h&&r.length){const t=r.reduce((t,e)=>t+e.ore,0)/r.length;if(t>0){const e=h.ore/t;e<.85?c="låg":e>1.15&&(c="hög")}}const d=o.filter(t=>t.start.getTime()+Xe>l);return{now:h,level:c,today:r,tomorrow:n,cheapestWindow:Ge(d)}}function Ke(t){const e=[...t.today,...t.tomorrow];return e.length>0&&e.every(t=>null!==t.spotOre)}const Ze="glass-hub-price-view";function Qe(){try{return"spot"===localStorage.getItem(Ze)?"spot":"allin"}catch{return"allin"}}function Je(t){return(t?.grid?.overforing_ore??0)+(t?.grid?.energiskatt_ore??0)}const ti={"låg":"lågt",normal:"normalt","hög":"högt"};class ei extends mt{constructor(){super(...arguments),this._now=new Date,this._open=()=>{this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:"energi"},bubbles:!0,composed:!0}))}}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;if(!t)return null;const e=Qe(),i=t.attributes,a=Ye(i,t.state,this._now,e,"allin"===e?Je(this.config):0);return"spot"===e&&a.today.length&&a.today.some(t=>null===t.spotOre)?Ye(i,t.state,this._now,"allin",Je(this.config)):a}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_bars(t){const e=function(t,e){const i=[...t.today,...t.tomorrow].sort((t,e)=>t.start.getTime()-e.start.getTime()),a=e.getTime(),s=t.cheapestWindow,r=s?s.start.getTime():null,n=s?s.end.getTime():null;return i.filter(t=>t.start.getTime()+Xe>a).slice(0,12).map(t=>{const e=t.start.getTime();return{start:t.start,ore:t.ore,current:e<=a&&a<e+Xe,cheap:null!==r&&e>=r&&e<n}})}(t,this._now);if(0===e.length)return V`<div class="waiting">Väntar på prisdata</div>`;const i=e.map(t=>t.ore),a=Math.min(...i),s=Math.max(...i)-a;return V`<div class="bars">
       ${e.map(t=>{return V`<div
           class="bar ${t.current?"current":t.cheap?"cheap":""}"
           style="height:${(e=t.ore,s>0?100*(.2+(e-a)/s*.8):60).toFixed(1)}%"
@@ -2123,19 +2134,19 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
     </div>`}render(){if(!this.hass||!this.config)return V``;const t=this._model(),e=this._currentOre(t),i=!!t&&t.today.length>0,a=t?.now?t.level:"normal",s="låg"===a?"low":"hög"===a?"high":"",r=i&&!!t?.now&&"normal"!==a,n=t?.cheapestWindow,o=n?V`<span class="hint"
           ><span class="ic">${It.clock}</span>Billigast ${n.start.getHours()}–${n.end.getHours()}</span
         >`:q;return V`
-      <button class="card" aria-label=${null===e?"Elpris, öppna energisidan":`Elpris ${e} öre just nu${r?`, ${ei[a]}`:""}, öppna energisidan`} @click=${this._open}>
+      <button class="card" aria-label=${null===e?"Elpris, öppna energisidan":`Elpris ${e} öre just nu${r?`, ${ti[a]}`:""}, öppna energisidan`} @click=${this._open}>
         <div class="head">
           <div class="lead">
             <span class="ic">${It.bolt}</span>
             <span class="num ${s}">${null===e?"—":e}</span>
             <span class="unit">öre</span>
-            ${r?V`<span class="level ${s}">· ${ei[a]}</span>`:q}
+            ${r?V`<span class="level ${s}">· ${ti[a]}</span>`:q}
           </div>
           ${o}
         </div>
         ${i?this._bars(t):V`<div class="waiting">Väntar på prisdata</div>`}
       </button>
-    `}}ii.styles=[Tt,n`
+    `}}ei.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -2260,7 +2271,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         color: var(--hub-text-dim);
         letter-spacing: 0.01em;
       }
-    `],t([gt({attribute:!1})],ii.prototype,"config",void 0),t([bt()],ii.prototype,"_now",void 0),customElements.define("hub-energy-strip",ii);const ai={cleaning:"Städar",returning:"Åker hem",paused:"Pausad",error:"Fel",idle:"Väntar"};class si extends vt{constructor(){super(...arguments),this.theme="natt",this.weatherBg=!1,this.pageActive=!1}_gotoPage(t){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:t},bubbles:!0,composed:!0}))}get _chips(){const t=this.config,e=[],i=t.lights_count_entity?this.getEntity(t.lights_count_entity):void 0,a=i&&!Number.isNaN(Number(i.state))?Number(i.state):null;if(e.push({icon:"lamp",label:null===a?"—":`${a} ${1===a?"lampa":"lampor"}`,tone:"amber",active:(a??0)>0}),t.vacuum_entity){const i=this.getEntity(t.vacuum_entity);i&&"docked"!==i.state&&"unavailable"!==i.state&&"unknown"!==i.state&&e.push({icon:"vacuum",label:ai[i.state]??"Städar",tone:"error"===i.state?"coral":"neutral",active:!0})}if(t.person_entity){const i=this.getEntity(t.person_entity),a=(i?.attributes.friendly_name||"Philip").split(" ")[0],s="home"===i?.state;e.push({icon:"home",label:`${a} ${s?"hemma":"borta"}`,tone:"neutral",active:!1})}return e}render(){if(!this.hass||!this.config)return V``;const t=this.config;return V`
+    `],t([gt({attribute:!1})],ei.prototype,"config",void 0),t([bt()],ei.prototype,"_now",void 0),customElements.define("hub-energy-strip",ei);const ii={cleaning:"Städar",returning:"Åker hem",paused:"Pausad",error:"Fel",idle:"Väntar"};class ai extends mt{constructor(){super(...arguments),this.theme="natt",this.weatherBg=!1,this.pageActive=!1}_gotoPage(t){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:t},bubbles:!0,composed:!0}))}get _chips(){const t=this.config,e=[],i=t.lights_count_entity?this.getEntity(t.lights_count_entity):void 0,a=i&&!Number.isNaN(Number(i.state))?Number(i.state):null;if(e.push({icon:"lamp",label:null===a?"—":`${a} ${1===a?"lampa":"lampor"}`,tone:"amber",active:(a??0)>0}),t.vacuum_entity){const i=this.getEntity(t.vacuum_entity);i&&"docked"!==i.state&&"unavailable"!==i.state&&"unknown"!==i.state&&e.push({icon:"vacuum",label:ii[i.state]??"Städar",tone:"error"===i.state?"coral":"neutral",active:!0})}if(t.person_entity){const i=this.getEntity(t.person_entity),a=(i?.attributes.friendly_name||"Philip").split(" ")[0],s="home"===i?.state;e.push({icon:"home",label:`${a} ${s?"hemma":"borta"}`,tone:"neutral",active:!1})}return e}render(){if(!this.hass||!this.config)return V``;const t=this.config;return V`
       ${this.weatherBg?V`<hub-weather-bg
             .hass=${this.hass}
             .entity=${t.weather_entity}
@@ -2269,7 +2280,11 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ></hub-weather-bg>`:q}
       <div class="page">
         <div class="top">
-          <hub-clock .hass=${this.hass} .weatherEntity=${t.weather_entity}></hub-clock>
+          <hub-clock
+            .hass=${this.hass}
+            .weatherEntity=${t.weather_entity}
+            .bgActive=${this.weatherBg}
+          ></hub-clock>
           <div class="chips">
             ${this._chips.map(t=>V`
                 <hub-status-chip
@@ -2311,7 +2326,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               ></hub-meal-card>`:q}
         </div>
       </div>
-    `}}si.styles=[Tt,n`
+    `}}ai.styles=[Tt,n`
       /* Host is a flex column that fills the page section but may grow past it:
          when the wall is too short for everything, the section (its own
          overflow-y:auto) scrolls instead of anything overlapping. */
@@ -2420,7 +2435,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           flex: 1;
         }
       }
-    `],t([gt({attribute:!1})],si.prototype,"config",void 0),t([gt({attribute:!1})],si.prototype,"theme",void 0),t([gt({attribute:!1})],si.prototype,"weatherBg",void 0),t([gt({attribute:!1})],si.prototype,"pageActive",void 0),customElements.define("hub-home-page",si);const ri=new Set(["unavailable","unknown"]);class ni extends vt{constructor(){super(...arguments),this._flash=!1,this._longPressed=!1,this._downX=0,this._downY=0,this._onPointerDown=t=>{this._dead||(this._longPressed=!1,this._downX=t.clientX,this._downY=t.clientY,this._pressTimer=window.setTimeout(()=>{this._longPressed=!0,this.dispatchEvent(new CustomEvent("hub-light-open",{detail:{entity:this.light.entity,name:this.light.name},bubbles:!0,composed:!0}))},500))},this._onPointerMove=t=>{void 0!==this._pressTimer&&(Ot(t.clientX-this._downX)||Ot(t.clientY-this._downY))&&this._cancelPress()},this._cancelPress=()=>{void 0!==this._pressTimer&&(clearTimeout(this._pressTimer),this._pressTimer=void 0)},this._onClick=()=>{this._dead||(this._longPressed?this._longPressed=!1:(this.callService("light","toggle",void 0,this.light.entity),this._flash=!0,void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)))}}disconnectedCallback(){super.disconnectedCallback(),this._cancelPress(),void 0!==this._flashTimer&&(clearTimeout(this._flashTimer),this._flashTimer=void 0)}get _dead(){const t=this.getEntity(this.light.entity);return!t||ri.has(t.state)}get _stateLabel(){const t=this.getEntity(this.light.entity);if(!t||ri.has(t.state))return"Ej tillgänglig";if("on"!==t.state)return"Av";const e=t.attributes.brightness;return"number"==typeof e?`${Math.round(e/255*100)} %`:"På"}render(){if(!this.hass||!this.light)return V``;const t=this.isOn(this.light.entity),e=this._dead;return V`
+    `],t([gt({attribute:!1})],ai.prototype,"config",void 0),t([gt({attribute:!1})],ai.prototype,"theme",void 0),t([gt({attribute:!1})],ai.prototype,"weatherBg",void 0),t([gt({attribute:!1})],ai.prototype,"pageActive",void 0),customElements.define("hub-home-page",ai);const si=new Set(["unavailable","unknown"]);class ri extends mt{constructor(){super(...arguments),this._flash=!1,this._longPressed=!1,this._downX=0,this._downY=0,this._onPointerDown=t=>{this._dead||(this._longPressed=!1,this._downX=t.clientX,this._downY=t.clientY,this._pressTimer=window.setTimeout(()=>{this._longPressed=!0,this.dispatchEvent(new CustomEvent("hub-light-open",{detail:{entity:this.light.entity,name:this.light.name},bubbles:!0,composed:!0}))},500))},this._onPointerMove=t=>{void 0!==this._pressTimer&&(Bt(t.clientX-this._downX)||Bt(t.clientY-this._downY))&&this._cancelPress()},this._cancelPress=()=>{void 0!==this._pressTimer&&(clearTimeout(this._pressTimer),this._pressTimer=void 0)},this._onClick=()=>{this._dead||(this._longPressed?this._longPressed=!1:(this.callService("light","toggle",void 0,this.light.entity),this._flash=!0,void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)))}}disconnectedCallback(){super.disconnectedCallback(),this._cancelPress(),void 0!==this._flashTimer&&(clearTimeout(this._flashTimer),this._flashTimer=void 0)}get _dead(){const t=this.getEntity(this.light.entity);return!t||si.has(t.state)}get _stateLabel(){const t=this.getEntity(this.light.entity);if(!t||si.has(t.state))return"Ej tillgänglig";if("on"!==t.state)return"Av";const e=t.attributes.brightness;return"number"==typeof e?`${Math.round(e/255*100)} %`:"På"}render(){if(!this.hass||!this.light)return V``;const t=this.isOn(this.light.entity),e=this._dead;return V`
       <div
         class="tile ${t?"on":""} ${this._flash?"flash":""} ${e?"dead":""}"
         @pointerdown=${this._onPointerDown}
@@ -2434,7 +2449,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         <span class="name">${this.light.name}</span>
         <span class="state">${this._stateLabel}</span>
       </div>
-    `}}ni.styles=[Tt,n`
+    `}}ri.styles=[Tt,n`
       :host {
         display: block;
       }
@@ -2507,7 +2522,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       .tile.on .state {
         color: var(--hub-amber-text);
       }
-    `],t([gt({attribute:!1})],ni.prototype,"light",void 0),t([bt()],ni.prototype,"_flash",void 0),customElements.define("hub-light-tile",ni);const oi=new Set(["unavailable","unknown"]);function li(t){return!!t&&!oi.has(t.state)}class hi extends vt{constructor(){super(...arguments),this._armed=!1,this._flash=!1,this._headLongPressed=!1,this._headDownX=0,this._headDownY=0,this._onAllOff=()=>{if(!this._armed)return this._armed=!0,void 0!==this._armTimer&&clearTimeout(this._armTimer),void(this._armTimer=window.setTimeout(()=>{this._armed=!1,this._armTimer=void 0},3e3));void 0!==this._armTimer&&clearTimeout(this._armTimer),this._armTimer=void 0,this._armed=!1,this._flash=!0,this.callService("light","turn_off",void 0,"all"),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)},this._onHeadMove=t=>{void 0!==this._headPressTimer&&(Ot(t.clientX-this._headDownX)||Ot(t.clientY-this._headDownY))&&this._cancelHeadPress()},this._cancelHeadPress=()=>{void 0!==this._headPressTimer&&(clearTimeout(this._headPressTimer),this._headPressTimer=void 0)}}disconnectedCallback(){super.disconnectedCallback(),this._clearTimers()}_clearTimers(){void 0!==this._armTimer&&clearTimeout(this._armTimer),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._armTimer=void 0,this._flashTimer=void 0,this._armed=!1,this._flash=!1,this._cancelHeadPress()}_activateScene(t){this.callService("scene","turn_on",void 0,t)}_onHeadDown(t,e){this._headLongPressed=!1,this._headDownX=t.clientX,this._headDownY=t.clientY,this._headPressTimer=window.setTimeout(()=>{this._headLongPressed=!0,this.dispatchEvent(new CustomEvent("hub-room-open",{detail:{roomId:e.id},bubbles:!0,composed:!0}))},500)}_onHeadClick(t){if(this._headLongPressed)return void(this._headLongPressed=!1);const e=_e(t,this.hass.states);this.callService("light",e.service,{entity_id:e.entities})}_section(t){const e=function(t,e){const i=t.lights.filter(t=>"on"===e[t.entity]?.state),a=i.length;if(0===a)return{onCount:0,pct:null,label:"Släckt"};const s=i.map(t=>e[t.entity]?.attributes.brightness).filter(t=>"number"==typeof t),r=s.length?Math.round(s.reduce((t,e)=>t+e,0)/s.length/255*100):null,n=1===a?"1 lampa":`${a} lampor`;return{onCount:a,pct:r,label:null!==r?`${n} · ${r} %`:n}}(t,this.hass.states),i=e.onCount>0;return V`
+    `],t([gt({attribute:!1})],ri.prototype,"light",void 0),t([bt()],ri.prototype,"_flash",void 0),customElements.define("hub-light-tile",ri);const ni=new Set(["unavailable","unknown"]);function oi(t){return!!t&&!ni.has(t.state)}class li extends mt{constructor(){super(...arguments),this._armed=!1,this._flash=!1,this._headLongPressed=!1,this._headDownX=0,this._headDownY=0,this._onAllOff=()=>{if(!this._armed)return this._armed=!0,void 0!==this._armTimer&&clearTimeout(this._armTimer),void(this._armTimer=window.setTimeout(()=>{this._armed=!1,this._armTimer=void 0},3e3));void 0!==this._armTimer&&clearTimeout(this._armTimer),this._armTimer=void 0,this._armed=!1,this._flash=!0,this.callService("light","turn_off",void 0,"all"),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._flashTimer=window.setTimeout(()=>{this._flash=!1,this._flashTimer=void 0},200)},this._onHeadMove=t=>{void 0!==this._headPressTimer&&(Bt(t.clientX-this._headDownX)||Bt(t.clientY-this._headDownY))&&this._cancelHeadPress()},this._cancelHeadPress=()=>{void 0!==this._headPressTimer&&(clearTimeout(this._headPressTimer),this._headPressTimer=void 0)}}disconnectedCallback(){super.disconnectedCallback(),this._clearTimers()}_clearTimers(){void 0!==this._armTimer&&clearTimeout(this._armTimer),void 0!==this._flashTimer&&clearTimeout(this._flashTimer),this._armTimer=void 0,this._flashTimer=void 0,this._armed=!1,this._flash=!1,this._cancelHeadPress()}_activateScene(t){this.callService("scene","turn_on",void 0,t)}_onHeadDown(t,e){this._headLongPressed=!1,this._headDownX=t.clientX,this._headDownY=t.clientY,this._headPressTimer=window.setTimeout(()=>{this._headLongPressed=!0,this.dispatchEvent(new CustomEvent("hub-room-open",{detail:{roomId:e.id},bubbles:!0,composed:!0}))},500)}_onHeadClick(t){if(this._headLongPressed)return void(this._headLongPressed=!1);const e=ye(t,this.hass.states);this.callService("light",e.service,{entity_id:e.entities})}_section(t){const e=function(t,e){const i=t.lights.filter(t=>"on"===e[t.entity]?.state),a=i.length;if(0===a)return{onCount:0,pct:null,label:"Släckt"};const s=i.map(t=>e[t.entity]?.attributes.brightness).filter(t=>"number"==typeof t),r=s.length?Math.round(s.reduce((t,e)=>t+e,0)/s.length/255*100):null,n=1===a?"1 lampa":`${a} lampor`;return{onCount:a,pct:r,label:null!==r?`${n} · ${r} %`:n}}(t,this.hass.states),i=e.onCount>0;return V`
       <div class="section">
         <div
           class="sec-head ${i?"active":""}"
@@ -2525,7 +2540,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ${t.lights.map(t=>V`<hub-light-tile .hass=${this.hass} .light=${t}></hub-light-tile>`)}
         </div>
       </div>
-    `}render(){if(!this.hass||!this.config)return V``;const t=this.config,e=function(t,e){let i=0,a=0;for(const s of t.rooms??[])for(const t of s.lights){const s=e[t.entity];li(s)&&(a+=1,"on"===s.state&&(i+=1))}return{on:i,total:a}}(t,this.hass.states);return V`
+    `}render(){if(!this.hass||!this.config)return V``;const t=this.config,e=function(t,e){let i=0,a=0;for(const s of t.rooms??[])for(const t of s.lights){const s=e[t.entity];oi(s)&&(a+=1,"on"===s.state&&(i+=1))}return{on:i,total:a}}(t,this.hass.states);return V`
       <div class="page">
         <div class="header">
           <div class="heading">
@@ -2559,7 +2574,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ${(t.rooms??[]).map(t=>this._section(t))}
         </div>
       </div>
-    `}}hi.styles=[Tt,n`
+    `}}li.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -2700,7 +2715,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       hub-light-tile {
         display: block;
       }
-    `],t([gt({attribute:!1})],hi.prototype,"config",void 0),t([bt()],hi.prototype,"_armed",void 0),t([bt()],hi.prototype,"_flash",void 0),customElements.define("hub-lights-page",hi);class ci extends ht{constructor(){super(...arguments),this.gridAddOre=0,this._detail=null}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._detailTimer&&(clearTimeout(this._detailTimer),this._detailTimer=void 0)}_slots(){const t=this.model,e=t?.today??[],i=t?.tomorrow??[],a=t?.now?t.now.start.getTime():null,s=t?.cheapestWindow,r=s?s.start.getTime():null,n=s?s.end.getTime():null,o=t=>{const e=t.start.getTime();let i="future",s=null;return null!==a&&(e<a?i="past":e===a&&(i="current",s=String(Math.round(t.ore)))),null!==r&&e>=r&&e<n&&(i+=" cheap"),{kind:"bar",hour:t,cls:i,label:s}},l=e.map(o);if(i.length){l.push({kind:"divider"});for(const t of i)l.push(o(t))}return l}_toggleDetail(t){this._detail=this._detail===t?null:t,void 0!==this._detailTimer&&clearTimeout(this._detailTimer),null!==this._detail&&(this._detailTimer=window.setTimeout(()=>{this._detail=null,this._detailTimer=void 0},6e3))}_bounds(){const t=[...this.model?.today??[],...this.model?.tomorrow??[]].map(t=>t.ore);return{min:Math.min(...t),max:Math.max(...t)}}_height(t,e,i){const a=i-e;return!Number.isFinite(a)||a<=0?60:100*(.14+(t-e)/a*.86)}_tint(t,e,i){const a=i-e,s=a>0?(i-t)/a:.5;return`color-mix(in srgb, var(--hub-green) ${Math.round(22+58*s)}%, var(--hub-track))`}_tick(t){const e=t.start.getHours();return V`<span class="tick ${0===e?"day":""}"
+    `],t([gt({attribute:!1})],li.prototype,"config",void 0),t([bt()],li.prototype,"_armed",void 0),t([bt()],li.prototype,"_flash",void 0),customElements.define("hub-lights-page",li);class hi extends ht{constructor(){super(...arguments),this.gridAddOre=0,this._detail=null}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._detailTimer&&(clearTimeout(this._detailTimer),this._detailTimer=void 0)}_slots(){const t=this.model,e=t?.today??[],i=t?.tomorrow??[],a=t?.now?t.now.start.getTime():null,s=t?.cheapestWindow,r=s?s.start.getTime():null,n=s?s.end.getTime():null,o=t=>{const e=t.start.getTime();let i="future",s=null;return null!==a&&(e<a?i="past":e===a&&(i="current",s=String(Math.round(t.ore)))),null!==r&&e>=r&&e<n&&(i+=" cheap"),{kind:"bar",hour:t,cls:i,label:s}},l=e.map(o);if(i.length){l.push({kind:"divider"});for(const t of i)l.push(o(t))}return l}_toggleDetail(t){this._detail=this._detail===t?null:t,void 0!==this._detailTimer&&clearTimeout(this._detailTimer),null!==this._detail&&(this._detailTimer=window.setTimeout(()=>{this._detail=null,this._detailTimer=void 0},6e3))}_bounds(){const t=[...this.model?.today??[],...this.model?.tomorrow??[]].map(t=>t.ore);return{min:Math.min(...t),max:Math.max(...t)}}_height(t,e,i){const a=i-e;return!Number.isFinite(a)||a<=0?60:100*(.14+(t-e)/a*.86)}_tint(t,e,i){const a=i-e,s=a>0?(i-t)/a:.5;return`color-mix(in srgb, var(--hub-green) ${Math.round(22+58*s)}%, var(--hub-track))`}_tick(t){const e=t.start.getHours();return V`<span class="tick ${0===e?"day":""}"
       >${e%6==0?String(e).padStart(2,"0"):""}</span
     >`}_flyout(t,e,i){const a=String(t.start.getHours()).padStart(2,"0"),s=String((t.start.getHours()+1)%24).padStart(2,"0"),r=e<2?"edge-l":e>i-3?"edge-r":"",n=function(t,e){return null===t.spotOre?null:{spot:t.spotOre,taxes:t.totalOre-t.spotOre,grid:e}}(t,this.gridAddOre);return V`
       <div class="flyout ${r}">
@@ -2731,7 +2746,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ${t.map(t=>"divider"===t.kind?V`<span></span>`:this._tick(t.hour))}
         </div>
       </div>
-    `}}ci.styles=[Tt,n`
+    `}}hi.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -2860,7 +2875,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
       }
-    `],t([gt({attribute:!1})],ci.prototype,"model",void 0),t([gt({type:Number})],ci.prototype,"gridAddOre",void 0),t([bt()],ci.prototype,"_detail",void 0),customElements.define("hub-price-chart",ci);const di={"låg":"lågt",normal:"normalt","hög":"högt"};class pi extends vt{constructor(){super(...arguments),this._now=new Date,this._view=Je()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;if(!t)return null;const e=t.attributes;let i=Ke(e,t.state,this._now,this._view,"allin"===this._view?ti(this.config):0);return"spot"!==this._view||Ze(i)||(i=Ke(e,t.state,this._now,"allin",ti(this.config))),i}_setView(t){this._view=t,function(t){try{localStorage.setItem(Qe,t)}catch{}}(t)}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_chips(t){const e=this.config,i=[],a=e.co2_entity?this.getEntity(e.co2_entity):void 0;a&&!Number.isNaN(Number(a.state))&&i.push({icon:"leaf",label:`${Math.round(Number(a.state))} g CO₂`,tone:"green"});const s=e.fossil_entity?this.getEntity(e.fossil_entity):void 0;if(s&&!Number.isNaN(Number(s.state))){const t=Math.round(Number(s.state));i.push({icon:"leaf",label:`${t} % fossilt`,tone:t>=40?"coral":"green"})}const r=t?.cheapestWindow;if(r){const t=r.start.getHours(),e=r.end.getHours();i.push({icon:"clock",label:`Billigast ${t}–${e}`,tone:"green"})}return i}render(){if(!this.hass||!this.config)return V``;const t=this._model(),e=this._currentOre(t),i=t?.now?t.level:"normal",a=!!t&&t.today.length>0,s=this._chips(t),r=!!t&&Ze(t),n="låg"===i?"low":"hög"===i?"high":"",o=!!t?.now&&"normal"!==i;return V`
+    `],t([gt({attribute:!1})],hi.prototype,"model",void 0),t([gt({type:Number})],hi.prototype,"gridAddOre",void 0),t([bt()],hi.prototype,"_detail",void 0),customElements.define("hub-price-chart",hi);const ci={"låg":"lågt",normal:"normalt","hög":"högt"};class di extends mt{constructor(){super(...arguments),this._now=new Date,this._view=Qe()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=new Date},6e4)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}_model(){const t=this.config.price_series_entity?this.getEntity(this.config.price_series_entity):void 0;if(!t)return null;const e=t.attributes;let i=Ye(e,t.state,this._now,this._view,"allin"===this._view?Je(this.config):0);return"spot"!==this._view||Ke(i)||(i=Ye(e,t.state,this._now,"allin",Je(this.config))),i}_setView(t){this._view=t,function(t){try{localStorage.setItem(Ze,t)}catch{}}(t)}_currentOre(t){if(t?.now)return Math.round(t.now.ore);const e=this.config.price_entity?this.getEntity(this.config.price_entity):void 0;return e&&!Number.isNaN(Number(e.state))?Math.round(100*Number(e.state)):null}_chips(t){const e=this.config,i=[],a=e.co2_entity?this.getEntity(e.co2_entity):void 0;a&&!Number.isNaN(Number(a.state))&&i.push({icon:"leaf",label:`${Math.round(Number(a.state))} g CO₂`,tone:"green"});const s=e.fossil_entity?this.getEntity(e.fossil_entity):void 0;if(s&&!Number.isNaN(Number(s.state))){const t=Math.round(Number(s.state));i.push({icon:"leaf",label:`${t} % fossilt`,tone:t>=40?"coral":"green"})}const r=t?.cheapestWindow;if(r){const t=r.start.getHours(),e=r.end.getHours();i.push({icon:"clock",label:`Billigast ${t}–${e}`,tone:"green"})}return i}render(){if(!this.hass||!this.config)return V``;const t=this._model(),e=this._currentOre(t),i=t?.now?t.level:"normal",a=!!t&&t.today.length>0,s=this._chips(t),r=!!t&&Ke(t),n="låg"===i?"low":"hög"===i?"high":"",o=!!t?.now&&"normal"!==i;return V`
       <div class="page">
         <div class="header">
           <div class="head-row">
@@ -2872,7 +2887,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               <div class="subline">
                 ${"spot"===this._view?"spotpris":"allt-in"} just nu${o?V` ·
                       <span class=${"låg"===i?"accent-low":"accent-high"}
-                        >${di[i]}</span
+                        >${ci[i]}</span
                       >`:q}
               </div>
             </div>
@@ -2894,7 +2909,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         </div>
 
         <div class="chart-wrap">
-          ${a?V`<hub-price-chart .model=${t} .gridAddOre=${ti(this.config)}></hub-price-chart>`:V`<div class="waiting">Väntar på prisdata</div>`}
+          ${a?V`<hub-price-chart .model=${t} .gridAddOre=${Je(this.config)}></hub-price-chart>`:V`<div class="waiting">Väntar på prisdata</div>`}
         </div>
 
         <div class="chips">
@@ -2908,7 +2923,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
             `)}
         </div>
       </div>
-    `}}async function ui(t){if(!t)return null;try{const i=await(e=t,new Promise((t,i)=>{const a=new Image;a.crossOrigin="anonymous",a.onload=()=>t(a),a.onerror=()=>i(new Error("image load failed")),a.src=e})),a=document.createElement("canvas");a.width=8,a.height=8;const s=a.getContext("2d");if(!s)return null;s.drawImage(i,0,0,8,8);const{data:r}=s.getImageData(0,0,8,8);let n=0,o=0,l=0,h=0;for(let t=0;t<r.length;t+=4){0!==r[t+3]&&(n+=r[t],o+=r[t+1],l+=r[t+2],h+=1)}return 0===h?null:[Math.round(n/h),Math.round(o/h),Math.round(l/h)]}catch{return null}var e}pi.styles=[Tt,n`
+    `}}async function pi(t){if(!t)return null;try{const i=await(e=t,new Promise((t,i)=>{const a=new Image;a.crossOrigin="anonymous",a.onload=()=>t(a),a.onerror=()=>i(new Error("image load failed")),a.src=e})),a=document.createElement("canvas");a.width=8,a.height=8;const s=a.getContext("2d");if(!s)return null;s.drawImage(i,0,0,8,8);const{data:r}=s.getImageData(0,0,8,8);let n=0,o=0,l=0,h=0;for(let t=0;t<r.length;t+=4){0!==r[t+3]&&(n+=r[t],o+=r[t+1],l+=r[t+2],h+=1)}return 0===h?null:[Math.round(n/h),Math.round(o/h),Math.round(l/h)]}catch{return null}var e}di.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -3017,7 +3032,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         gap: 8px;
         padding-bottom: 44px; /* clear the page dots */
       }
-    `],t([gt({attribute:!1})],pi.prototype,"config",void 0),t([bt()],pi.prototype,"_now",void 0),t([bt()],pi.prototype,"_view",void 0),customElements.define("hub-energy-page",pi);const gi=new Set(["unavailable","unknown"]);class bi extends vt{constructor(){super(...arguments),this.groupMaster=null,this._drag=null}_entity(){return this.hass?.states[this.player.entity]}_volume(){if(null!==this._drag)return this._drag;const t=this._entity()?.attributes.volume_level;return"number"==typeof t?t:0}_onInput(t){this._drag=Number(t.target.value)}_onChange(t){const e=Number(t.target.value);this._drag=null,this.callService("media_player","volume_set",{volume_level:e},this.player.entity)}_stop(t){t.stopPropagation()}_toggleGroup(t){this.groupMaster&&(t?this.callService("media_player","unjoin",void 0,this.player.entity):this.callService("media_player","join",{group_members:[this.player.entity]},this.groupMaster))}render(){if(!this.hass||!this.player)return V``;const t=this._entity(),e=!t||gi.has(t.state),i=this._volume(),a=Math.round(100*i),s=!e&&i>0,r=this.player.entity===this.groupMaster,n=!r&&!!this.groupMaster&&(o=this.hass.states[this.groupMaster]?.attributes.group_members,l=this.player.entity,Array.isArray(o)&&o.includes(l));var o,l;const h=`linear-gradient(90deg, var(--hub-teal) 0 ${a}%, var(--hub-track) ${a}% 100%)`;return V`
+    `],t([gt({attribute:!1})],di.prototype,"config",void 0),t([bt()],di.prototype,"_now",void 0),t([bt()],di.prototype,"_view",void 0),customElements.define("hub-energy-page",di);const ui=new Set(["unavailable","unknown"]);class gi extends mt{constructor(){super(...arguments),this.groupMaster=null,this._drag=null}_entity(){return this.hass?.states[this.player.entity]}_volume(){if(null!==this._drag)return this._drag;const t=this._entity()?.attributes.volume_level;return"number"==typeof t?t:0}_onInput(t){this._drag=Number(t.target.value)}_onChange(t){const e=Number(t.target.value);this._drag=null,this.callService("media_player","volume_set",{volume_level:e},this.player.entity)}_stop(t){t.stopPropagation()}_toggleGroup(t){this.groupMaster&&(t?this.callService("media_player","unjoin",void 0,this.player.entity):this.callService("media_player","join",{group_members:[this.player.entity]},this.groupMaster))}render(){if(!this.hass||!this.player)return V``;const t=this._entity(),e=!t||ui.has(t.state),i=this._volume(),a=Math.round(100*i),s=!e&&i>0,r=this.player.entity===this.groupMaster,n=!r&&!!this.groupMaster&&(o=this.hass.states[this.groupMaster]?.attributes.group_members,l=this.player.entity,Array.isArray(o)&&o.includes(l));var o,l;const h=`linear-gradient(90deg, var(--hub-teal) 0 ${a}%, var(--hub-track) ${a}% 100%)`;return V`
       <div class="row ${s?"active":""}">
         <span class="ic">${It.speaker}</span>
         <div class="main">
@@ -3053,7 +3068,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               </button>
             `}
       </div>
-    `}}bi.styles=[Tt,n`
+    `}}gi.styles=[Tt,n`
       :host {
         display: block;
       }
@@ -3200,7 +3215,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         font: 500 12.5px var(--hub-font-body);
         margin-left: auto;
       }
-    `],t([gt({attribute:!1})],bi.prototype,"player",void 0),t([gt({attribute:!1})],bi.prototype,"groupMaster",void 0),t([bt()],bi.prototype,"_drag",void 0),customElements.define("hub-volume-row",bi);const mi=new Set(["off","unavailable","unknown","standby","idle"]);function vi(t){const e=Number.isFinite(t)&&t>0?t:0,i=Math.floor(e/60),a=Math.floor(e%60);return`${i}:${String(a).padStart(2,"0")}`}class fi extends vt{constructor(){super(...arguments),this._sel=null,this._rgb=null,this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}get _players(){return this.config?.media_players??[]}_selId(){if(this._sel)return this._sel;const t=$e(this.hass?.states??{},this._players);return t?.entity.entity_id??this._players[0]?.entity??null}_theme(){const t=this.getRootNode()?.host;return"dag"===t?.getAttribute("data-theme")?"dag":"natt"}updated(t){const e=this._selId(),i=e?this.hass?.states[e]?.attributes.entity_picture:void 0;i!==this._pic&&(this._pic=i,i?ui(i).then(t=>{this._pic===i&&(this._rgb=t)}):this._rgb=null)}_transport(t,e){this.callService("media_player",t,void 0,e)}_hero(t,e){const i="playing"===t.state,a=t.attributes.media_title||e,s=t.attributes.media_artist||e,r=t.attributes.entity_picture,n="number"==typeof t.attributes.media_duration?t.attributes.media_duration:0,o=Ee(t,this._now),l=o/100*n,h=t.entity_id;return V`
+    `],t([gt({attribute:!1})],gi.prototype,"player",void 0),t([gt({attribute:!1})],gi.prototype,"groupMaster",void 0),t([bt()],gi.prototype,"_drag",void 0),customElements.define("hub-volume-row",gi);const bi=new Set(["off","unavailable","unknown","standby","idle"]);function vi(t){const e=Number.isFinite(t)&&t>0?t:0,i=Math.floor(e/60),a=Math.floor(e%60);return`${i}:${String(a).padStart(2,"0")}`}class mi extends mt{constructor(){super(...arguments),this._sel=null,this._rgb=null,this._now=Date.now()}connectedCallback(){super.connectedCallback(),this._interval=window.setInterval(()=>{this._now=Date.now()},1e3)}disconnectedCallback(){super.disconnectedCallback(),void 0!==this._interval&&(clearInterval(this._interval),this._interval=void 0)}get _players(){return this.config?.media_players??[]}_selId(){if(this._sel)return this._sel;const t=ke(this.hass?.states??{},this._players);return t?.entity.entity_id??this._players[0]?.entity??null}_theme(){const t=this.getRootNode()?.host;return"dag"===t?.getAttribute("data-theme")?"dag":"natt"}updated(t){const e=this._selId(),i=e?this.hass?.states[e]?.attributes.entity_picture:void 0;i!==this._pic&&(this._pic=i,i?pi(i).then(t=>{this._pic===i&&(this._rgb=t)}):this._rgb=null)}_transport(t,e){this.callService("media_player",t,void 0,e)}_hero(t,e){const i="playing"===t.state,a=t.attributes.media_title||e,s=t.attributes.media_artist||e,r=t.attributes.entity_picture,n="number"==typeof t.attributes.media_duration?t.attributes.media_duration:0,o=$e(t,this._now),l=o/100*n,h=t.entity_id;return V`
       <div class="hero">
         <div class="art" style=${r?`background-image:url('${r}')`:""}></div>
         <div class="meta">
@@ -3245,7 +3260,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         <span class="qic">${It.note}</span>
         <span class="qtext">Ingenting spelas</span>
       </div>
-    `}render(){if(!this.hass||!this.config)return V``;const t=this._players,e=this.hass.states,i=this._selId(),a=i?e[i]:void 0,s=t.find(t=>t.entity===i)?.name??"",r=!!a&&!mi.has(a.state),n=function(t,e){for(const i of e)if("playing"===t[i.entity]?.state)return i.entity;return e[0]?.entity??null}(e,t),o=function(t,e){if(!t)return"none";const[i,a,s]=t;return`radial-gradient(80% 60% at 30% 20%, rgba(${i}, ${a}, ${s}, ${"natt"===e?"0.22":"0.12"}), transparent 70%)`}(this._rgb,this._theme());return V`
+    `}render(){if(!this.hass||!this.config)return V``;const t=this._players,e=this.hass.states,i=this._selId(),a=i?e[i]:void 0,s=t.find(t=>t.entity===i)?.name??"",r=!!a&&!bi.has(a.state),n=function(t,e){for(const i of e)if("playing"===t[i.entity]?.state)return i.entity;return e[0]?.entity??null}(e,t),o=function(t,e){if(!t)return"none";const[i,a,s]=t;return`radial-gradient(80% 60% at 30% 20%, rgba(${i}, ${a}, ${s}, ${"natt"===e?"0.22":"0.12"}), transparent 70%)`}(this._rgb,this._theme());return V`
       <div class="page">
         <div class="bleed" style=${`background:${o}`}></div>
         <div class="content">
@@ -3275,7 +3290,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           </div>
         </div>
       </div>
-    `}}fi.styles=[Tt,n`
+    `}}mi.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -3481,7 +3496,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       .speakers.pushed {
         margin-top: auto;
       }
-    `],t([gt({attribute:!1})],fi.prototype,"config",void 0),t([bt()],fi.prototype,"_sel",void 0),t([bt()],fi.prototype,"_rgb",void 0),t([bt()],fi.prototype,"_now",void 0),customElements.define("hub-media-page",fi);let xi=0;class yi extends ht{constructor(){super(...arguments),this.points=[],this.stroke="--hub-lavender",this.width=560,this.height=130,this._gid="hub-spark-"+xi++}render(){const t=function(t,e,i,a=.1){const s=t.length;if(0===s)return[];if(1===s)return[{x:e,y:i/2}];const r=t.map(t=>t.value),n=Math.min(...r),o=Math.max(...r)-n,l=n-o*a,h=o*(1+2*a);return t.map((t,a)=>({x:a/(s-1)*e,y:o<=0?i/2:i-(t.value-l)/h*i}))}(this.points,this.width,this.height);if(0===t.length)return V``;const e=t.map(t=>`${t.x.toFixed(2)},${t.y.toFixed(2)}`).join(" "),i=t[t.length-1],a=t[0],s=t.length>=2,r=`${e} ${i.x.toFixed(2)},${this.height} ${a.x.toFixed(2)},${this.height}`;return V`
+    `],t([gt({attribute:!1})],mi.prototype,"config",void 0),t([bt()],mi.prototype,"_sel",void 0),t([bt()],mi.prototype,"_rgb",void 0),t([bt()],mi.prototype,"_now",void 0),customElements.define("hub-media-page",mi);let fi=0;class xi extends ht{constructor(){super(...arguments),this.points=[],this.stroke="--hub-lavender",this.width=560,this.height=130,this._gid="hub-spark-"+fi++}render(){const t=function(t,e,i,a=.1){const s=t.length;if(0===s)return[];if(1===s)return[{x:e,y:i/2}];const r=t.map(t=>t.value),n=Math.min(...r),o=Math.max(...r)-n,l=n-o*a,h=o*(1+2*a);return t.map((t,a)=>({x:a/(s-1)*e,y:o<=0?i/2:i-(t.value-l)/h*i}))}(this.points,this.width,this.height);if(0===t.length)return V``;const e=t.map(t=>`${t.x.toFixed(2)},${t.y.toFixed(2)}`).join(" "),i=t[t.length-1],a=t[0],s=t.length>=2,r=`${e} ${i.x.toFixed(2)},${this.height} ${a.x.toFixed(2)},${this.height}`;return V`
       <div class="spark" style="--spark-stroke:var(${this.stroke})">
         ${X`
           <svg
@@ -3505,7 +3520,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           style="left:${(i.x/this.width*100).toFixed(3)}%;top:${(i.y/this.height*100).toFixed(3)}%"
         ></span>
       </div>
-    `}}yi.styles=n`
+    `}}xi.styles=n`
     :host {
       display: block;
     }
@@ -3544,7 +3559,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       pointer-events: none;
       box-shadow: 0 0 0 5px color-mix(in srgb, var(--spark-stroke, #b99cf2) 16%, transparent);
     }
-  `,t([gt({attribute:!1})],yi.prototype,"points",void 0),t([gt()],yi.prototype,"stroke",void 0),t([gt({type:Number})],yi.prototype,"width",void 0),t([gt({type:Number})],yi.prototype,"height",void 0),customElements.define("hub-sparkline",yi);const _i=new Intl.NumberFormat("sv-SE"),wi=new Intl.NumberFormat("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1}),ki=new Intl.NumberFormat("sv-SE",{maximumFractionDigits:1}),$i=new Intl.DateTimeFormat("sv-SE",{day:"numeric",month:"short",timeZone:"UTC"}),Ei=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long",timeZone:"UTC"});function Ci(t){if(!t)return"";const e=new Date(`${t}T00:00:00Z`);return Number.isNaN(e.getTime())?"":$i.format(e).replace(/\.$/,"")}class Mi extends vt{_meals(t){const e=t.attributes.meals;return Array.isArray(e)?e.filter(t=>!!t&&"object"==typeof t).map(t=>({name:"string"==typeof t.name?t.name:"",kcal:"number"==typeof t.kcal?t.kcal:Number(t.kcal)||0})).filter(t=>t.name):[]}_num(t){return"number"==typeof t?t:NaN}_offline(){return V`
+  `,t([gt({attribute:!1})],xi.prototype,"points",void 0),t([gt()],xi.prototype,"stroke",void 0),t([gt({type:Number})],xi.prototype,"width",void 0),t([gt({type:Number})],xi.prototype,"height",void 0),customElements.define("hub-sparkline",xi);const yi=new Intl.NumberFormat("sv-SE"),_i=new Intl.NumberFormat("sv-SE",{minimumFractionDigits:1,maximumFractionDigits:1}),wi=new Intl.NumberFormat("sv-SE",{maximumFractionDigits:1}),ki=new Intl.DateTimeFormat("sv-SE",{day:"numeric",month:"short",timeZone:"UTC"}),$i=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long",timeZone:"UTC"});function Ei(t){if(!t)return"";const e=new Date(`${t}T00:00:00Z`);return Number.isNaN(e.getTime())?"":ki.format(e).replace(/\.$/,"")}class Ci extends mt{_meals(t){const e=t.attributes.meals;return Array.isArray(e)?e.filter(t=>!!t&&"object"==typeof t).map(t=>({name:"string"==typeof t.name?t.name:"",kcal:"number"==typeof t.kcal?t.kcal:Number(t.kcal)||0})).filter(t=>t.name):[]}_num(t){return"number"==typeof t?t:NaN}_offline(){return V`
       <div class="page">
         <div class="offline">
           <div class="off-ring"></div>
@@ -3557,11 +3572,11 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           <div class="w-num-row"><span class="w-num">${"−"}</span><span class="w-unit">kg</span></div>
           <div class="spark-wrap"><span class="spark-empty">Ingen viktdata</span></div>
         </section>
-      `;const a=e.attributes.weight_trend,s=Array.isArray(a)?a.filter(t=>!!t&&"object"==typeof t).map(t=>({date:String(t.date??""),value:Number(t.kg)})).filter(t=>Number.isFinite(t.value)):[],r=function(t){if(t.length<2)return null;const e=new Date(`${t[0].date}T00:00:00Z`).getTime(),i=new Date(`${t[t.length-1].date}T00:00:00Z`).getTime();return Number.isNaN(e)||Number.isNaN(i)?null:Math.round((i-e)/864e5)}(s),n=s.length>=2?s[s.length-1].value-s[0].value:null,o=null===n||null===r?null:`${n<0?"−":n>0?"+":""}${wi.format(Math.abs(n))} kg på ${r} ${1===r?"dag":"dagar"}`,l=e.attributes.forecast,h=l&&"object"==typeof l?l:null,c=h?function(t){const e="number"==typeof t.goal_kg?`Mål ${ki.format(t.goal_kg)} kg`:"",i=t.eta?Ci(t.eta):"",a=t.eta_early&&t.eta_late?`${Ci(t.eta_early)}–${Ci(t.eta_late)}`:"";return[e,i?`ETA ${i}${a?` (${a})`:""}`:""].filter(Boolean).join(" · ")}(h):"",d=!!h?.on_track;return V`
+      `;const a=e.attributes.weight_trend,s=Array.isArray(a)?a.filter(t=>!!t&&"object"==typeof t).map(t=>({date:String(t.date??""),value:Number(t.kg)})).filter(t=>Number.isFinite(t.value)):[],r=function(t){if(t.length<2)return null;const e=new Date(`${t[0].date}T00:00:00Z`).getTime(),i=new Date(`${t[t.length-1].date}T00:00:00Z`).getTime();return Number.isNaN(e)||Number.isNaN(i)?null:Math.round((i-e)/864e5)}(s),n=s.length>=2?s[s.length-1].value-s[0].value:null,o=null===n||null===r?null:`${n<0?"−":n>0?"+":""}${_i.format(Math.abs(n))} kg på ${r} ${1===r?"dag":"dagar"}`,l=e.attributes.forecast,h=l&&"object"==typeof l?l:null,c=h?function(t){const e="number"==typeof t.goal_kg?`Mål ${wi.format(t.goal_kg)} kg`:"",i=t.eta?Ei(t.eta):"",a=t.eta_early&&t.eta_late?`${Ei(t.eta_early)}–${Ei(t.eta_late)}`:"";return[e,i?`ETA ${i}${a?` (${a})`:""}`:""].filter(Boolean).join(" · ")}(h):"",d=!!h?.on_track;return V`
       <section class="card">
         <span class="w-eyebrow">Vikt</span>
         <div class="w-num-row">
-          <span class="w-num">${wi.format(i)}</span>
+          <span class="w-num">${_i.format(i)}</span>
           <span class="w-unit">kg</span>
         </div>
         ${o?V`<span class="w-delta">${o}</span>`:q}
@@ -3580,7 +3595,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ${d?V`<span class="fc-chip">i fas ✓</span>`:q}
         </div>
       </section>
-    `}render(){if(!this.hass||!this.config)return V``;const t=this.config.kcal?.today_entity,e=t?this.getEntity(t):void 0,i=e?Number(e.state):NaN;if(!e||"unavailable"===e.state||"unknown"===e.state||Number.isNaN(i))return this._offline();const a=this._num(e.attributes.kcal_target),s=Se(i,a),r=Number.isFinite(a)&&a>0,n=r?a-i:NaN,o=r?n>0?`${_i.format(Math.round(n))} kcal kvar`:0===n?"Målet nått":`${_i.format(Math.round(-n))} över målet`:null,l=this._num(e.attributes.protein_g),h=this._num(e.attributes.protein_target_g),c=Number.isFinite(l)&&Number.isFinite(h)&&h>0,d=c?Math.max(0,Math.min(100,l/h*100)):0,p=this._meals(e),u=e.attributes.date,g="string"!=typeof u||Number.isNaN(new Date(`${u}T00:00:00Z`).getTime())?"":Ei.format(new Date(`${u}T00:00:00Z`));return V`
+    `}render(){if(!this.hass||!this.config)return V``;const t=this.config.kcal?.today_entity,e=t?this.getEntity(t):void 0,i=e?Number(e.state):NaN;if(!e||"unavailable"===e.state||"unknown"===e.state||Number.isNaN(i))return this._offline();const a=this._num(e.attributes.kcal_target),s=Me(i,a),r=Number.isFinite(a)&&a>0,n=r?a-i:NaN,o=r?n>0?`${yi.format(Math.round(n))} kcal kvar`:0===n?"Målet nått":`${yi.format(Math.round(-n))} över målet`:null,l=this._num(e.attributes.protein_g),h=this._num(e.attributes.protein_target_g),c=Number.isFinite(l)&&Number.isFinite(h)&&h>0,d=c?Math.max(0,Math.min(100,l/h*100)):0,p=this._meals(e),u=e.attributes.date,g="string"!=typeof u||Number.isNaN(new Date(`${u}T00:00:00Z`).getTime())?"":$i.format(new Date(`${u}T00:00:00Z`));return V`
       <div class="page">
         <div class="header">
           <h1 class="title">Kcal</h1>
@@ -3593,9 +3608,9 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               <div class="ring-glow"></div>
               <div class="ring" style="--pct:${s}"></div>
               <div class="ring-center">
-                <span class="kc-num">${_i.format(Math.round(i))}</span>
+                <span class="kc-num">${yi.format(Math.round(i))}</span>
                 <span class="kc-target">
-                  ${r?`/ ${_i.format(a)} kcal`:"kcal"}
+                  ${r?`/ ${yi.format(a)} kcal`:"kcal"}
                 </span>
               </div>
             </div>
@@ -3618,7 +3633,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               ${p.length?p.map(t=>V`
                       <div class="meal">
                         <span class="meal-name">${t.name}</span>
-                        <span class="meal-kcal">${_i.format(Math.round(t.kcal))} kcal</span>
+                        <span class="meal-kcal">${yi.format(Math.round(t.kcal))} kcal</span>
                       </div>
                     `):V`<div class="empty">Inga måltider loggade ännu</div>`}
             </div>
@@ -3627,7 +3642,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ${this._weightCard()}
         </div>
       </div>
-    `}}Mi.styles=[Tt,n`
+    `}}Ci.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -3920,23 +3935,23 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         color: var(--hub-text-muted);
         letter-spacing: 0.01em;
       }
-    `],t([gt({attribute:!1})],Mi.prototype,"config",void 0),customElements.define("hub-kcal-page",Mi);const Si=new Intl.NumberFormat("sv-SE"),Ai=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long",timeZone:"UTC"});class Ti extends vt{constructor(){super(...arguments),this._openDate=null,this._confirming=!1}_model(){const t=this.config?.kcal?.planner_entity;if(!t)return null;const e=this.getEntity(t);return e&&"unavailable"!==e.state&&"unknown"!==e.state?Be(e.attributes):null}_confirm(t){this._confirming||t.confirmed||0===t.meals.length||(this._confirming=!0,this.callService("rest_command","kcal_confirm_day",{date:t.date}),window.setTimeout(()=>{const t=this.config?.kcal?.planner_entity;t&&this.callService("homeassistant","update_entity",void 0,t),this._confirming=!1,this._openDate=null},1500))}_dayPopup(t){const e=t.days.find(t=>t.date===this._openDate);if(!e)return q;const i=Ai.format(new Date(`${e.date}T00:00:00Z`)),a=!e.confirmed&&e.meals.some(t=>!t.logged);return V`
+    `],t([gt({attribute:!1})],Ci.prototype,"config",void 0),customElements.define("hub-kcal-page",Ci);const Mi=new Intl.NumberFormat("sv-SE"),Si=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long",timeZone:"UTC"});class Ai extends mt{constructor(){super(...arguments),this._openDate=null,this._confirming=!1}_model(){const t=this.config?.kcal?.planner_entity;if(!t)return null;const e=this.getEntity(t);return e&&"unavailable"!==e.state&&"unknown"!==e.state?De(e.attributes):null}_confirm(t){this._confirming||t.confirmed||0===t.meals.length||(this._confirming=!0,this.callService("rest_command","kcal_confirm_day",{date:t.date}),window.setTimeout(()=>{const t=this.config?.kcal?.planner_entity;t&&this.callService("homeassistant","update_entity",void 0,t),this._confirming=!1,this._openDate=null},1500))}_dayPopup(t){const e=t.days.find(t=>t.date===this._openDate);if(!e)return q;const i=Si.format(new Date(`${e.date}T00:00:00Z`)),a=!e.confirmed&&e.meals.some(t=>!t.logged);return V`
       <div class="scrim" @click=${()=>this._openDate=null}>
         <div class="popup" @click=${t=>t.stopPropagation()}>
           <h2 class="popup-title">${i}</h2>
           <div class="popup-sub">
-            ${e.day_type} · ${Si.format(e.total_kcal)} / ${Si.format(e.target_kcal)} kcal
+            ${e.day_type} · ${Mi.format(e.total_kcal)} / ${Mi.format(e.target_kcal)} kcal
             ${e.confirmed?" · bekräftad ✓":""}
           </div>
           ${e.meals.map(t=>V`
               <div class="pm">
                 <div>
-                  <span class="pm-slot">${Te[t.slot]}${t.logged?" · loggad":""}</span>
+                  <span class="pm-slot">${Ae[t.slot]}${t.logged?" · loggad":""}</span>
                   <span class="pm-name">${t.name}</span>
                 </div>
                 <span class="pm-macro">
-                  ${Si.format(t.kcal)} kcal<br />
-                  P ${Si.format(t.protein)} · F ${Si.format(t.fat)} · K ${Si.format(t.carbs)}
+                  ${Mi.format(t.kcal)} kcal<br />
+                  P ${Mi.format(t.protein)} · F ${Mi.format(t.fat)} · K ${Mi.format(t.carbs)}
                 </span>
               </div>
             `)}
@@ -3952,7 +3967,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           </div>
         </div>
       </div>
-    `}_dayCard(t,e){const i=Pe.filter(e=>t.meals.some(t=>t.slot===e));return V`
+    `}_dayCard(t,e){const i=Te.filter(e=>t.meals.some(t=>t.slot===e));return V`
       <button
         class="day${t.date===e?" today":""}${t.confirmed?" confirmed":""}"
         @click=${()=>this._openDate=t.date}
@@ -3962,24 +3977,24 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           <span class="day-date">${t.date.slice(8)}</span>
           <span class="day-flex"></span>
           ${t.confirmed?V`<span class="lock">✓</span>`:q}
-          <span class="type-chip ${t.day_type}">${a=t.day_type,Ne[a]??"·"}</span>
+          <span class="type-chip ${t.day_type}">${a=t.day_type,Pe[a]??"·"}</span>
         </div>
         <div class="slots">
           ${0===i.length?V`<span class="empty-day">—</span>`:q}
           ${i.map(e=>V`
               <div>
-                <span class="slot-label">${Te[e]}</span>
+                <span class="slot-label">${Ae[e]}</span>
                 ${t.meals.filter(t=>t.slot===e).map(t=>V`
                       <div class="meal">
                         <span class="meal-name${t.logged?" logged":""}">${t.name}</span>
-                        <span class="meal-kcal">${Si.format(t.kcal)} kcal</span>
+                        <span class="meal-kcal">${Mi.format(t.kcal)} kcal</span>
                       </div>
                     `)}
               </div>
             `)}
         </div>
         <div class="day-foot">
-          ${t.meals.length>0?V`${Si.format(t.total_kcal)} / ${Si.format(t.target_kcal)}
+          ${t.meals.length>0?V`${Mi.format(t.total_kcal)} / ${Mi.format(t.target_kcal)}
               ${t.kcal_ok&&t.protein_ok?q:V`<span class="warn"> ⚠</span>`}`:V`&nbsp;`}
         </div>
       </button>
@@ -3992,7 +4007,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         <div class="grid">${t.days.map(e=>this._dayCard(e,t.today))}</div>
       </div>
       ${this._openDate?this._dayPopup(t):q}
-    `:V`<div class="page"><div class="offline">Vecka · offline</div></div>`}}Ti.styles=[Tt,n`
+    `:V`<div class="page"><div class="offline">Vecka · offline</div></div>`}}Ai.styles=[Tt,n`
       :host {
         display: block;
         height: 100%;
@@ -4269,17 +4284,17 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         font: 300 clamp(26px, 4vw, 38px) var(--hub-font-display);
         color: var(--hub-text-muted);
       }
-    `],t([gt({attribute:!1})],Ti.prototype,"config",void 0),t([bt()],Ti.prototype,"_openDate",void 0),t([bt()],Ti.prototype,"_confirming",void 0),customElements.define("hub-planner-page",Ti);const Pi=X`
+    `],t([gt({attribute:!1})],Ai.prototype,"config",void 0),t([bt()],Ai.prototype,"_openDate",void 0),t([bt()],Ai.prototype,"_confirming",void 0),customElements.define("hub-planner-page",Ai);const Ti=X`
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
     <path d="M6 6l12 12M18 6L6 18"></path>
   </svg>
-`;class Ni extends vt{constructor(){super(...arguments),this.room=null,this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}_activateScene(t){this.callService("scene","turn_on",void 0,t)}render(){if(!this.room||!this.hass)return V``;const t=this.room;return V`
+`;class Pi extends mt{constructor(){super(...arguments),this.room=null,this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}_activateScene(t){this.callService("scene","turn_on",void 0,t)}render(){if(!this.room||!this.hass)return V``;const t=this.room;return V`
       <div class="scrim" @click=${this._onScrim}>
         <div class="card" role="dialog" aria-label=${t.name}>
           <div class="head">
             <span class="title">${t.name}</span>
             <button class="close" aria-label="Stäng" @click=${this._close}>
-              ${Pi}
+              ${Ti}
             </button>
           </div>
           <div class="lights">
@@ -4299,7 +4314,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               </div>`:q}
         </div>
       </div>
-    `}}Ni.styles=[Tt,n`
+    `}}Pi.styles=[Tt,n`
       :host {
         position: absolute;
         inset: 0;
@@ -4411,16 +4426,16 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         border-color: var(--hub-amber-border);
         color: var(--hub-amber-text);
       }
-    `],t([gt({attribute:!1})],Ni.prototype,"room",void 0),customElements.define("hub-room-popup",Ni);const zi=X`
+    `],t([gt({attribute:!1})],Pi.prototype,"room",void 0),customElements.define("hub-room-popup",Pi);const Ni=X`
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
     <path d="M6 6l12 12M18 6L6 18"></path>
   </svg>
-`;class Fi extends vt{constructor(){super(...arguments),this.entity="",this.name="",this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}render(){return this.entity&&this.hass?V`
+`;class zi extends mt{constructor(){super(...arguments),this.entity="",this.name="",this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}render(){return this.entity&&this.hass?V`
       <div class="scrim" @click=${this._onScrim}>
         <div class="card" role="dialog" aria-label=${this.name}>
           <div class="head">
             <span class="title">${this.name}</span>
-            <button class="close" aria-label="Stäng" @click=${this._close}>${zi}</button>
+            <button class="close" aria-label="Stäng" @click=${this._close}>${Ni}</button>
           </div>
           <glass-light-slider
             .hass=${this.hass}
@@ -4428,7 +4443,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           ></glass-light-slider>
         </div>
       </div>
-    `:V``}}Fi.styles=[Tt,n`
+    `:V``}}zi.styles=[Tt,n`
       :host {
         position: absolute;
         inset: 0;
@@ -4497,11 +4512,11 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       glass-light-slider {
         display: block;
       }
-    `],t([gt()],Fi.prototype,"entity",void 0),t([gt()],Fi.prototype,"name",void 0),customElements.define("hub-light-popup",Fi);const Di=X`
+    `],t([gt()],zi.prototype,"entity",void 0),t([gt()],zi.prototype,"name",void 0),customElements.define("hub-light-popup",zi);const Fi=X`
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
     <path d="M6 6l12 12M18 6L6 18"></path>
   </svg>
-`,Bi=new Set(["EXPECTED","ATSTOP"]);class Oi extends vt{constructor(){super(...arguments),this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}_departures(t,e,i){if(!t)return[];const a=this.getEntity(t);return Le(a?.attributes.departures??[],e,i).slice(0,6)}_depRow(t){const e=function(t){return"string"==typeof t.state&&t.state.length>0&&!Bi.has(t.state)}(t),i=Ve(t.expected??t.scheduled)??"–";return V`
+`,Di=new Set(["EXPECTED","ATSTOP"]);class ji extends mt{constructor(){super(...arguments),this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}_departures(t,e,i){if(!t)return[];const a=this.getEntity(t);return He(a?.attributes.departures??[],e,i).slice(0,6)}_depRow(t){const e=function(t){return"string"==typeof t.state&&t.state.length>0&&!Di.has(t.state)}(t),i=Ue(t.expected??t.scheduled)??"–";return V`
       <div class="dep-row">
         <span class="dep-time ${e?"delayed":""}">${i}</span>
         <span class="dep-dest">${t.destination??"–"}</span>
@@ -4526,19 +4541,19 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
             </div>
           `)}
       </div>
-    `}render(){if(!this.hass||!this.config)return V``;const t=this.config,e=this._departures(t.departures?.list_entity,"43",""),i=t.transit?.bus,a=i?this._departures(i.entity,i.line,i.exclude_destination):[],s=t.disturbances_entity?this.getEntity(t.disturbances_entity):void 0,r=s&&"unavailable"!==s.state&&"unknown"!==s.state?Re(s.attributes.deviations):[];return V`
+    `}render(){if(!this.hass||!this.config)return V``;const t=this.config,e=this._departures(t.departures?.list_entity,"43",""),i=t.transit?.bus,a=i?this._departures(i.entity,i.line,i.exclude_destination):[],s=t.disturbances_entity?this.getEntity(t.disturbances_entity):void 0,r=s&&"unavailable"!==s.state&&"unknown"!==s.state?Le(s.attributes.deviations):[];return V`
       <div class="scrim" @click=${this._onScrim}>
         <div class="card" role="dialog" aria-label="Resor och störningar">
           <div class="head">
             <span class="title">Resor & störningar</span>
-            <button class="close" aria-label="Stäng" @click=${this._close}>${Di}</button>
+            <button class="close" aria-label="Stäng" @click=${this._close}>${Fi}</button>
           </div>
           ${this._depSection("Pendeltåg",e,"–")}
           ${this._depSection(i?.label??"Buss",a,"Inga avgångar idag")}
           ${this._storSection(r)}
         </div>
       </div>
-    `}}Oi.styles=[Tt,n`
+    `}}ji.styles=[Tt,n`
       :host {
         position: absolute;
         inset: 0;
@@ -4697,13 +4712,13 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         font: 500 12px var(--hub-font-body);
         color: var(--hub-text-dim);
       }
-    `],t([gt({attribute:!1})],Oi.prototype,"config",void 0),customElements.define("hub-transit-popup",Oi);const ji=X`
+    `],t([gt({attribute:!1})],ji.prototype,"config",void 0),customElements.define("hub-transit-popup",ji);const Bi=X`
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
     <path d="M6 6l12 12M18 6L6 18"></path>
   </svg>
-`,Ii=new Intl.DateTimeFormat("sv-SE",{weekday:"short"});class Hi extends vt{constructor(){super(...arguments),this._loc=0,this._hours=[],this._days=[],this._bgOn=zt(),this._loadedFor="",this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}get _locations(){const t=this.config;return t?.weather_locations?.length?t.weather_locations:t?.weather_entity?[{entity:t.weather_entity,name:"Hem"}]:[]}updated(t){const e=this._locations[this._loc]?.entity;e&&this.hass&&(t.has("hass")||t.has("config"))&&this._loadedFor!==e&&this._load(e)}async _load(t){this._loadedFor=t;const[e,i]=await Promise.all([ve(this.hass,t,"hourly"),ve(this.hass,t,"daily")]);this._loadedFor===t&&(this._hours=e?Wt(e):[],this._days=i?qt(i):[])}_pickLoc(t){if(t===this._loc)return;this._loc=t,this._hours=[],this._days=[];const e=this._locations[t]?.entity;e&&this._load(e)}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}_toggleBg(){this._bgOn=!this._bgOn,Ft(this._bgOn),this.dispatchEvent(new CustomEvent("hub-weather-bg-toggle",{detail:{on:this._bgOn},bubbles:!0,composed:!0}))}get _isNight(){return"below_horizon"===this.hass?.states["sun.sun"]?.state}_hero(){const t=this.getEntity(this._locations[this._loc]?.entity??"");if(!t)return q;const e=t.attributes.temperature,i=t.attributes.apparent_temperature,a=t.attributes.wind_speed,s=t.attributes.wind_speed_unit??"km/h";return V`
+`,Oi=new Intl.DateTimeFormat("sv-SE",{weekday:"short"});class Ii extends mt{constructor(){super(...arguments),this._loc=0,this._hours=[],this._days=[],this._bgOn=zt(),this._loadedFor="",this._onScrim=t=>{t.target===t.currentTarget&&this._close()}}get _locations(){const t=this.config;return t?.weather_locations?.length?t.weather_locations:t?.weather_entity?[{entity:t.weather_entity,name:"Hem"}]:[]}updated(t){const e=this._locations[this._loc]?.entity;e&&this.hass&&(t.has("hass")||t.has("config"))&&this._loadedFor!==e&&this._load(e)}async _load(t){this._loadedFor=t;const[e,i]=await Promise.all([ve(this.hass,t,"hourly"),ve(this.hass,t,"daily")]);this._loadedFor===t&&(this._hours=e?Wt(e):[],this._days=i?qt(i):[])}_pickLoc(t){if(t===this._loc)return;this._loc=t,this._hours=[],this._days=[];const e=this._locations[t]?.entity;e&&this._load(e)}_close(){this.dispatchEvent(new CustomEvent("hub-popup-close",{bubbles:!0,composed:!0}))}_toggleBg(){this._bgOn=!this._bgOn,Ft(this._bgOn),this.dispatchEvent(new CustomEvent("hub-weather-bg-toggle",{detail:{on:this._bgOn},bubbles:!0,composed:!0}))}get _isNight(){return"below_horizon"===this.hass?.states["sun.sun"]?.state}_hero(){const t=this.getEntity(this._locations[this._loc]?.entity??"");if(!t)return q;const e=t.attributes.temperature,i=t.attributes.apparent_temperature,a=t.attributes.wind_speed,s=t.attributes.wind_speed_unit??"km/h";return V`
       <div class="hero">
-        ${be(t.state,this._isNight)}
+        ${ge(t.state,this._isNight)}
         <span class="hero-temp">${"number"==typeof e?Math.round(e):"–"}°</span>
         <span class="hero-meta">
           <span class="hero-cond">${this.hass.formatEntityState(t)}</span>
@@ -4718,7 +4733,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
               ${e.map(t=>V`
                   <div class="hour">
                     <span class="hour-t">${String(new Date(t.ts).getHours()).padStart(2,"0")}</span>
-                    ${be(t.condition,this._isNight)}
+                    ${ge(t.condition,this._isNight)}
                     <span class="hour-temp">${Math.round(t.temp)}°</span>
                     <span class="hour-precip">${t.precip>=.1?`${t.precip.toFixed(1)}`:""}</span>
                   </div>
@@ -4730,8 +4745,8 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         <div class="sec-title">7 dagar</div>
         ${t.length&&e?t.map((t,a)=>{const s=t.low??t.high,r=(s-e.min)/i*100,n=Math.max((t.high-s)/i*100,4);return V`
                 <div class="day-row">
-                  <span class="day-name">${0===a?"Idag":function(t){return t.length?t.charAt(0).toUpperCase()+t.slice(1):t}(Ii.format(new Date(t.ts)))}</span>
-                  ${be(t.condition,!1)}
+                  <span class="day-name">${0===a?"Idag":function(t){return t.length?t.charAt(0).toUpperCase()+t.slice(1):t}(Oi.format(new Date(t.ts)))}</span>
+                  ${ge(t.condition,!1)}
                   <span class="day-prob">${null!==t.precipProb&&t.precipProb>=20?`${Math.round(t.precipProb)}%`:""}</span>
                   <span class="day-lo">${null!==t.low?`${Math.round(t.low)}°`:""}</span>
                   <span class="day-bar">
@@ -4752,7 +4767,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
                   </button>
                 `)}
             </div>
-            <button class="close" aria-label="Stäng" @click=${()=>this._close()}>${ji}</button>
+            <button class="close" aria-label="Stäng" @click=${()=>this._close()}>${Bi}</button>
           </div>
           ${this._hero()}
           ${this._hourly()}
@@ -4771,7 +4786,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           </div>
         </div>
       </div>
-    `}}Hi.styles=[Tt,n`
+    `}}Ii.styles=[Tt,n`
       :host {
         position: absolute;
         inset: 0;
@@ -4995,11 +5010,11 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         transition: transform 200ms ease;
       }
       .switch.on::after { transform: translateX(18px); }
-    `],t([gt({attribute:!1})],Hi.prototype,"config",void 0),t([bt()],Hi.prototype,"_loc",void 0),t([bt()],Hi.prototype,"_hours",void 0),t([bt()],Hi.prototype,"_days",void 0),t([bt()],Hi.prototype,"_bgOn",void 0),customElements.define("hub-weather-popup",Hi);const Li={hem:{label:"Hem",icon:"home",tone:"neutral"},ljus:{label:"Ljus",icon:"lamp",tone:"amber"},media:{label:"Media",icon:"note",tone:"teal"},energi:{label:"Energi",icon:"bolt",tone:"green"},kcal:{label:"Kcal",icon:"ring",tone:"lavender"},vecka:{label:"Vecka",icon:"calendar",tone:"lavender"}};class Ri extends ht{constructor(){super(...arguments),this.pages=[],this.active=0}_select(t){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:t},bubbles:!0,composed:!0}))}render(){return V`
+    `],t([gt({attribute:!1})],Ii.prototype,"config",void 0),t([bt()],Ii.prototype,"_loc",void 0),t([bt()],Ii.prototype,"_hours",void 0),t([bt()],Ii.prototype,"_days",void 0),t([bt()],Ii.prototype,"_bgOn",void 0),customElements.define("hub-weather-popup",Ii);const Hi={hem:{label:"Hem",icon:"home",tone:"neutral"},ljus:{label:"Ljus",icon:"lamp",tone:"amber"},media:{label:"Media",icon:"note",tone:"teal"},energi:{label:"Energi",icon:"bolt",tone:"green"},kcal:{label:"Kcal",icon:"ring",tone:"lavender"},vecka:{label:"Vecka",icon:"calendar",tone:"lavender"}};class Li extends ht{constructor(){super(...arguments),this.pages=[],this.active=0}_select(t){this.dispatchEvent(new CustomEvent("hub-goto-page",{detail:{page:t},bubbles:!0,composed:!0}))}render(){return V`
       <nav>
         <div class="rail"></div>
         <div class="items">
-          ${this.pages.map((t,e)=>{const i=function(t){const e=Li[t];return e?{id:t,...e}:{id:t,label:t.charAt(0).toUpperCase()+t.slice(1),icon:"",tone:"neutral"}}(t),a=e===this.active,s=It[i.icon];return V`
+          ${this.pages.map((t,e)=>{const i=function(t){const e=Hi[t];return e?{id:t,...e}:{id:t,label:t.charAt(0).toUpperCase()+t.slice(1),icon:"",tone:"neutral"}}(t),a=e===this.active,s=It[i.icon];return V`
               <button
                 class="item tone-${i.tone} ${a?"active":""}"
                 aria-label=${i.label}
@@ -5017,7 +5032,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
           <slot name="controls"></slot>
         </div>
       </nav>
-    `}}Ri.styles=[Tt,n`
+    `}}Li.styles=[Tt,n`
       :host {
         position: absolute;
         left: 0;
@@ -5144,7 +5159,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         background: var(--hub-lavender-bg);
         border-color: var(--hub-lavender-border);
       }
-    `],t([gt({attribute:!1})],Ri.prototype,"pages",void 0),t([gt({type:Number})],Ri.prototype,"active",void 0),customElements.define("hub-nav-bar",Ri);const Ui=["hem","ljus","media","energi","kcal","vecka"],Vi={hem:"Hem",ljus:"Ljus",media:"Media",energi:"Energi",kcal:"Kcal",vecka:"Vecka"};const Xi=["auto","dag","natt"];let Wi=0;class qi extends vt{constructor(){super(...arguments),this.theme="natt",this.kiosk=new URLSearchParams(location.search).has("kiosk"),this._page=0,this._dragX=0,this._openRoom=null,this._openLight=null,this._openTransit=!1,this._openWeather=!1,this._weatherBgOn=zt(),this._override=function(){const t=localStorage.getItem(Pt);return"natt"===t||"dag"===t?t:"auto"}(),this._pointerActive=!1,this._dragging=!1,this._startX=0,this._startY=0,this._lastX=0,this._lastT=0,this._velocity=0,this._onRoomOpen=t=>{const e=t.detail?.roomId;this._openRoom=this._cfg?.rooms?.find(t=>t.id===e)??null},this._onLightOpen=t=>{const e=t.detail;this._openLight=e?.entity?{entity:e.entity,name:e.name??e.entity}:null},this._onGotoPage=t=>{const e=t.detail?.page;e&&this.goToPage(e)},this._onTransitOpen=()=>{this._openTransit=!0},this._onWeatherOpen=()=>{this._openWeather=!0},this._onWeatherBgToggle=t=>{this._weatherBgOn=t.detail?.on??zt(),Ft(this._weatherBgOn)},this._onPopupClose=()=>{this._openRoom=null,this._openLight=null,this._openTransit=!1,this._openWeather=!1},this._onAnyInteraction=()=>{this._resetIdle()},this._onPointerDown=t=>{this._pointerActive=!0,this._dragging=!1,this._startX=t.clientX,this._startY=t.clientY,this._lastX=t.clientX,this._lastT=t.timeStamp,this._velocity=0,this._dragX=0},this._onPointerMove=t=>{if(!this._pointerActive)return;const e=t.clientX-this._startX,i=t.clientY-this._startY;if(!this._dragging){if(!Ot(e)&&!Ot(i))return;if(!function(t,e){return Math.abs(t)>Math.abs(e)}(e,i))return void(this._pointerActive=!1);this._dragging=!0,t.currentTarget.setPointerCapture?.(t.pointerId),this._lastX=t.clientX,this._lastT=t.timeStamp}const a=t.timeStamp-this._lastT;a>0&&(this._velocity=(t.clientX-this._lastX)/a),this._lastX=t.clientX,this._lastT=t.timeStamp,this._dragX=e},this._onPointerUp=t=>{if(!this._pointerActive)return;const e=this._dragging;if(this._pointerActive=!1,this._dragging=!1,e){t.currentTarget.releasePointerCapture?.(t.pointerId);const e=this.clientWidth||window.innerWidth;this._page=function(t,e,i,a,s){const r=.2*e,n=Math.abs(i)>.5;let o=a;return t<-r||n&&i<-.5?o=a+1:(t>r||n&&i>.5)&&(o=a-1),Math.max(0,Math.min(s-1,o))}(this._dragX,e,this._velocity,this._page,this._pages.length),Wi=this._page}this._dragX=0,this._velocity=0}}setConfig(t){super.setConfig(t)}get _cfg(){return this._config}get _pages(){return this._cfg?.pages??Ui}connectedCallback(){super.connectedCallback(),function(){if(document.getElementById("glass-hub-fonts"))return;const t=document.createElement("style");t.id="glass-hub-fonts",t.textContent="\n@font-face{font-family:'Outfit';src:url('/local/glass-cards/fonts/outfit-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n@font-face{font-family:'Inter';src:url('/local/glass-cards/fonts/inter-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n",document.head.appendChild(t)}(),this._applyTheme(),this._page=Wi,this._resetIdle(),this._startKioskDrawerShim(),function(){const t=new URLSearchParams(location.search).get("weather");t&&(Dt=t),window.__hubForceWeather=t=>{Dt=t,window.dispatchEvent(new CustomEvent("hub-weather-force"))}}(),this.addEventListener("pointerdown",this._onAnyInteraction),this.addEventListener("hub-room-open",this._onRoomOpen),this.addEventListener("hub-light-open",this._onLightOpen),this.addEventListener("hub-transit-open",this._onTransitOpen),this.addEventListener("hub-goto-page",this._onGotoPage),this.addEventListener("hub-popup-close",this._onPopupClose),this.addEventListener("hub-weather-open",this._onWeatherOpen),this.addEventListener("hub-weather-bg-toggle",this._onWeatherBgToggle)}disconnectedCallback(){super.disconnectedCallback(),this._clearIdle(),void 0!==this._kioskTimer&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0),this.removeEventListener("pointerdown",this._onAnyInteraction),this.removeEventListener("hub-room-open",this._onRoomOpen),this.removeEventListener("hub-light-open",this._onLightOpen),this.removeEventListener("hub-transit-open",this._onTransitOpen),this.removeEventListener("hub-goto-page",this._onGotoPage),this.removeEventListener("hub-popup-close",this._onPopupClose),this.removeEventListener("hub-weather-open",this._onWeatherOpen),this.removeEventListener("hub-weather-bg-toggle",this._onWeatherBgToggle)}willUpdate(t){t.has("hass")&&this._applyTheme()}goToPage(t){const e=this._pages.indexOf(t);e>=0&&(this._page=e,Wi=e,this._dragX=0)}_applyTheme(){const t=this.hass?.states["sun.sun"]?.attributes?.elevation,e="number"==typeof t?t:null;this.theme=function(t,e,i=4){return"auto"!==e?e:null===t?"natt":t>i?"dag":"natt"}(e,this._override,this._cfg?.day_elevation??4)}_cycleTheme(){const t=Xi.indexOf(this._override);this._override=Xi[(t+1)%Xi.length],function(t){localStorage.setItem(Pt,t)}(this._override),this._applyTheme()}_toggleKiosk(){const t=new URLSearchParams(location.search);t.has("kiosk")?t.delete("kiosk"):t.set("kiosk","true");const e=t.toString();location.assign(location.pathname+(e?`?${e}`:""))}_resetIdle(){this._clearIdle();const t=this._cfg?.idle_return_s??120;this._idleTimer=window.setTimeout(()=>{0!==this._page&&this.goToPage(this._pages[0])},1e3*t)}_clearIdle(){void 0!==this._idleTimer&&(clearTimeout(this._idleTimer),this._idleTimer=void 0)}_startKioskDrawerShim(){if(!new URLSearchParams(location.search).has("kiosk"))return;const t=Date.now(),e=()=>{const t=document.querySelector("home-assistant")?.shadowRoot?.querySelector("home-assistant-main");if(!t)return!1;t.style.setProperty("--mdc-drawer-width","0px");const e=t.shadowRoot?.querySelector("ha-drawer");return e?.style.setProperty("--mdc-drawer-width","0px"),!0};e()||(this._kioskTimer=window.setInterval(()=>{(e()||Date.now()-t>5e3)&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0)},250))}_themeGlyph(){return"auto"===this._override?V`<span class="glyph-auto">A</span>`:"dag"===this._override?X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+    `],t([gt({attribute:!1})],Li.prototype,"pages",void 0),t([gt({type:Number})],Li.prototype,"active",void 0),customElements.define("hub-nav-bar",Li);const Ri=["hem","ljus","media","energi","kcal","vecka"],Ui={hem:"Hem",ljus:"Ljus",media:"Media",energi:"Energi",kcal:"Kcal",vecka:"Vecka"};const Vi=["auto","dag","natt"];let Xi=0;class Wi extends mt{constructor(){super(...arguments),this.theme="natt",this.kiosk=new URLSearchParams(location.search).has("kiosk"),this._page=0,this._dragX=0,this._openRoom=null,this._openLight=null,this._openTransit=!1,this._openWeather=!1,this._weatherBgOn=zt(),this._override=function(){const t=localStorage.getItem(Pt);return"natt"===t||"dag"===t?t:"auto"}(),this._pointerActive=!1,this._dragging=!1,this._startX=0,this._startY=0,this._lastX=0,this._lastT=0,this._velocity=0,this._onRoomOpen=t=>{const e=t.detail?.roomId;this._openRoom=this._cfg?.rooms?.find(t=>t.id===e)??null},this._onLightOpen=t=>{const e=t.detail;this._openLight=e?.entity?{entity:e.entity,name:e.name??e.entity}:null},this._onGotoPage=t=>{const e=t.detail?.page;e&&this.goToPage(e)},this._onTransitOpen=()=>{this._openTransit=!0},this._onWeatherOpen=()=>{this._openWeather=!0},this._onWeatherBgToggle=t=>{this._weatherBgOn=t.detail?.on??zt(),Ft(this._weatherBgOn)},this._onPopupClose=()=>{this._openRoom=null,this._openLight=null,this._openTransit=!1,this._openWeather=!1},this._onAnyInteraction=()=>{this._resetIdle()},this._onPointerDown=t=>{this._pointerActive=!0,this._dragging=!1,this._startX=t.clientX,this._startY=t.clientY,this._lastX=t.clientX,this._lastT=t.timeStamp,this._velocity=0,this._dragX=0},this._onPointerMove=t=>{if(!this._pointerActive)return;const e=t.clientX-this._startX,i=t.clientY-this._startY;if(!this._dragging){if(!Bt(e)&&!Bt(i))return;if(!function(t,e){return Math.abs(t)>Math.abs(e)}(e,i))return void(this._pointerActive=!1);this._dragging=!0,t.currentTarget.setPointerCapture?.(t.pointerId),this._lastX=t.clientX,this._lastT=t.timeStamp}const a=t.timeStamp-this._lastT;a>0&&(this._velocity=(t.clientX-this._lastX)/a),this._lastX=t.clientX,this._lastT=t.timeStamp,this._dragX=e},this._onPointerUp=t=>{if(!this._pointerActive)return;const e=this._dragging;if(this._pointerActive=!1,this._dragging=!1,e){t.currentTarget.releasePointerCapture?.(t.pointerId);const e=this.clientWidth||window.innerWidth;this._page=function(t,e,i,a,s){const r=.2*e,n=Math.abs(i)>.5;let o=a;return t<-r||n&&i<-.5?o=a+1:(t>r||n&&i>.5)&&(o=a-1),Math.max(0,Math.min(s-1,o))}(this._dragX,e,this._velocity,this._page,this._pages.length),Xi=this._page}this._dragX=0,this._velocity=0}}setConfig(t){super.setConfig(t)}get _cfg(){return this._config}get _pages(){return this._cfg?.pages??Ri}connectedCallback(){super.connectedCallback(),function(){if(document.getElementById("glass-hub-fonts"))return;const t=document.createElement("style");t.id="glass-hub-fonts",t.textContent="\n@font-face{font-family:'Outfit';src:url('/local/glass-cards/fonts/outfit-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n@font-face{font-family:'Inter';src:url('/local/glass-cards/fonts/inter-variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}\n",document.head.appendChild(t)}(),this._applyTheme(),this._page=Xi,this._resetIdle(),this._startKioskDrawerShim(),function(){const t=new URLSearchParams(location.search).get("weather");t&&(Dt=t),window.__hubForceWeather=t=>{Dt=t,window.dispatchEvent(new CustomEvent("hub-weather-force"))}}(),this.addEventListener("pointerdown",this._onAnyInteraction),this.addEventListener("hub-room-open",this._onRoomOpen),this.addEventListener("hub-light-open",this._onLightOpen),this.addEventListener("hub-transit-open",this._onTransitOpen),this.addEventListener("hub-goto-page",this._onGotoPage),this.addEventListener("hub-popup-close",this._onPopupClose),this.addEventListener("hub-weather-open",this._onWeatherOpen),this.addEventListener("hub-weather-bg-toggle",this._onWeatherBgToggle)}disconnectedCallback(){super.disconnectedCallback(),this._clearIdle(),void 0!==this._kioskTimer&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0),this.removeEventListener("pointerdown",this._onAnyInteraction),this.removeEventListener("hub-room-open",this._onRoomOpen),this.removeEventListener("hub-light-open",this._onLightOpen),this.removeEventListener("hub-transit-open",this._onTransitOpen),this.removeEventListener("hub-goto-page",this._onGotoPage),this.removeEventListener("hub-popup-close",this._onPopupClose),this.removeEventListener("hub-weather-open",this._onWeatherOpen),this.removeEventListener("hub-weather-bg-toggle",this._onWeatherBgToggle)}willUpdate(t){t.has("hass")&&this._applyTheme()}goToPage(t){const e=this._pages.indexOf(t);e>=0&&(this._page=e,Xi=e,this._dragX=0)}_applyTheme(){const t=this.hass?.states["sun.sun"]?.attributes?.elevation,e="number"==typeof t?t:null;this.theme=function(t,e,i=4){return"auto"!==e?e:null===t?"natt":t>i?"dag":"natt"}(e,this._override,this._cfg?.day_elevation??4)}_cycleTheme(){const t=Vi.indexOf(this._override);this._override=Vi[(t+1)%Vi.length],function(t){localStorage.setItem(Pt,t)}(this._override),this._applyTheme()}_toggleKiosk(){const t=new URLSearchParams(location.search);t.has("kiosk")?t.delete("kiosk"):t.set("kiosk","true");const e=t.toString();location.assign(location.pathname+(e?`?${e}`:""))}_resetIdle(){this._clearIdle();const t=this._cfg?.idle_return_s??120;this._idleTimer=window.setTimeout(()=>{0!==this._page&&this.goToPage(this._pages[0])},1e3*t)}_clearIdle(){void 0!==this._idleTimer&&(clearTimeout(this._idleTimer),this._idleTimer=void 0)}_startKioskDrawerShim(){if(!new URLSearchParams(location.search).has("kiosk"))return;const t=Date.now(),e=()=>{const t=document.querySelector("home-assistant")?.shadowRoot?.querySelector("home-assistant-main");if(!t)return!1;t.style.setProperty("--mdc-drawer-width","0px");const e=t.shadowRoot?.querySelector("ha-drawer");return e?.style.setProperty("--mdc-drawer-width","0px"),!0};e()||(this._kioskTimer=window.setInterval(()=>{(e()||Date.now()-t>5e3)&&(clearInterval(this._kioskTimer),this._kioskTimer=void 0)},250))}_themeGlyph(){return"auto"===this._override?V`<span class="glyph-auto">A</span>`:"dag"===this._override?X`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
         stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"></circle>
         <line x1="12" y1="2" x2="12" y2="5"></line>
@@ -5189,7 +5204,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
                           ></hub-kcal-page>`:"vecka"===e?V`<hub-planner-page
                               .hass=${this.hass}
                               .config=${this._cfg}
-                            ></hub-planner-page>`:V`<h1 class="page-placeholder">${function(t){return Vi[t]??t.charAt(0).toUpperCase()+t.slice(1)}(e)}</h1>`}
+                            ></hub-planner-page>`:V`<h1 class="page-placeholder">${function(t){return Ui[t]??t.charAt(0).toUpperCase()+t.slice(1)}(e)}</h1>`}
             </section>
           `)}
       </div>
@@ -5230,7 +5245,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
             .hass=${this.hass}
             .config=${this._cfg}
           ></hub-weather-popup>`:q}
-    `}}qi.styles=[Tt,n`
+    `}}Wi.styles=[Tt,n`
       :host {
         position: absolute;
         inset: 0;
@@ -5307,4 +5322,4 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
         font-weight: 500;
         font-size: 20px;
       }
-    `],t([gt({reflect:!0,attribute:"data-theme"})],qi.prototype,"theme",void 0),t([gt({reflect:!0,type:Boolean})],qi.prototype,"kiosk",void 0),t([bt()],qi.prototype,"_page",void 0),t([bt()],qi.prototype,"_dragX",void 0),t([bt()],qi.prototype,"_openRoom",void 0),t([bt()],qi.prototype,"_openLight",void 0),t([bt()],qi.prototype,"_openTransit",void 0),t([bt()],qi.prototype,"_openWeather",void 0),t([bt()],qi.prototype,"_weatherBgOn",void 0),customElements.define("glass-hub",qi);const Gi=window;Gi.customCards=Gi.customCards||[],Gi.customCards.push({type:"glass-background",name:"Glass Background",description:"Animated gradient background"},{type:"glass-button",name:"Glass Button",description:"Toggle/info button"},{type:"glass-chip",name:"Glass Chip",description:"Small status pill"},{type:"glass-header",name:"Glass Header",description:"Greeting, weather, status chips"},{type:"glass-room-card",name:"Glass Room Card",description:"Room with sub-buttons and popup"},{type:"glass-light-slider",name:"Glass Light Slider",description:"Brightness slider with glow"},{type:"glass-popup",name:"Glass Popup",description:"Modal overlay"},{type:"glass-nav-bar",name:"Glass Nav Bar",description:"Bottom navigation"},{type:"glass-vacuum-card",name:"Glass Vacuum Card",description:"Vacuum controls"},{type:"glass-info-row",name:"Glass Info Row",description:"Information display"},{type:"glass-section",name:"Glass Section",description:"Section header label"},{type:"glass-departure-card",name:"Glass Departure Card",description:"Train departure list"},{type:"glass-hub",name:"Glass Hub",description:"Full-screen wall hub"}),console.info("%c GLASS CARDS %c v0.1.0 ","color: white; background: #4FC3F7; font-weight: bold; padding: 2px 6px; border-radius: 4px 0 0 4px;","color: #4FC3F7; background: rgba(79,195,247,0.1); padding: 2px 6px; border-radius: 0 4px 4px 0;");
+    `],t([gt({reflect:!0,attribute:"data-theme"})],Wi.prototype,"theme",void 0),t([gt({reflect:!0,type:Boolean})],Wi.prototype,"kiosk",void 0),t([bt()],Wi.prototype,"_page",void 0),t([bt()],Wi.prototype,"_dragX",void 0),t([bt()],Wi.prototype,"_openRoom",void 0),t([bt()],Wi.prototype,"_openLight",void 0),t([bt()],Wi.prototype,"_openTransit",void 0),t([bt()],Wi.prototype,"_openWeather",void 0),t([bt()],Wi.prototype,"_weatherBgOn",void 0),customElements.define("glass-hub",Wi);const qi=window;qi.customCards=qi.customCards||[],qi.customCards.push({type:"glass-background",name:"Glass Background",description:"Animated gradient background"},{type:"glass-button",name:"Glass Button",description:"Toggle/info button"},{type:"glass-chip",name:"Glass Chip",description:"Small status pill"},{type:"glass-header",name:"Glass Header",description:"Greeting, weather, status chips"},{type:"glass-room-card",name:"Glass Room Card",description:"Room with sub-buttons and popup"},{type:"glass-light-slider",name:"Glass Light Slider",description:"Brightness slider with glow"},{type:"glass-popup",name:"Glass Popup",description:"Modal overlay"},{type:"glass-nav-bar",name:"Glass Nav Bar",description:"Bottom navigation"},{type:"glass-vacuum-card",name:"Glass Vacuum Card",description:"Vacuum controls"},{type:"glass-info-row",name:"Glass Info Row",description:"Information display"},{type:"glass-section",name:"Glass Section",description:"Section header label"},{type:"glass-departure-card",name:"Glass Departure Card",description:"Train departure list"},{type:"glass-hub",name:"Glass Hub",description:"Full-screen wall hub"}),console.info("%c GLASS CARDS %c v0.1.0 ","color: white; background: #4FC3F7; font-weight: bold; padding: 2px 6px; border-radius: 4px 0 0 4px;","color: #4FC3F7; background: rgba(79,195,247,0.1); padding: 2px 6px; border-radius: 0 4px 4px 0;");

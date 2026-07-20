@@ -94,16 +94,25 @@ export class HubClock extends GlassBaseElement {
         font: 500 12.5px var(--hub-font-body);
         color: var(--hub-teal);
       }
+      /* Over weather footage the hero always uses light ink + shadow — the
+         backdrop is the video (dark night clips, bright day clips), not the
+         theme surface, so theme-colored text can't guarantee contrast. */
       :host([bg-active]) .time,
       :host([bg-active]) .wx-temp {
-        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.22);
+        color: var(--hub-ink-on-media);
+        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
       }
       :host([bg-active]) .date,
-      :host([bg-active]) .wx-range,
+      :host([bg-active]) .wx-range {
+        color: var(--hub-ink-on-media-muted);
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+      }
+      :host([bg-active]) .wx svg {
+        color: var(--hub-ink-on-media-muted);
+      }
       :host([bg-active]) .hint {
-        color: var(--hub-text);
-        opacity: 0.82;
-        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.28);
+        color: #8fe3d2;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
       }
     `,
   ];

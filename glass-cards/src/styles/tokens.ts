@@ -66,6 +66,11 @@ export const hubTokens = css`
     --hub-navbar-border: rgba(60, 50, 30, 0.08);
   }
   :host {
+    /* Ink for text sitting directly on weather footage — always light with a
+       shadow, independent of theme (the footage, not the theme, is the
+       backdrop there). */
+    --hub-ink-on-media: #f4f3ef;
+    --hub-ink-on-media-muted: rgba(244, 243, 239, 0.95);
     --hub-font-display: 'Outfit', sans-serif;
     --hub-font-body: 'Inter', -apple-system, sans-serif;
     --hub-radius: 18px;

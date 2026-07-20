@@ -237,3 +237,39 @@ const DAG_CLOUDS: Record<SkyKind, CloudColors> = {
 export function cloudColors(sky: SkyKind, theme: 'natt' | 'dag'): CloudColors {
   return theme === 'natt' ? NATT_CLOUDS[sky] : DAG_CLOUDS[sky];
 }
+
+// ── Video background clip selection ────────────────────────
+
+/**
+ * Stock-footage loop for a condition, or null to fall back to the shader.
+ * Clips are baked by scripts/fetch-weather-clips.sh and served from
+ * /local/glass-cards/weather/. Day/night follows the sun band; night clips
+ * are natively dark so the natt theme needs no extra treatment for them.
+ */
+export function clipForScene(condition: string, band: ElevBand): string | null {
+  const day = band !== 'night';
+  switch (condition) {
+    case 'sunny':
+    case 'clear-night':
+      return day ? 'sunny-day' : 'clear-night';
+    case 'partlycloudy':
+    case 'windy':
+    case 'windy-variant':
+      return day ? 'partly-day' : 'clear-night';
+    case 'cloudy':
+      return day ? 'cloudy-day' : 'cloudy-night';
+    case 'rainy':
+    case 'pouring':
+    case 'lightning':
+    case 'lightning-rainy':
+    case 'hail':
+      return day ? 'storm-day' : 'cloudy-night';
+    case 'snowy':
+    case 'snowy-rainy':
+      return day ? 'snow-day' : 'cloudy-night';
+    case 'fog':
+      return 'fog';
+    default:
+      return day ? 'cloudy-day' : 'cloudy-night';
+  }
+}

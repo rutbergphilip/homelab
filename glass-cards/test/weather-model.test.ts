@@ -10,6 +10,7 @@ import {
   precipHint,
   isWetCondition,
   cloudColors,
+  clipForScene,
 } from '../src/hub/weather-model';
 
 const ALL_CONDITIONS = [
@@ -188,5 +189,25 @@ describe('cloudColors', () => {
       expect(lum(natt.lit), sky).toBeLessThan(0.3);
       expect(lum(dag.lit)).toBeGreaterThan(lum(natt.lit));
     }
+  });
+});
+
+describe('clipForScene', () => {
+  it('maps every condition to a clip for day and night', () => {
+    for (const c of ALL_CONDITIONS) {
+      for (const band of ['day', 'golden', 'night'] as const) {
+        const clip = clipForScene(c, band);
+        expect(clip, `${c}/${band}`).toMatch(/^[a-z-]+$/);
+      }
+    }
+  });
+  it('day/night variants', () => {
+    expect(clipForScene('sunny', 'day')).toBe('sunny-day');
+    expect(clipForScene('clear-night', 'night')).toBe('clear-night');
+    expect(clipForScene('rainy', 'day')).toBe('storm-day');
+    expect(clipForScene('rainy', 'night')).toBe('cloudy-night');
+    expect(clipForScene('snowy', 'golden')).toBe('snow-day');
+    expect(clipForScene('fog', 'night')).toBe('fog');
+    expect(clipForScene('banana', 'day')).toBe('cloudy-day');
   });
 });

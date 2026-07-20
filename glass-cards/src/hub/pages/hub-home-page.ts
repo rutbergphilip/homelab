@@ -205,6 +205,18 @@ export class HubHomePage extends GlassBaseElement {
   render() {
     if (!this.hass || !this.config) return html``;
     const cfg = this.config;
+    // Over weather footage, soften the opaque surfaces so cards sit in the
+    // scene instead of punching hard rectangles out of it. Values are the
+    // theme's card/chip colors at ~86% alpha; interior text contrast is
+    // preserved. Vars cascade from this wrapper into every child widget.
+    const mediaVars = !this.weatherBg
+      ? ''
+      : this.theme === 'natt'
+        ? '--hub-card:rgba(19,19,22,0.86);--hub-chip-bg:rgba(21,21,25,0.86);' +
+          '--hub-teal-bg:rgba(16,20,24,0.86);--hub-lavender-bg:rgba(20,18,23,0.86);'
+        : '--hub-card:rgba(255,255,255,0.88);--hub-chip-bg:rgba(255,255,255,0.88);' +
+          '--hub-teal-bg:rgba(255,255,255,0.88);--hub-lavender-bg:rgba(255,255,255,0.88);' +
+          '--hub-amber-bg:rgba(255,255,255,0.88);';
     return html`
       ${this.weatherBg
         ? html`<hub-weather-bg
@@ -214,7 +226,7 @@ export class HubHomePage extends GlassBaseElement {
             .active=${this.pageActive}
           ></hub-weather-bg>`
         : nothing}
-      <div class="page">
+      <div class="page" style=${mediaVars}>
         <div class="top">
           <hub-clock
             .hass=${this.hass}

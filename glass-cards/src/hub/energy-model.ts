@@ -3,9 +3,19 @@
 // arrays of { total: SEK/kWh, startsAt: ISO8601 }; everything here is in öre
 // (SEK/kWh × 100), decimals preserved — the page rounds for display.
 
+export type PriceView = 'spot' | 'allin';
+
 export interface HourPrice {
   start: Date;
-  ore: number; // öre/kWh
+  ore: number; // öre/kWh in the ACTIVE view
+  totalOre: number; // Tibber total (spot+påslag+skatt/moms) öre/kWh
+  spotOre: number | null; // Tibber energy part, null when the sensor lacks it
+}
+
+export interface PriceBreakdown {
+  spot: number; // öre/kWh
+  taxes: number; // Tibber total − spot (påslag + skatt + moms)
+  grid: number; // configured elnät add-on
 }
 
 export interface EnergyModel {
@@ -27,7 +37,7 @@ function emptyModel(): EnergyModel {
   return { now: null, level: 'normal', today: [], tomorrow: [], cheapestWindow: null };
 }
 
-function parseHours(raw: unknown): HourPrice[] {
+function parseHours(raw: unknown, view: PriceView, gridAddOre: number): HourPrice[] {
   if (!Array.isArray(raw)) return [];
   const out: HourPrice[] = [];
   for (const item of raw) {
@@ -37,7 +47,14 @@ function parseHours(raw: unknown): HourPrice[] {
     if (!Number.isFinite(total) || typeof rec.startsAt !== 'string') continue;
     const start = new Date(rec.startsAt);
     if (Number.isNaN(start.getTime())) continue;
-    out.push({ start, ore: total * 100 });
+    const energyRaw = typeof rec.energy === 'number' ? rec.energy : Number(rec.energy);
+    const spotOre = Number.isFinite(energyRaw) ? energyRaw * 100 : null;
+    const totalOre = total * 100;
+    const ore =
+      view === 'spot' && spotOre !== null
+        ? spotOre
+        : totalOre + (view === 'allin' ? gridAddOre : 0);
+    out.push({ start, ore, totalOre, spotOre });
   }
   return out.sort((a, b) => a.start.getTime() - b.start.getTime());
 }
@@ -111,11 +128,13 @@ export function buildEnergyModel(
   attrs: Record<string, unknown> | null | undefined,
   state: string,
   now: Date,
+  view: PriceView = 'allin',
+  gridAddOre = 0,
 ): EnergyModel {
   if (DEAD.has(String(state ?? '').toLowerCase())) return emptyModel();
 
-  const today = parseHours(attrs?.today);
-  const tomorrow = parseHours(attrs?.tomorrow);
+  const today = parseHours(attrs?.today, view, gridAddOre);
+  const tomorrow = parseHours(attrs?.tomorrow, view, gridAddOre);
   if (today.length === 0 && tomorrow.length === 0) return emptyModel();
 
   const series = [...today, ...tomorrow].sort(
@@ -140,4 +159,16 @@ export function buildEnergyModel(
   const future = series.filter((h) => h.start.getTime() + HOUR_MS > nowMs);
 
   return { now: current, level, today, tomorrow, cheapestWindow: cheapestWindow(future) };
+}
+
+/** True when every parsed hour carries the Tibber energy (spot) component. */
+export function hasSpotSeries(model: EnergyModel): boolean {
+  const all = [...model.today, ...model.tomorrow];
+  return all.length > 0 && all.every((h) => h.spotOre !== null);
+}
+
+/** Spot / taxes / elnät split for the detail flyout; null without spot data. */
+export function priceBreakdown(h: HourPrice, gridAddOre: number): PriceBreakdown | null {
+  if (h.spotOre === null) return null;
+  return { spot: h.spotOre, taxes: h.totalOre - h.spotOre, grid: gridAddOre };
 }

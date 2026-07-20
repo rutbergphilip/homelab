@@ -4,6 +4,7 @@ import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import { icons } from './icons.js';
 import { buildEnergyModel, next12Hours, type EnergyModel } from '../energy-model.js';
+import { getStoredPriceView, gridAddOre } from '../price-view.js';
 import type { HubConfig } from '../hub-config.js';
 
 const LEVEL_WORD: Record<EnergyModel['level'], string> = {
@@ -182,7 +183,16 @@ export class HubEnergyStrip extends GlassBaseElement {
       ? this.getEntity(this.config.price_series_entity)
       : undefined;
     if (!ent) return null;
-    return buildEnergyModel(ent.attributes as Record<string, unknown>, ent.state, this._now);
+    const view = getStoredPriceView();
+    const attrs = ent.attributes as Record<string, unknown>;
+    const model = buildEnergyModel(
+      attrs, ent.state, this._now, view,
+      view === 'allin' ? gridAddOre(this.config) : 0,
+    );
+    if (view === 'spot' && model.today.length && model.today.some((h) => h.spotOre === null)) {
+      return buildEnergyModel(attrs, ent.state, this._now, 'allin', gridAddOre(this.config));
+    }
+    return model;
   }
 
   /** Current price in öre: the series' current hour, else the Tibber sensor. */

@@ -1,7 +1,7 @@
 import { html, css, nothing, LitElement, type TemplateResult } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { hubTokens } from '../../styles/tokens.js';
-import type { EnergyModel, HourPrice } from '../energy-model.js';
+import { priceBreakdown, type EnergyModel, type HourPrice } from '../energy-model.js';
 
 type Slot =
   | { kind: 'bar'; hour: HourPrice; cls: string; label: string | null }
@@ -17,6 +17,17 @@ const MIN_BAR = 0.14; // shortest bar as a fraction of the plot height
  */
 export class HubPriceChart extends LitElement {
   @property({ attribute: false }) model!: EnergyModel;
+  @property({ type: Number }) gridAddOre = 0;
+  @state() private _detail: number | null = null; // slot index of the open flyout
+  private _detailTimer?: number;
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._detailTimer !== undefined) {
+      clearTimeout(this._detailTimer);
+      this._detailTimer = undefined;
+    }
+  }
 
   static styles = [
     hubTokens,
@@ -97,6 +108,58 @@ export class HubPriceChart extends LitElement {
         color: var(--hub-text-muted);
         font-weight: 600;
       }
+      .cell {
+        cursor: pointer;
+      }
+      .flyout {
+        position: absolute;
+        bottom: calc(var(--bar-h) + 10px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 5;
+        min-width: 132px;
+        padding: 10px 12px;
+        border-radius: var(--hub-radius-sm, 12px);
+        background: var(--hub-card);
+        border: 1px solid var(--hub-card-border);
+        box-shadow: var(--hub-shadow);
+        pointer-events: none;
+      }
+      .flyout.edge-l {
+        left: 0;
+        transform: none;
+      }
+      .flyout.edge-r {
+        left: auto;
+        right: 0;
+        transform: none;
+      }
+      .fly-hour {
+        font: 600 11.5px var(--hub-font-body);
+        color: var(--hub-text-dim);
+        white-space: nowrap;
+      }
+      .fly-price {
+        margin-top: 2px;
+        font: 600 17px var(--hub-font-display);
+        color: var(--hub-text);
+        white-space: nowrap;
+      }
+      .fly-rows {
+        margin-top: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .fly-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font: 500 11px var(--hub-font-body);
+        color: var(--hub-text-muted);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
     `,
   ];
 
@@ -132,6 +195,17 @@ export class HubPriceChart extends LitElement {
     return slots;
   }
 
+  private _toggleDetail(idx: number): void {
+    this._detail = this._detail === idx ? null : idx;
+    if (this._detailTimer !== undefined) clearTimeout(this._detailTimer);
+    if (this._detail !== null) {
+      this._detailTimer = window.setTimeout(() => {
+        this._detail = null;
+        this._detailTimer = undefined;
+      }, 6000);
+    }
+  }
+
   private _bounds(): { min: number; max: number } {
     const all = [...(this.model?.today ?? []), ...(this.model?.tomorrow ?? [])].map((h) => h.ore);
     return { min: Math.min(...all), max: Math.max(...all) };
@@ -163,6 +237,26 @@ export class HubPriceChart extends LitElement {
     >`;
   }
 
+  private _flyout(h: HourPrice, idx: number, count: number): TemplateResult {
+    const from = String(h.start.getHours()).padStart(2, '0');
+    const to = String((h.start.getHours() + 1) % 24).padStart(2, '0');
+    const edge = idx < 2 ? 'edge-l' : idx > count - 3 ? 'edge-r' : '';
+    const bd = priceBreakdown(h, this.gridAddOre);
+    return html`
+      <div class="flyout ${edge}">
+        <div class="fly-hour">${from}–${to}</div>
+        <div class="fly-price">${Math.round(h.ore)} öre/kWh</div>
+        ${bd
+          ? html`<div class="fly-rows">
+              <div class="fly-row"><span>Spot</span><span>${Math.round(bd.spot)} öre</span></div>
+              <div class="fly-row"><span>Skatt &amp; moms</span><span>${Math.round(bd.taxes)} öre</span></div>
+              <div class="fly-row"><span>Elnät</span><span>${Math.round(bd.grid)} öre</span></div>
+            </div>`
+          : nothing}
+      </div>
+    `;
+  }
+
   render() {
     if (!this.model || this.model.today.length === 0) return html``;
     const slots = this._slots();
@@ -174,7 +268,7 @@ export class HubPriceChart extends LitElement {
     return html`
       <div class="chart">
         <div class="plot" style="grid-template-columns:${cols}">
-          ${slots.map((s) => {
+          ${slots.map((s, i) => {
             if (s.kind === 'divider') return html`<div class="divider"></div>`;
             const h = this._height(s.hour.ore, min, max);
             // Future bars carry the cheapness tint; past/current use their class colours.
@@ -182,8 +276,15 @@ export class HubPriceChart extends LitElement {
               ? `background:${this._tint(s.hour.ore, min, max)}`
               : '';
             return html`
-              <div class="cell ${s.cls}" style="--bar-h:${h}%">
-                ${s.label ? html`<span class="cell-label">${s.label}</span>` : nothing}
+              <div
+                class="cell ${s.cls}"
+                style="--bar-h:${h}%"
+                @click=${() => this._toggleDetail(i)}
+              >
+                ${this._detail === i ? this._flyout(s.hour, i, slots.length) : nothing}
+                ${s.label && this._detail !== i
+                  ? html`<span class="cell-label">${s.label}</span>`
+                  : nothing}
                 <div class="bar" style="height:${h}%;${bg}"></div>
               </div>
             `;

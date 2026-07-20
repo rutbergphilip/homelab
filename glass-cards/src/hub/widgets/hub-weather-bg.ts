@@ -5,9 +5,11 @@ import {
   conditionScene,
   skyStops,
   elevBand,
+  cloudColors,
   type SceneSpec,
 } from '../weather-model.js';
 import { getForcedCondition } from '../weather-settings.js';
+import { CloudShader } from './cloud-shader.js';
 import type { HubTheme } from '../theme-controller.js';
 
 const DPR_CAP = 1.5;
@@ -20,7 +22,7 @@ const DEPTH = [
   { scale: 1.15, alpha: 0.9, speed: 1.15 },
 ];
 
-interface Drop { x: number; y: number; layer: number }
+interface Drop { x: number; y: number; layer: number; jl: number; js: number; ja: number }
 interface Flake { x: number; y: number; r: number; phase: number; rot: number; rotSpd: number; layer: number }
 interface Stone { x: number; y: number; vy: number; vx: number; r: number; bounced: boolean }
 interface Splash { x: number; y: number; r: number; life: number }
@@ -45,6 +47,8 @@ export class HubWeatherBg extends GlassBaseElement {
 
   private _canvas?: HTMLCanvasElement;
   private _ctx?: CanvasRenderingContext2D;
+  private _glCanvas?: HTMLCanvasElement;
+  private _shader?: CloudShader;
   private _ro?: ResizeObserver;
   private _w = 0; // CSS px
   private _h = 0;
@@ -69,6 +73,7 @@ export class HubWeatherBg extends GlassBaseElement {
   private _flakeSprite?: HTMLCanvasElement;
   private _flash = 0; // lightning envelope 0..1
   private _nextFlash = 0;
+  private _bolt: [number, number][][] | null = null; // main channel + branches
 
   static styles = css`
     :host {
@@ -103,12 +108,16 @@ export class HubWeatherBg extends GlassBaseElement {
     window.removeEventListener('hub-weather-force', this._onForce);
     this._ro?.disconnect();
     this._ro = undefined;
+    this._shader?.dispose();
+    this._shader = undefined;
     this._stopLoop();
   }
 
   firstUpdated(): void {
-    this._canvas = this.renderRoot.querySelector('canvas') ?? undefined;
+    this._canvas = (this.renderRoot.querySelector('canvas.px') as HTMLCanvasElement) ?? undefined;
     this._ctx = this._canvas?.getContext('2d') ?? undefined;
+    this._glCanvas = (this.renderRoot.querySelector('canvas.gl') as HTMLCanvasElement) ?? undefined;
+    if (this._glCanvas) this._shader = new CloudShader(this._glCanvas);
     this._ro = new ResizeObserver(() => this._resize());
     this._ro.observe(this);
     this._resize();
@@ -162,6 +171,12 @@ export class HubWeatherBg extends GlassBaseElement {
     this._dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
     this._canvas.width = Math.max(1, Math.round(this._w * this._dpr));
     this._canvas.height = Math.max(1, Math.round(this._h * this._dpr));
+    // Cloud field renders at half resolution — it's all soft gradients, and
+    // CSS upscaling is invisible while the fill-rate saving is 4×.
+    if (this._glCanvas) {
+      this._glCanvas.width = Math.max(1, Math.round((this._w * this._dpr) / 2));
+      this._glCanvas.height = Math.max(1, Math.round((this._h * this._dpr) / 2));
+    }
     this._buildParticles();
   }
 
@@ -185,6 +200,9 @@ export class HubWeatherBg extends GlassBaseElement {
       x: rand() * w,
       y: rand() * h,
       layer: Math.floor(rand() * DEPTH.length),
+      jl: 0.7 + rand() * 0.6, // per-drop length jitter
+      js: 0.85 + rand() * 0.35, // per-drop speed jitter
+      ja: (rand() - 0.5) * 40, // per-drop wind-angle jitter (px/s)
     }));
     this._flakes = Array.from({ length: this._perMp(s.snow) }, () => ({
       x: rand() * w,
@@ -315,16 +333,36 @@ export class HubWeatherBg extends GlassBaseElement {
     if (this._stars.length && this._isNightBand) this._drawStars(ctx);
     if (this._scene.sun && !this._isNightBand && this.theme === 'dag') this._drawSun(ctx, w, h);
     this._updateFlash(dt);
-    if (this._clouds.length) this._drawClouds(ctx, dt, w, h);
+    // Clouds: volumetric fBm shader when WebGL is healthy, sprite fallback otherwise.
+    const shaderOn = this._shader?.ok === true;
+    if (shaderOn) {
+      if (this._scene.clouds > 0) {
+        this._shader!.render({
+          time: this._t,
+          density: this._scene.clouds,
+          wind: this._scene.wind,
+          palette: cloudColors(this._scene.sky, this.theme),
+          flash: this._flash,
+        });
+      } else {
+        this._shader!.clear();
+      }
+    } else if (this._clouds.length) {
+      this._drawClouds(ctx, dt, w, h);
+    }
     if (this._scene.fog) this._drawFog(ctx, dt, w, h);
     if (this._drops.length) this._drawRain(ctx, dt, w, h);
     if (this._flakes.length) this._drawSnow(ctx, dt, w, h);
     if (this._stones.length) this._drawHail(ctx, dt, w, h);
     if (this._splashes.length) this._drawSplashes(ctx, dt);
     if (this._flash > 0.01) {
-      ctx.fillStyle = `rgba(215,225,255,${this._flash * (this.theme === 'natt' ? 0.22 : 0.3)})`;
+      // A visible channel carries the drama — dampen the sheet flash then.
+      const sheet = (this.theme === 'natt' ? 0.22 : 0.3) * (this._bolt ? 0.6 : 1);
+      ctx.fillStyle = `rgba(215,225,255,${this._flash * sheet})`;
       ctx.fillRect(0, 0, w, h);
     }
+    // Bolt last so the flash overlay never dilutes the channel.
+    if (this._bolt && this._flash > 0.05) this._drawBolt(ctx);
   }
 
   private _drawStars(ctx: CanvasRenderingContext2D): void {
@@ -341,19 +379,31 @@ export class HubWeatherBg extends GlassBaseElement {
     const cx = w * 0.76;
     const cy = h * 0.2;
     const golden = elevBand(this._elevation) === 'golden';
-    const rad = Math.min(w, h) * 0.5;
-    const pulse = 0.9 + 0.1 * Math.sin(this._t * 0.3);
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-    grad.addColorStop(0, golden ? `rgba(255,170,90,${0.5 * pulse})` : `rgba(255,214,120,${0.55 * pulse})`);
-    grad.addColorStop(0.25, golden ? 'rgba(255,170,90,0.18)' : 'rgba(255,214,120,0.2)');
-    grad.addColorStop(1, 'rgba(255,214,120,0)');
+    const rad = Math.min(w, h) * 0.55;
+    const pulse = 0.92 + 0.08 * Math.sin(this._t * 0.3);
+    const warm = golden ? '255,170,90' : '255,218,130';
+    // Hot core + wide bloom (Apple's sunny hero look).
+    let grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    grad.addColorStop(0, `rgba(255,246,220,${0.85 * pulse})`);
+    grad.addColorStop(0.12, `rgba(${warm},${0.5 * pulse})`);
+    grad.addColorStop(0.35, `rgba(${warm},0.16)`);
+    grad.addColorStop(1, `rgba(${warm},0)`);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
+    // Lens-halo ring around the disc.
+    const ringR = rad * 0.52;
+    grad = ctx.createRadialGradient(cx, cy, ringR * 0.88, cx, cy, ringR * 1.12);
+    grad.addColorStop(0, `rgba(${warm},0)`);
+    grad.addColorStop(0.5, `rgba(${warm},0.1)`);
+    grad.addColorStop(1, `rgba(${warm},0)`);
+    ctx.fillStyle = grad;
+    const rb = ringR * 1.15;
+    ctx.fillRect(cx - rb, cy - rb, rb * 2, rb * 2);
     // Slow-rotating rays.
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(this._t * 0.02);
-    ctx.fillStyle = golden ? 'rgba(255,170,90,0.05)' : 'rgba(255,214,120,0.06)';
+    ctx.fillStyle = `rgba(${warm},0.07)`;
     for (let i = 0; i < 8; i++) {
       ctx.rotate(Math.PI / 4);
       ctx.beginPath();
@@ -364,6 +414,23 @@ export class HubWeatherBg extends GlassBaseElement {
       ctx.fill();
     }
     ctx.restore();
+    // Faint lens-flare dots along the sun→centre axis.
+    const dxAxis = w / 2 - cx;
+    const dyAxis = h / 2 - cy;
+    const dots: [number, number, number][] = [
+      [0.7, 14, 0.06],
+      [1.4, 9, 0.08],
+      [2.1, 22, 0.045],
+    ];
+    for (const [f, r, a] of dots) {
+      const x = cx + dxAxis * f;
+      const y = cy + dyAxis * f;
+      const g2 = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g2.addColorStop(0, `rgba(${warm},${a})`);
+      g2.addColorStop(1, `rgba(${warm},0)`);
+      ctx.fillStyle = g2;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
   }
 
   private _drawClouds(ctx: CanvasRenderingContext2D, dt: number, w: number, h: number): void {
@@ -407,8 +474,8 @@ export class HubWeatherBg extends GlassBaseElement {
     ctx.lineCap = 'round';
     for (const d of this._drops) {
       const L = DEPTH[d.layer];
-      const spd = baseSpd * L.speed;
-      const drift = 60 * wind * L.speed;
+      const spd = baseSpd * L.speed * d.js;
+      const drift = (60 * wind + d.ja) * L.speed;
       d.y += spd * dt;
       d.x += drift * dt;
       if (d.y > h) {
@@ -419,7 +486,7 @@ export class HubWeatherBg extends GlassBaseElement {
         }
       }
       if (d.x > w) d.x -= w;
-      const len = baseLen * L.scale;
+      const len = baseLen * L.scale * d.jl;
       const slant = (drift / spd) * len;
       ctx.strokeStyle = natt
         ? `rgba(150,170,200,${L.alpha * 0.45})`
@@ -504,10 +571,13 @@ export class HubWeatherBg extends GlassBaseElement {
   private _updateFlash(dt: number): void {
     if (!this._scene.lightning) {
       this._flash = 0;
+      this._bolt = null;
       return;
     }
     if (this._t >= this._nextFlash) {
       this._flash = 1;
+      // Most strikes show a visible branching channel; some are sheet lightning.
+      this._bolt = Math.random() < 0.7 ? this._makeBolt() : null;
       // Occasional quick double-flash, otherwise a 4–12 s lull.
       this._nextFlash = this._t + (Math.random() < 0.3 ? 0.15 : 4 + Math.random() * 8);
     } else {
@@ -515,11 +585,71 @@ export class HubWeatherBg extends GlassBaseElement {
     }
   }
 
+  /** Jagged main channel from the cloud deck with a few thinner branches. */
+  private _makeBolt(): [number, number][][] {
+    const w = this._w;
+    const h = this._h;
+    const rand = Math.random;
+    const polylines: [number, number][][] = [];
+    const main: [number, number][] = [];
+    let x = w * (0.2 + rand() * 0.6);
+    let y = -8;
+    const bias = (rand() - 0.5) * 10;
+    const endY = h * (0.55 + rand() * 0.3);
+    main.push([x, y]);
+    while (y < endY) {
+      y += 12 + rand() * 22;
+      x += (rand() - 0.5) * 36 + bias;
+      main.push([x, y]);
+      if (rand() < 0.14 && main.length > 2) {
+        // Branch: shorter, drifting off to one side, fading out mid-air.
+        const branch: [number, number][] = [[x, y]];
+        let bx = x;
+        let by = y;
+        const dir = rand() < 0.5 ? -1 : 1;
+        const steps = 3 + Math.floor(rand() * 4);
+        for (let i = 0; i < steps; i++) {
+          by += 10 + rand() * 16;
+          bx += dir * (8 + rand() * 20) + (rand() - 0.5) * 12;
+          branch.push([bx, by]);
+        }
+        polylines.push(branch);
+      }
+    }
+    polylines.unshift(main);
+    return polylines;
+  }
+
+  private _drawBolt(ctx: CanvasRenderingContext2D): void {
+    const bolt = this._bolt;
+    if (!bolt) return;
+    const a = this._flash;
+    // Three passes: wide glow, tight glow, hot core. Branches thinner than main.
+    const passes: [number, string][] = [
+      [10, `rgba(120,170,255,${0.25 * a})`],
+      [4.5, `rgba(170,205,255,${0.45 * a})`],
+      [2.5, `rgba(255,255,255,${0.95 * a})`],
+    ];
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const [lw, style] of passes) {
+      ctx.strokeStyle = style;
+      bolt.forEach((line, i) => {
+        ctx.lineWidth = i === 0 ? lw : lw * 0.55;
+        ctx.beginPath();
+        ctx.moveTo(line[0][0], line[0][1]);
+        for (let j = 1; j < line.length; j++) ctx.lineTo(line[j][0], line[j][1]);
+        ctx.stroke();
+      });
+    }
+  }
+
   render() {
     return html`
       <div class="sky" style="${this._skyA};opacity:${this._frontA ? 1 : 0}"></div>
       <div class="sky" style="${this._skyB};opacity:${this._frontA ? 0 : 1}"></div>
-      <canvas></canvas>
+      <canvas class="gl"></canvas>
+      <canvas class="px"></canvas>
     `;
   }
 }

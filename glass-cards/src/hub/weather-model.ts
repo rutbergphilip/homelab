@@ -208,3 +208,32 @@ export function precipHint(hours: ForecastHour[], nowTs: number): string | null 
   const word = SNOWISH.has(wet.condition) ? 'Snö' : 'Regn';
   return `${word} börjar ~${hhmm(wet.ts)}`;
 }
+
+// ── Cloud shader palettes ──────────────────────────────────
+
+/** RGB components 0..1 for the WebGL cloud field, per sky kind × theme. */
+export interface CloudColors {
+  lit: [number, number, number];
+  shade: [number, number, number];
+  alpha: number;
+}
+
+const NATT_CLOUDS: Record<SkyKind, CloudColors> = {
+  clear:    { lit: [0.16, 0.18, 0.23], shade: [0.05, 0.06, 0.09], alpha: 0.75 },
+  partly:   { lit: [0.16, 0.18, 0.23], shade: [0.05, 0.06, 0.09], alpha: 0.8 },
+  overcast: { lit: [0.13, 0.14, 0.17], shade: [0.04, 0.045, 0.06], alpha: 0.85 },
+  storm:    { lit: [0.12, 0.13, 0.16], shade: [0.03, 0.035, 0.05], alpha: 0.9 },
+  fog:      { lit: [0.16, 0.17, 0.2], shade: [0.07, 0.08, 0.1], alpha: 0.6 },
+};
+
+const DAG_CLOUDS: Record<SkyKind, CloudColors> = {
+  clear:    { lit: [1, 1, 1], shade: [0.62, 0.66, 0.72], alpha: 0.92 },
+  partly:   { lit: [1, 1, 1], shade: [0.62, 0.66, 0.72], alpha: 0.92 },
+  overcast: { lit: [0.82, 0.85, 0.88], shade: [0.45, 0.49, 0.55], alpha: 0.95 },
+  storm:    { lit: [0.62, 0.66, 0.72], shade: [0.28, 0.31, 0.37], alpha: 0.95 },
+  fog:      { lit: [0.88, 0.89, 0.9], shade: [0.65, 0.67, 0.69], alpha: 0.7 },
+};
+
+export function cloudColors(sky: SkyKind, theme: 'natt' | 'dag'): CloudColors {
+  return theme === 'natt' ? NATT_CLOUDS[sky] : DAG_CLOUDS[sky];
+}

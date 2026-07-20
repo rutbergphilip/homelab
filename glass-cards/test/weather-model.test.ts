@@ -9,6 +9,7 @@ import {
   weekRange,
   precipHint,
   isWetCondition,
+  cloudColors,
 } from '../src/hub/weather-model';
 
 const ALL_CONDITIONS = [
@@ -163,5 +164,29 @@ describe('isWetCondition', () => {
       expect(isWetCondition(c), c).toBe(true);
     for (const c of ['sunny', 'cloudy', 'fog', 'windy', 'lightning'])
       expect(isWetCondition(c), c).toBe(false);
+  });
+});
+
+describe('cloudColors', () => {
+  const skies = ['clear', 'partly', 'overcast', 'storm', 'fog'] as const;
+  it('returns valid 0..1 components for every sky × theme', () => {
+    for (const sky of skies) {
+      for (const theme of ['natt', 'dag'] as const) {
+        const c = cloudColors(sky, theme);
+        for (const v of [...c.lit, ...c.shade, c.alpha]) {
+          expect(v).toBeGreaterThanOrEqual(0);
+          expect(v).toBeLessThanOrEqual(1);
+        }
+      }
+    }
+  });
+  it('natt clouds stay dim (lit luminance < 0.3), dag clouds are brighter', () => {
+    for (const sky of skies) {
+      const natt = cloudColors(sky, 'natt');
+      const dag = cloudColors(sky, 'dag');
+      const lum = (c: readonly number[]) => (c[0] + c[1] + c[2]) / 3;
+      expect(lum(natt.lit), sky).toBeLessThan(0.3);
+      expect(lum(dag.lit)).toBeGreaterThan(lum(natt.lit));
+    }
   });
 });

@@ -4,6 +4,8 @@ import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
 import type { HubConfig } from '../hub-config.js';
+import '../widgets/hub-weather-bg.js';
+import type { HubTheme } from '../theme-controller.js';
 import '../widgets/hub-clock.js';
 import '../widgets/hub-status-chip.js';
 import '../widgets/hub-room-tile.js';
@@ -31,6 +33,9 @@ const VAC_LABELS: Record<string, string> = {
 
 export class HubHomePage extends GlassBaseElement {
   @property({ attribute: false }) config!: HubConfig;
+  @property({ attribute: false }) theme: HubTheme = 'natt';
+  @property({ attribute: false }) weatherBg = false;
+  @property({ attribute: false }) pageActive = false;
 
   static styles = [
     hubTokens,
@@ -42,6 +47,7 @@ export class HubHomePage extends GlassBaseElement {
         display: flex;
         flex-direction: column;
         min-height: 100%;
+        position: relative;
       }
       .page {
         flex: 1;
@@ -50,6 +56,8 @@ export class HubHomePage extends GlassBaseElement {
         flex-direction: column;
         gap: 14px;
         padding: var(--hub-page-pad);
+        position: relative;
+        z-index: 1;
       }
       .top {
         display: flex;
@@ -198,6 +206,14 @@ export class HubHomePage extends GlassBaseElement {
     if (!this.hass || !this.config) return html``;
     const cfg = this.config;
     return html`
+      ${this.weatherBg
+        ? html`<hub-weather-bg
+            .hass=${this.hass}
+            .entity=${cfg.weather_entity}
+            .theme=${this.theme}
+            .active=${this.pageActive}
+          ></hub-weather-bg>`
+        : nothing}
       <div class="page">
         <div class="top">
           <hub-clock .hass=${this.hass} .weatherEntity=${cfg.weather_entity}></hub-clock>

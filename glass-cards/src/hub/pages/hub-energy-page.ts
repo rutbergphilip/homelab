@@ -2,7 +2,8 @@ import { html, css, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
-import { buildEnergyModel, type EnergyModel } from '../energy-model.js';
+import { buildEnergyModel, hasSpotSeries, type EnergyModel, type PriceView } from '../energy-model.js';
+import { getStoredPriceView, setStoredPriceView, gridAddOre } from '../price-view.js';
 import type { HubConfig } from '../hub-config.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
 import '../widgets/hub-price-chart.js';
@@ -25,6 +26,7 @@ export class HubEnergyPage extends GlassBaseElement {
 
   // Advance the current hour without waiting on a state push.
   @state() private _now = new Date();
+  @state() private _view: PriceView = getStoredPriceView();
   private _interval?: number;
 
   static styles = [
@@ -46,6 +48,36 @@ export class HubEnergyPage extends GlassBaseElement {
       .header {
         padding-right: 56px; /* clear the corner theme toggle */
         margin-bottom: 8px;
+      }
+      .view-toggle {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border-radius: var(--hub-radius-pill);
+        border: 1px solid var(--hub-chip-border);
+        background: var(--hub-chip-bg);
+      }
+      .view-toggle button {
+        min-height: 42px;
+        padding: 0 16px;
+        border: none;
+        border-radius: var(--hub-radius-pill);
+        background: transparent;
+        color: var(--hub-text-muted);
+        font: 600 13px var(--hub-font-body);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 150ms ease, color 150ms ease;
+      }
+      .view-toggle button.sel {
+        background: var(--hub-green-bg);
+        color: var(--hub-green);
+      }
+      .head-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
       }
       .price {
         display: flex;
@@ -132,11 +164,21 @@ export class HubEnergyPage extends GlassBaseElement {
       ? this.getEntity(this.config.price_series_entity)
       : undefined;
     if (!ent) return null;
-    return buildEnergyModel(
-      ent.attributes as Record<string, unknown>,
-      ent.state,
-      this._now,
+    const attrs = ent.attributes as Record<string, unknown>;
+    let model = buildEnergyModel(
+      attrs, ent.state, this._now, this._view,
+      this._view === 'allin' ? gridAddOre(this.config) : 0,
     );
+    if (this._view === 'spot' && !hasSpotSeries(model)) {
+      // sensor not migrated yet — fall back to the allt-in series
+      model = buildEnergyModel(attrs, ent.state, this._now, 'allin', gridAddOre(this.config));
+    }
+    return model;
+  }
+
+  private _setView(v: PriceView): void {
+    this._view = v;
+    setStoredPriceView(v);
   }
 
   /** Current price in öre: the series' current hour, else the Tibber sensor. */
@@ -184,6 +226,7 @@ export class HubEnergyPage extends GlassBaseElement {
     const level = model?.now ? model.level : 'normal';
     const hasChart = !!model && model.today.length > 0;
     const chips = this._chips(model);
+    const spotAvailable = !!model && hasSpotSeries(model);
 
     const numClass = level === 'låg' ? 'low' : level === 'hög' ? 'high' : '';
     const showWord = !!model?.now && level !== 'normal';
@@ -191,23 +234,43 @@ export class HubEnergyPage extends GlassBaseElement {
     return html`
       <div class="page">
         <div class="header">
-          <div class="price">
-            <span class="price-num ${numClass}">${ore === null ? '—' : ore}</span>
-            <span class="price-unit">öre/kWh</span>
-          </div>
-          <div class="subline">
-            just nu${showWord
-              ? html` ·
-                  <span class=${level === 'låg' ? 'accent-low' : 'accent-high'}
-                    >${LEVEL_WORD[level]}</span
-                  >`
+          <div class="head-row">
+            <div>
+              <div class="price">
+                <span class="price-num ${numClass}">${ore === null ? '—' : ore}</span>
+                <span class="price-unit">öre/kWh</span>
+              </div>
+              <div class="subline">
+                ${this._view === 'spot' ? 'spotpris' : 'allt-in'} just nu${showWord
+                  ? html` ·
+                      <span class=${level === 'låg' ? 'accent-low' : 'accent-high'}
+                        >${LEVEL_WORD[level]}</span
+                      >`
+                  : nothing}
+              </div>
+            </div>
+            ${spotAvailable
+              ? html`<div class="view-toggle">
+                  <button
+                    class=${this._view === 'spot' ? 'sel' : ''}
+                    @click=${() => this._setView('spot')}
+                  >
+                    Spot
+                  </button>
+                  <button
+                    class=${this._view === 'allin' ? 'sel' : ''}
+                    @click=${() => this._setView('allin')}
+                  >
+                    Allt-in
+                  </button>
+                </div>`
               : nothing}
           </div>
         </div>
 
         <div class="chart-wrap">
           ${hasChart
-            ? html`<hub-price-chart .model=${model}></hub-price-chart>`
+            ? html`<hub-price-chart .model=${model} .gridAddOre=${gridAddOre(this.config)}></hub-price-chart>`
             : html`<div class="waiting">Väntar på prisdata</div>`}
         </div>
 

@@ -3,7 +3,12 @@ import { property } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import { icons } from './icons.js';
-import { filterBusDepartures, shapeDeviations, type SlDeparture } from '../transit-model.js';
+import {
+  filterBusDepartures,
+  shapeDeviations,
+  type SlDeparture,
+  type ShapedDeviation,
+} from '../transit-model.js';
 import type { HubConfig } from '../hub-config.js';
 
 const DEAD = new Set(['unavailable', 'unknown', '']);
@@ -48,10 +53,16 @@ export class HubTransitCard extends GlassBaseElement {
         gap: 14px;
         padding: 14px 18px;
         min-width: 0;
+        min-height: 0;
         flex: 1;
+        overflow: hidden;
       }
       .row + .row {
         border-top: 1px solid var(--hub-card-border);
+      }
+      .card.has-alerts .row {
+        padding: 6px 18px;
+        gap: 12px;
       }
       .ic {
         display: flex;
@@ -68,6 +79,15 @@ export class HubTransitCard extends GlassBaseElement {
         width: 21px;
         height: 21px;
       }
+      .card.has-alerts .ic {
+        width: 28px;
+        height: 28px;
+        border-radius: 9px;
+      }
+      .card.has-alerts .ic svg {
+        width: 16px;
+        height: 16px;
+      }
       .meta {
         flex: 1;
         min-width: 0;
@@ -80,6 +100,9 @@ export class HubTransitCard extends GlassBaseElement {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .card.has-alerts .label {
+        font-size: 13.5px;
+      }
       .sub {
         display: block;
         margin-top: 3px;
@@ -88,6 +111,10 @@ export class HubTransitCard extends GlassBaseElement {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+      .card.has-alerts .sub {
+        font-size: 12px;
+        margin-top: 2px;
       }
       .sub.dim {
         color: var(--hub-text-dim);
@@ -107,10 +134,10 @@ export class HubTransitCard extends GlassBaseElement {
         flex-shrink: 0;
         border-top: 1px solid var(--hub-coral-border);
         background: var(--hub-coral-bg);
-        padding: 6px 18px;
+        padding: 3px 18px;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
       }
       .alert {
         display: flex;
@@ -120,18 +147,18 @@ export class HubTransitCard extends GlassBaseElement {
       }
       .badge {
         flex-shrink: 0;
-        min-width: 24px;
+        min-width: 22px;
         padding: 1px 6px;
         border-radius: 6px;
         text-align: center;
         background: var(--hub-coral);
         color: var(--hub-surface);
-        font: 700 10.5px var(--hub-font-body);
+        font: 700 10px var(--hub-font-body);
       }
       .alert-text {
         flex: 1;
         min-width: 0;
-        font: 600 11.5px var(--hub-font-body);
+        font: 600 11px var(--hub-font-body);
         color: var(--hub-coral);
         white-space: nowrap;
         overflow: hidden;
@@ -174,12 +201,15 @@ export class HubTransitCard extends GlassBaseElement {
     >`;
   }
 
-  private _alerts() {
+  private _shaped(): ShapedDeviation[] {
     const ent = this.config.disturbances_entity
       ? this.getEntity(this.config.disturbances_entity)
       : undefined;
-    if (!ent || ent.state === 'unavailable' || ent.state === 'unknown') return nothing;
-    const shaped = shapeDeviations(ent.attributes.deviations);
+    if (!ent || ent.state === 'unavailable' || ent.state === 'unknown') return [];
+    return shapeDeviations(ent.attributes.deviations);
+  }
+
+  private _alerts(shaped: ShapedDeviation[]) {
     if (shaped.length === 0) return nothing;
 
     if (shaped.length === 1) {
@@ -203,8 +233,9 @@ export class HubTransitCard extends GlassBaseElement {
   render() {
     if (!this.hass || !this.config) return html``;
     const busLabel = this.config.transit?.bus?.label ?? 'Buss';
+    const shaped = this._shaped();
     return html`
-      <div class="card">
+      <div class="card ${shaped.length ? 'has-alerts' : ''}">
         <div class="row">
           <span class="ic">${icons.train}</span>
           <div class="meta">
@@ -219,7 +250,7 @@ export class HubTransitCard extends GlassBaseElement {
             ${this._bus()}
           </div>
         </div>
-        ${this._alerts()}
+        ${this._alerts(shaped)}
       </div>
     `;
   }

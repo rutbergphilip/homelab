@@ -114,3 +114,43 @@ describe('shapeDeviations', () => {
     expect(shapeDeviations('not-an-array')).toEqual([]);
   });
 });
+
+describe('shapeDeviations details/scope passthrough', () => {
+  const dev = (over: Record<string, unknown> = {}) => ({
+    header: 'Försenad trafik',
+    priority: 30,
+    lines: [{ designation: '19', transport_mode: 'METRO' }],
+    ...over,
+  });
+
+  it('passes details and scope through', () => {
+    const out = shapeDeviations([
+      dev({ details: 'Signalfel vid Gullmarsplan.', scope: 'Gröna linjen mot Hagsätra' }),
+    ]);
+    expect(out).toEqual([
+      {
+        badges: ['19'],
+        header: 'Försenad trafik',
+        details: 'Signalfel vid Gullmarsplan.',
+        scope: 'Gröna linjen mot Hagsätra',
+      },
+    ]);
+  });
+
+  it('omits details/scope when absent or not strings', () => {
+    const out = shapeDeviations([dev({ details: 42, scope: null })]);
+    expect(out[0].details).toBeUndefined();
+    expect(out[0].scope).toBeUndefined();
+  });
+
+  it('merge keeps the first non-empty details/scope', () => {
+    const out = shapeDeviations([
+      dev({ details: '', scope: undefined }),
+      dev({ details: 'Först.', scope: 'Nynäsgård' }),
+      dev({ details: 'Sen.', scope: 'Ösmo' }),
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0].details).toBe('Först.');
+    expect(out[0].scope).toBe('Nynäsgård');
+  });
+});

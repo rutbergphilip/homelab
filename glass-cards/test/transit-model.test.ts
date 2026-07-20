@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterBusDepartures, type SlDeparture } from '../src/hub/transit-model';
+import { filterBusDepartures, shapeDeviations, type SlDeparture } from '../src/hub/transit-model';
 import fixture from './fixtures/sl-kullstaplan.json';
 
 const real = (fixture.departures as unknown) as SlDeparture[];
@@ -75,5 +75,42 @@ describe('filterBusDepartures', () => {
   it('returns an empty array for non-array input', () => {
     expect(filterBusDepartures(undefined, '861', 'nynäs')).toEqual([]);
     expect(filterBusDepartures(null as never, '861', 'nynäs')).toEqual([]);
+  });
+});
+
+describe('shapeDeviations', () => {
+  const dev = (over: Record<string, unknown> = {}) => ({
+    header: 'Försenad trafik',
+    priority: 30,
+    lines: [{ designation: '19', transport_mode: 'METRO' }],
+    ...over,
+  });
+
+  it('maps deviations to badge + header rows', () => {
+    expect(shapeDeviations([dev()])).toEqual([{ badges: ['19'], header: 'Försenad trafik' }]);
+  });
+
+  it('dedupes identical headers and merges badges', () => {
+    const out = shapeDeviations([
+      dev({ lines: [{ designation: '18', transport_mode: 'METRO' }] }),
+      dev({ lines: [{ designation: '19', transport_mode: 'METRO' }] }),
+    ]);
+    expect(out).toEqual([{ badges: ['18', '19'], header: 'Försenad trafik' }]);
+  });
+
+  it('sorts by priority descending', () => {
+    const out = shapeDeviations([
+      dev({ header: 'Mindre', priority: 10, lines: [{ designation: '861', transport_mode: 'BUS' }] }),
+      dev({ header: 'Stopp', priority: 40, lines: [{ designation: '43', transport_mode: 'TRAIN' }] }),
+    ]);
+    expect(out.map((d) => d.header)).toEqual(['Stopp', 'Mindre']);
+  });
+
+  it('drops malformed entries and caps at 5', () => {
+    const many = Array.from({ length: 8 }, (_, i) => dev({ header: `Störning ${i}` }));
+    expect(shapeDeviations(many)).toHaveLength(5);
+    expect(shapeDeviations([{ lines: [] }, null, 'x'])).toEqual([]);
+    expect(shapeDeviations(undefined)).toEqual([]);
+    expect(shapeDeviations('not-an-array')).toEqual([]);
   });
 });

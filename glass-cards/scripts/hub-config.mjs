@@ -16,6 +16,9 @@ export const hubDashboard = {
         price_series_entity: 'sensor.elpris_timserie',
         co2_entity: 'sensor.electricity_maps_co2_intensitet',
         fossil_entity: 'sensor.electricity_maps_procent_fossila_branslen_i_elnatet',
+        // Verified 2026-07-20: Tibber total = (energy+påslag)×moms, no energiskatt → add both fees
+        // (diff 33.96 öre vs moms-only 22.37 öre @ 00:00; consistent ~10-13 öre påslag gap across
+        // hours, not the ~45 öre energiskatt would add).
         grid: { overforing_ore: 26, energiskatt_ore: 45 },
         disturbances_entity: 'sensor.sl_storningar',
         departures: { next_entity: 'sensor.avgangar_next_departure', list_entity: 'sensor.avgangar_departures' },

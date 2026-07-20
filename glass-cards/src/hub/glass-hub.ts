@@ -20,6 +20,7 @@ import './pages/hub-kcal-page.js';
 import './pages/hub-planner-page.js';
 import './widgets/hub-room-popup.js';
 import './widgets/hub-light-popup.js';
+import './widgets/hub-transit-popup.js';
 import './widgets/hub-nav-bar.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka'];
@@ -57,6 +58,7 @@ export class GlassHub extends GlassBaseElement {
   @state() private _dragX = 0;
   @state() private _openRoom: HubRoom | null = null;
   @state() private _openLight: { entity: string; name: string } | null = null;
+  @state() private _openTransit = false;
 
   private _override: ThemeOverride = getStoredOverride();
   private _idleTimer?: number;
@@ -175,6 +177,7 @@ export class GlassHub extends GlassBaseElement {
     this.addEventListener('pointerdown', this._onAnyInteraction);
     this.addEventListener('hub-room-open', this._onRoomOpen as EventListener);
     this.addEventListener('hub-light-open', this._onLightOpen as EventListener);
+    this.addEventListener('hub-transit-open', this._onTransitOpen);
     this.addEventListener('hub-goto-page', this._onGotoPage as EventListener);
     this.addEventListener('hub-popup-close', this._onPopupClose);
   }
@@ -189,6 +192,7 @@ export class GlassHub extends GlassBaseElement {
     this.removeEventListener('pointerdown', this._onAnyInteraction);
     this.removeEventListener('hub-room-open', this._onRoomOpen as EventListener);
     this.removeEventListener('hub-light-open', this._onLightOpen as EventListener);
+    this.removeEventListener('hub-transit-open', this._onTransitOpen);
     this.removeEventListener('hub-goto-page', this._onGotoPage as EventListener);
     this.removeEventListener('hub-popup-close', this._onPopupClose);
   }
@@ -209,9 +213,14 @@ export class GlassHub extends GlassBaseElement {
     if (page) this.goToPage(page);
   };
 
+  private _onTransitOpen = (): void => {
+    this._openTransit = true;
+  };
+
   private _onPopupClose = (): void => {
     this._openRoom = null;
     this._openLight = null;
+    this._openTransit = false;
   };
 
   willUpdate(changed: PropertyValues): void {
@@ -485,6 +494,12 @@ export class GlassHub extends GlassBaseElement {
             .entity=${this._openLight.entity}
             .name=${this._openLight.name}
           ></hub-light-popup>`
+        : nothing}
+      ${this._openTransit
+        ? html`<hub-transit-popup
+            .hass=${this.hass}
+            .config=${this._cfg}
+          ></hub-transit-popup>`
         : nothing}
     `;
   }

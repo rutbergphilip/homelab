@@ -46,6 +46,13 @@ export class HubTransitCard extends GlassBaseElement {
         border: 1px solid var(--hub-card-border);
         box-shadow: var(--hub-shadow);
         overflow: hidden;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .card:active {
+        transform: scale(0.985);
       }
       .row {
         display: flex;
@@ -230,12 +237,24 @@ export class HubTransitCard extends GlassBaseElement {
     </div>`;
   }
 
+  private _open = (): void => {
+    this.dispatchEvent(
+      new CustomEvent('hub-transit-open', { bubbles: true, composed: true }),
+    );
+  };
+
   render() {
     if (!this.hass || !this.config) return html``;
     const busLabel = this.config.transit?.bus?.label ?? 'Buss';
     const shaped = this._shaped();
     return html`
-      <div class="card ${shaped.length ? 'has-alerts' : ''}">
+      <div
+        class="card ${shaped.length ? 'has-alerts' : ''}"
+        role="button"
+        tabindex="0"
+        aria-label="Visa avgångar och störningar"
+        @click=${this._open}
+      >
         <div class="row">
           <span class="ic">${icons.train}</span>
           <div class="meta">

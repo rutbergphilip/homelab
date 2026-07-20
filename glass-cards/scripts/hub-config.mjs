@@ -9,6 +9,10 @@ export const hubDashboard = {
       cards: [{
         type: 'custom:glass-hub',
         weather_entity: 'weather.forecast_home',
+        weather_locations: [
+          { entity: 'weather.forecast_home', name: 'Nynäshamn' },
+          { entity: 'weather.forecast_stockholm', name: 'Stockholm' },
+        ],
         person_entity: 'person.philip_rutberg',
         lights_count_entity: 'sensor.lights_on_count',
         vacuum_entity: 'vacuum.roborock_s8',

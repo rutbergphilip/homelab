@@ -9,6 +9,7 @@ import {
   type ThemeOverride,
   type HubTheme,
 } from './theme-controller.js';
+import { getWeatherBgEnabled, setWeatherBgEnabled, installForceHook } from './weather-settings.js';
 import { settlePage, isDrag, isHorizontalDrag } from './swipe.js';
 import { icons } from './widgets/icons.js';
 import type { HubConfig, HubRoom } from './hub-config.js';
@@ -21,6 +22,7 @@ import './pages/hub-planner-page.js';
 import './widgets/hub-room-popup.js';
 import './widgets/hub-light-popup.js';
 import './widgets/hub-transit-popup.js';
+import './widgets/hub-weather-popup.js';
 import './widgets/hub-nav-bar.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka'];
@@ -59,6 +61,8 @@ export class GlassHub extends GlassBaseElement {
   @state() private _openRoom: HubRoom | null = null;
   @state() private _openLight: { entity: string; name: string } | null = null;
   @state() private _openTransit = false;
+  @state() private _openWeather = false;
+  @state() private _weatherBgOn = getWeatherBgEnabled();
 
   private _override: ThemeOverride = getStoredOverride();
   private _idleTimer?: number;
@@ -174,12 +178,15 @@ export class GlassHub extends GlassBaseElement {
     this._page = lastActivePage;   // survive a re-mount without snapping to Hem
     this._resetIdle();
     this._startKioskDrawerShim();
+    installForceHook();
     this.addEventListener('pointerdown', this._onAnyInteraction);
     this.addEventListener('hub-room-open', this._onRoomOpen as EventListener);
     this.addEventListener('hub-light-open', this._onLightOpen as EventListener);
     this.addEventListener('hub-transit-open', this._onTransitOpen);
     this.addEventListener('hub-goto-page', this._onGotoPage as EventListener);
     this.addEventListener('hub-popup-close', this._onPopupClose);
+    this.addEventListener('hub-weather-open', this._onWeatherOpen);
+    this.addEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
   disconnectedCallback(): void {
@@ -195,6 +202,8 @@ export class GlassHub extends GlassBaseElement {
     this.removeEventListener('hub-transit-open', this._onTransitOpen);
     this.removeEventListener('hub-goto-page', this._onGotoPage as EventListener);
     this.removeEventListener('hub-popup-close', this._onPopupClose);
+    this.removeEventListener('hub-weather-open', this._onWeatherOpen);
+    this.removeEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
   // ── Room popup + cross-widget navigation ─────────────────
@@ -217,10 +226,20 @@ export class GlassHub extends GlassBaseElement {
     this._openTransit = true;
   };
 
+  private _onWeatherOpen = (): void => {
+    this._openWeather = true;
+  };
+
+  private _onWeatherBgToggle = (e: CustomEvent<{ on: boolean }>): void => {
+    this._weatherBgOn = e.detail?.on ?? getWeatherBgEnabled();
+    setWeatherBgEnabled(this._weatherBgOn);
+  };
+
   private _onPopupClose = (): void => {
     this._openRoom = null;
     this._openLight = null;
     this._openTransit = false;
+    this._openWeather = false;
   };
 
   willUpdate(changed: PropertyValues): void {
@@ -431,6 +450,9 @@ export class GlassHub extends GlassBaseElement {
                 ? html`<hub-home-page
                     .hass=${this.hass}
                     .config=${this._cfg}
+                    .theme=${this.theme}
+                    .weatherBg=${this._weatherBgOn}
+                    .pageActive=${pages[this._page] === 'hem'}
                   ></hub-home-page>`
                 : id === 'ljus'
                   ? html`<hub-lights-page
@@ -500,6 +522,12 @@ export class GlassHub extends GlassBaseElement {
             .hass=${this.hass}
             .config=${this._cfg}
           ></hub-transit-popup>`
+        : nothing}
+      ${this._openWeather
+        ? html`<hub-weather-popup
+            .hass=${this.hass}
+            .config=${this._cfg}
+          ></hub-weather-popup>`
         : nothing}
     `;
   }

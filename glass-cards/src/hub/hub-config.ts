@@ -16,6 +16,7 @@ export interface HubGridFees {
 export interface HubConfig extends LovelaceCardConfig {
   pages?: string[];
   weather_entity: string;
+  weather_locations?: { entity: string; name: string }[]; // popup location pills; first = primary
   person_entity?: string;
   lights_count_entity?: string;
   vacuum_entity?: string;

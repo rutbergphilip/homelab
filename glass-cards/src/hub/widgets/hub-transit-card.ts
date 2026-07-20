@@ -1,9 +1,9 @@
-import { html, css } from 'lit';
+import { html, css, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import { icons } from './icons.js';
-import { filterBusDepartures, type SlDeparture } from '../transit-model.js';
+import { filterBusDepartures, shapeDeviations, type SlDeparture } from '../transit-model.js';
 import type { HubConfig } from '../hub-config.js';
 
 const DEAD = new Set(['unavailable', 'unknown', '']);
@@ -103,6 +103,40 @@ export class HubTransitCard extends GlassBaseElement {
         color: var(--hub-text-dim);
         margin: 0 6px;
       }
+      .alerts {
+        flex-shrink: 0;
+        border-top: 1px solid var(--hub-coral-border);
+        background: var(--hub-coral-bg);
+        padding: 6px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .alert {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .badge {
+        flex-shrink: 0;
+        min-width: 24px;
+        padding: 1px 6px;
+        border-radius: 6px;
+        text-align: center;
+        background: var(--hub-coral);
+        color: var(--hub-surface);
+        font: 700 10.5px var(--hub-font-body);
+      }
+      .alert-text {
+        flex: 1;
+        min-width: 0;
+        font: 600 11.5px var(--hub-font-body);
+        color: var(--hub-coral);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     `,
   ];
 
@@ -140,6 +174,32 @@ export class HubTransitCard extends GlassBaseElement {
     >`;
   }
 
+  private _alerts() {
+    const ent = this.config.disturbances_entity
+      ? this.getEntity(this.config.disturbances_entity)
+      : undefined;
+    if (!ent || ent.state === 'unavailable' || ent.state === 'unknown') return nothing;
+    const shaped = shapeDeviations(ent.attributes.deviations);
+    if (shaped.length === 0) return nothing;
+
+    if (shaped.length === 1) {
+      const d = shaped[0];
+      return html`<div class="alerts">
+        <div class="alert">
+          ${d.badges.map((b) => html`<span class="badge">${b}</span>`)}
+          <span class="alert-text">${d.header}</span>
+        </div>
+      </div>`;
+    }
+    const badges = [...new Set(shaped.flatMap((d) => d.badges))].sort();
+    return html`<div class="alerts">
+      <div class="alert">
+        ${badges.map((b) => html`<span class="badge">${b}</span>`)}
+        <span class="alert-text">${shaped.length} störningar</span>
+      </div>
+    </div>`;
+  }
+
   render() {
     if (!this.hass || !this.config) return html``;
     const busLabel = this.config.transit?.bus?.label ?? 'Buss';
@@ -159,6 +219,7 @@ export class HubTransitCard extends GlassBaseElement {
             ${this._bus()}
           </div>
         </div>
+        ${this._alerts()}
       </div>
     `;
   }

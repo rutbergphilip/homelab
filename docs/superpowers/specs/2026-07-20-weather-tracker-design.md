@@ -150,3 +150,16 @@ integration so the entity exists.
 - Weather-driven automations/alerts.
 - Radar/precipitation maps.
 - More than two locations (config array supports it, UI designed for 2 pills).
+
+## Addendum (2026-07-20 late): volumetric cloud shader
+
+Philip's verdict on the shipped sprite clouds: "chopped", not aesthetic. Reference: Apple
+Weather's full-bleed turbulent cloud fields (Hamilton cloudy screenshot et al.).
+
+Replacement: a dependency-free WebGL fragment shader rendering multi-octave fBm
+(domain-warped value noise) as a continuous cloud layer on its own half-resolution
+canvas between the sky gradient and the particle canvas. Coverage/turbulence driven by
+scene.clouds + wind; colors per sky-kind × theme (natt stays near-black with faint
+texture); lightning flash brightens the field via uniform. Clouds render at ~30 fps
+(they move slowly); particles stay 60. Sprite clouds remain as automatic fallback when
+WebGL is unavailable or the context is lost. Fog bands, sun bloom, stars unchanged.

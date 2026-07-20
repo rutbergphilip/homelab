@@ -1,4 +1,4 @@
-import { html, css, nothing, type PropertyValues } from 'lit';
+import { html, css, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import {
@@ -6,9 +6,7 @@ import {
   skyStops,
   elevBand,
   cloudColors,
-  clipForScene,
   type SceneSpec,
-  type ElevBand,
 } from '../weather-model.js';
 import { getForcedCondition } from '../weather-settings.js';
 import { CloudShader } from './cloud-shader.js';
@@ -16,7 +14,6 @@ import type { HubTheme } from '../theme-controller.js';
 
 const DPR_CAP = 1.5;
 const MAX_DT = 0.05; // clamp frame delta (s) so tab-switch jumps don't teleport particles
-const CLIP_BASE = '/local/glass-cards/weather'; // baked by scripts/fetch-weather-clips.sh
 
 // Parallax depth layers: far → near.
 const DEPTH = [
@@ -48,17 +45,6 @@ export class HubWeatherBg extends GlassBaseElement {
   @state() private _skyB = '';
   @state() private _frontA = true;
 
-  // Two stacked stock-footage loops, crossfaded on clip change. Empty src =
-  // slot unmounted. When both are empty the shader/sprite path takes over.
-  @state() private _vidSrcA = '';
-  @state() private _vidSrcB = '';
-  @state() private _vidFrontA = true;
-
-  private _activeVidSrc = '';
-  private _videoDead = false; // a clip 404'd/failed → shader for the session
-  private _vidSwapTimer?: number;
-  private _band: ElevBand = 'night';
-  private _clipName: string | null = null;
 
   private _canvas?: HTMLCanvasElement;
   private _ctx?: CanvasRenderingContext2D;
@@ -103,23 +89,12 @@ export class HubWeatherBg extends GlassBaseElement {
       inset: 0;
       transition: opacity 1.5s ease;
     }
-    .vid {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: opacity 1.5s ease;
-    }
-    /* Day clip forced under the natt theme (manual override) — dim it. */
-    .vid.dim {
-      filter: brightness(0.5) saturate(0.85);
-    }
-    /* Text-contrast veil over bright day footage, anchored to the clock corner. */
+    /* Text-contrast veil for the light on-media hero ink over bright day
+       skies, anchored to the clock corner. Invisible on dark natt scenes. */
     .scrim {
       position: absolute;
       inset: 0;
-      background: radial-gradient(120% 90% at 18% 12%, rgba(0, 0, 0, 0.34), transparent 55%);
+      background: radial-gradient(120% 90% at 18% 12%, rgba(0, 0, 0, 0.26), transparent 55%);
     }
     canvas {
       position: absolute;
@@ -143,10 +118,6 @@ export class HubWeatherBg extends GlassBaseElement {
     this._ro = undefined;
     this._shader?.dispose();
     this._shader = undefined;
-    if (this._vidSwapTimer !== undefined) {
-      clearTimeout(this._vidSwapTimer);
-      this._vidSwapTimer = undefined;
-    }
     this._stopLoop();
   }
 
@@ -184,16 +155,7 @@ export class HubWeatherBg extends GlassBaseElement {
     const key = `${condition}|${this.theme}|${band}`;
     if (key === this._sceneKey) return;
     this._sceneKey = key;
-    this._band = band;
     this._scene = conditionScene(condition);
-    // Stock-footage layer: pick the clip for this scene; crossfade on change.
-    const clip = this._videoDead ? null : clipForScene(condition, band);
-    this._clipName = clip;
-    const src = clip ? `${CLIP_BASE}/${clip}.mp4` : '';
-    if (src !== this._activeVidSrc) {
-      this._activeVidSrc = src;
-      this._swapVideo(src);
-    }
     const [top, mid, bot] = skyStops(this._scene.sky, this.theme, band);
     const cssBg = `background:linear-gradient(180deg, ${top} 0%, ${mid} 55%, ${bot} 100%)`;
     // Crossfade: paint the back layer, then flip which layer is in front.
@@ -229,61 +191,6 @@ export class HubWeatherBg extends GlassBaseElement {
   private get _isNightBand(): boolean {
     return elevBand(this._elevation) === 'night';
   }
-
-  // ── Stock-footage layer ──────────────────────────────────
-  private get _videoOn(): boolean {
-    return this._activeVidSrc !== '' && !this._videoDead;
-  }
-
-  private _swapVideo(src: string): void {
-    if (this._vidSwapTimer !== undefined) {
-      clearTimeout(this._vidSwapTimer);
-      this._vidSwapTimer = undefined;
-    }
-    if (!src) {
-      this._vidSrcA = '';
-      this._vidSrcB = '';
-      return;
-    }
-    if (this._vidFrontA) {
-      this._vidSrcB = src;
-      this._vidFrontA = false;
-    } else {
-      this._vidSrcA = src;
-      this._vidFrontA = true;
-    }
-    void this.updateComplete.then(() => {
-      this._playVideos();
-      // Once the crossfade lands, unmount the faded-out slot to free its decoder.
-      this._vidSwapTimer = window.setTimeout(() => {
-        if (this._vidFrontA) this._vidSrcB = '';
-        else this._vidSrcA = '';
-      }, 1700);
-    });
-  }
-
-  private _videos(): HTMLVideoElement[] {
-    return Array.from(this.renderRoot.querySelectorAll('video'));
-  }
-
-  private _playVideos(): void {
-    if (!this._running) return;
-    for (const v of this._videos()) void v.play().catch(() => {});
-  }
-
-  private _pauseVideos(): void {
-    for (const v of this._videos()) v.pause();
-  }
-
-  private _onVideoError = (): void => {
-    console.debug('[weather-bg] video failed — falling back to shader clouds');
-    this._videoDead = true;
-    this._activeVidSrc = '';
-    this._vidSrcA = '';
-    this._vidSrcB = '';
-    this._sceneKey = ''; // force a scene rebuild on the next update
-    this.requestUpdate();
-  };
 
   /** Particle counts scale with viewport area (spec counts are per megapixel). */
   private _perMp(n: number): number {
@@ -393,14 +300,13 @@ export class HubWeatherBg extends GlassBaseElement {
     const hasWork =
       this._scene.rain > 0 || this._scene.snow > 0 || this._scene.hail > 0 ||
       this._scene.clouds > 0 || this._scene.stars || this._scene.sun ||
-      this._scene.fog || this._scene.lightning || this._videoOn;
+      this._scene.fog || this._scene.lightning;
     const should =
       this.active && hasWork && this.isConnected && document.visibilityState === 'visible';
     if (should && !this._running) {
       this._running = true;
       this._last = performance.now();
       console.debug('[weather-bg] start');
-      this._playVideos();
       this._raf = requestAnimationFrame(this._frame);
     } else if (!should && this._running) {
       this._stopLoop();
@@ -411,7 +317,6 @@ export class HubWeatherBg extends GlassBaseElement {
     if (!this._running) return;
     this._running = false;
     cancelAnimationFrame(this._raf);
-    this._pauseVideos();
     console.debug('[weather-bg] stop');
   }
 
@@ -434,16 +339,14 @@ export class HubWeatherBg extends GlassBaseElement {
     ctx.clearRect(0, 0, w, h);
 
     this._updateFlash(dt);
-    // Footage carries sky/clouds/sun/stars/fog when active; only precipitation
-    // and lightning stay on the canvas. Otherwise: fBm shader clouds when
-    // WebGL is healthy, sprite fallback when it isn't.
-    const videoOn = this._videoOn;
-    if (!videoOn && this._stars.length && this._isNightBand) this._drawStars(ctx);
-    if (!videoOn && this._scene.sun && !this._isNightBand && this.theme === 'dag')
-      this._drawSun(ctx, w, h);
+    if (this._stars.length && this._isNightBand) this._drawStars(ctx);
+    if (this._isNightBand && (this._scene.sky === 'clear' || this._scene.sky === 'partly'))
+      this._drawMoon(ctx, w, h);
+    if (this._scene.sun && !this._isNightBand && this.theme === 'dag') this._drawSun(ctx, w, h);
+    // Clouds: volumetric fBm shader when WebGL is healthy, sprite fallback otherwise.
     const shaderOn = this._shader?.ok === true;
     if (shaderOn) {
-      if (!videoOn && this._scene.clouds > 0) {
+      if (this._scene.clouds > 0) {
         this._shader!.render({
           time: this._t,
           density: this._scene.clouds,
@@ -454,10 +357,10 @@ export class HubWeatherBg extends GlassBaseElement {
       } else {
         this._shader!.clear();
       }
-    } else if (!videoOn && this._clouds.length) {
+    } else if (this._clouds.length) {
       this._drawClouds(ctx, dt, w, h);
     }
-    if (!videoOn && this._scene.fog) this._drawFog(ctx, dt, w, h);
+    if (this._scene.fog) this._drawFog(ctx, dt, w, h);
     if (this._drops.length) this._drawRain(ctx, dt, w, h);
     if (this._flakes.length) this._drawSnow(ctx, dt, w, h);
     if (this._stones.length) this._drawHail(ctx, dt, w, h);
@@ -482,9 +385,56 @@ export class HubWeatherBg extends GlassBaseElement {
     }
   }
 
-  private _drawSun(ctx: CanvasRenderingContext2D, w: number, h: number): void {
-    const cx = w * 0.76;
+  /** Soft moon disc + glow on clear/partly nights — quiet, not photographic. */
+  private _drawMoon(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+    const cx = w * 0.78;
     const cy = h * 0.2;
+    const r = Math.min(w, h) * 0.045;
+    // Halo.
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 5);
+    glow.addColorStop(0, 'rgba(215,225,250,0.22)');
+    glow.addColorStop(0.4, 'rgba(215,225,250,0.07)');
+    glow.addColorStop(1, 'rgba(215,225,250,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(cx - r * 5, cy - r * 5, r * 10, r * 10);
+    // Disc with a soft terminator: bright limb up-right, shaded low-left.
+    const disc = ctx.createRadialGradient(
+      cx + r * 0.35,
+      cy - r * 0.35,
+      r * 0.1,
+      cx,
+      cy,
+      r,
+    );
+    disc.addColorStop(0, 'rgba(238,242,250,0.95)');
+    disc.addColorStop(0.75, 'rgba(214,222,238,0.9)');
+    disc.addColorStop(1, 'rgba(178,190,214,0.85)');
+    ctx.fillStyle = disc;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /**
+   * Sun bloom placed by the REAL sun: azimuth → x (east 90° at the left edge,
+   * south 180° centre, west 270° right), elevation → y (horizon low, high sun
+   * near the top). Falls back to the classic upper-right spot if sun.sun
+   * attributes are missing.
+   */
+  private _sunPos(w: number, h: number): { cx: number; cy: number } {
+    const attrs = this.hass?.states['sun.sun']?.attributes as
+      | { azimuth?: unknown; elevation?: unknown }
+      | undefined;
+    const az = typeof attrs?.azimuth === 'number' ? attrs.azimuth : null;
+    const el = typeof attrs?.elevation === 'number' ? attrs.elevation : null;
+    if (az === null || el === null) return { cx: w * 0.76, cy: h * 0.2 };
+    const fx = Math.min(Math.max((az - 90) / 180, 0.06), 0.94);
+    const fe = Math.min(Math.max(el, 0), 55) / 55;
+    return { cx: w * fx, cy: h * (0.78 - fe * 0.62) };
+  }
+
+  private _drawSun(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+    const { cx, cy } = this._sunPos(w, h);
     const golden = elevBand(this._elevation) === 'golden';
     const rad = Math.min(w, h) * 0.55;
     const pulse = 0.92 + 0.08 * Math.sin(this._t * 0.3);
@@ -752,30 +702,10 @@ export class HubWeatherBg extends GlassBaseElement {
   }
 
   render() {
-    // Dim any bright (non-night) clip under the natt theme — day clips during
-    // a manual natt override, and the fog clip, which is bright at any hour.
-    const dim =
-      this.theme === 'natt' && this._clipName !== null && !this._clipName.endsWith('-night')
-        ? 'dim'
-        : '';
-    const vid = (src: string, front: boolean) =>
-      src
-        ? html`<video
-            class="vid ${dim}"
-            style="opacity:${front ? 1 : 0}"
-            .src=${src}
-            muted
-            loop
-            playsinline
-            preload="auto"
-            @error=${this._onVideoError}
-          ></video>`
-        : nothing;
     return html`
       <div class="sky" style="${this._skyA};opacity:${this._frontA ? 1 : 0}"></div>
       <div class="sky" style="${this._skyB};opacity:${this._frontA ? 0 : 1}"></div>
-      ${vid(this._vidSrcA, this._vidFrontA)} ${vid(this._vidSrcB, !this._vidFrontA)}
-      ${this._videoOn ? html`<div class="scrim"></div>` : nothing}
+      <div class="scrim"></div>
       <canvas class="gl"></canvas>
       <canvas class="px"></canvas>
     `;

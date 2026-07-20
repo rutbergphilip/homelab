@@ -163,3 +163,14 @@ scene.clouds + wind; colors per sky-kind × theme (natt stays near-black with fa
 texture); lightning flash brightens the field via uniform. Clouds render at ~30 fps
 (they move slowly); particles stay 60. Sprite clouds remain as automatic fallback when
 WebGL is unavailable or the context is lost. Fog bands, sun bloom, stars unchanged.
+
+## Addendum 2 (2026-07-21): shader is final; video loops removed
+
+A video-loop experiment (stock Pexels sky footage, seamless baked loops) was
+built and deployed, but a side-by-side comparison — enabled by a stale service
+worker accidentally A/B-ing the two engines in different browsers — showed
+Philip prefers the cleaner, flatter fBm-shader look over photographic footage.
+The video path, clips, and fetch script were removed. The shader scene gained a
+procedural moon disc (clear/partly nights) to close the "no moon/sun" gap, and
+kept the adaptive-contrast work from the video round: always-light hero ink
+over the scene, clock-corner scrim (0.26), ~86% card alpha on Hem.

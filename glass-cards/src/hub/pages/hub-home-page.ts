@@ -205,9 +205,9 @@ export class HubHomePage extends GlassBaseElement {
   render() {
     if (!this.hass || !this.config) return html``;
     const cfg = this.config;
-    // Over weather footage, soften the opaque surfaces so cards sit in the
-    // scene instead of punching hard rectangles out of it. Values are the
-    // theme's card/chip colors at ~86% alpha; interior text contrast is
+    // Over the animated weather scene, soften the opaque surfaces so cards sit
+    // in the scene instead of punching hard rectangles out of it. Values are
+    // the theme's card/chip colors at ~86% alpha; interior text contrast is
     // preserved. Vars cascade from this wrapper into every child widget.
     const mediaVars = !this.weatherBg
       ? ''

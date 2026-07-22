@@ -59,10 +59,10 @@ spec:
           resources:
             requests:
               cpu: 500m
-              memory: 1Gi
+              memory: 2Gi
             limits:
               cpu: "3"
-              memory: 2Gi
+              memory: 4Gi
 
       volumes:
         - name: homelab-storage

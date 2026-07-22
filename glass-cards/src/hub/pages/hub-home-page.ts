@@ -9,6 +9,7 @@ import type { HubTheme } from '../theme-controller.js';
 import '../widgets/hub-clock.js';
 import '../widgets/hub-status-chip.js';
 import '../widgets/hub-lighting-tile.js';
+import '../widgets/hub-car-card.js';
 import '../widgets/hub-vacuum-card.js';
 import '../widgets/hub-todo-card.js';
 import '../widgets/hub-now-playing.js';
@@ -292,6 +293,7 @@ export class HubHomePage extends GlassBaseElement {
 
         <div class="widgets">
           <hub-lighting-tile .hass=${this.hass} .config=${cfg}></hub-lighting-tile>
+          <hub-car-card .hass=${this.hass} .config=${cfg}></hub-car-card>
           <hub-vacuum-card .hass=${this.hass} .config=${cfg}></hub-vacuum-card>
           <hub-todo-card .hass=${this.hass} .config=${cfg}></hub-todo-card>
         </div>

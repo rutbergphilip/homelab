@@ -23,6 +23,17 @@ export interface HubVacuumControls {
   mop_intensity_entity?: string;    // select.roborock_s8_moppintensitet
   consumables?: { entity: string; name: string }[];
 }
+export interface HubVolvoConfig {
+  name?: string;                   // display name, default "Volvo"
+  battery_entity?: string;         // battery charge level %
+  range_entity?: string;           // electric range km
+  lock_entity?: string;            // lock.<car>...
+  charging_entity?: string;        // charging status sensor
+  climate_entity?: string;         // switch.* (toggle) or button.* (press) for climatization
+  climate_stop_entity?: string;    // optional separate stop button
+  odometer_entity?: string;
+  doors?: { entity: string; name: string }[]; // binary sensors: on = open
+}
 export interface HubConfig extends LovelaceCardConfig {
   pages?: string[];
   weather_entity: string;
@@ -49,4 +60,5 @@ export interface HubConfig extends LovelaceCardConfig {
   scenes?: { entity: string; name: string; icon: string }[];
   idle_return_s?: number;           // default 120
   day_elevation?: number;           // default 4
+  volvo?: HubVolvoConfig;
 }

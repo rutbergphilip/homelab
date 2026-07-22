@@ -138,4 +138,5 @@ export const icons: Record<string, TemplateResult> = {
     <path d="M20 16h-3a1 1 0 0 1-1 1v3"></path>
   `),
   close: svg`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>`,
+  car: svg`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"></path><path d="M4 11h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1"></path><path d="M3 12v4a1 1 0 0 0 1 1h1"></path><circle cx="7.5" cy="16.5" r="1.7"></circle><circle cx="16.5" cy="16.5" r="1.7"></circle><path d="M9.2 17h5.6"></path></svg>`,
 };

@@ -13,6 +13,16 @@ export interface HubGridFees {
   overforing_ore: number;           // elnät överföringsavgift, öre/kWh
   energiskatt_ore: number;          // statlig energiskatt, öre/kWh (set 0 if Tibber total already includes it — see Task 9 gate)
 }
+export interface HubVacuumControls {
+  status_entity: string;            // sensor.roborock_s8_status (rich state text)
+  battery_entity: string;           // sensor.roborock_s8_batteri
+  current_room_entity?: string;     // sensor.roborock_s8_nuvarande_rum
+  full_button: string;              // button.roborock_s8_full_cleaning
+  room_buttons: { entity: string; name: string }[];
+  mop_mode_entity?: string;         // select.roborock_s8_mopplage
+  mop_intensity_entity?: string;    // select.roborock_s8_moppintensitet
+  consumables?: { entity: string; name: string }[];
+}
 export interface HubConfig extends LovelaceCardConfig {
   pages?: string[];
   weather_entity: string;
@@ -20,6 +30,7 @@ export interface HubConfig extends LovelaceCardConfig {
   person_entity?: string;
   lights_count_entity?: string;
   vacuum_entity?: string;
+  vacuum_controls?: HubVacuumControls;
   price_entity?: string;            // Tibber (official integration) — current price + level
   price_series_entity?: string;     // Tibber GraphQL REST sensor — today/tomorrow hourly arrays
   co2_entity?: string;

@@ -9,6 +9,7 @@ import type { HubTheme } from '../theme-controller.js';
 import '../widgets/hub-clock.js';
 import '../widgets/hub-status-chip.js';
 import '../widgets/hub-lighting-tile.js';
+import '../widgets/hub-vacuum-card.js';
 import '../widgets/hub-now-playing.js';
 import '../widgets/hub-kcal-ring.js';
 import '../widgets/hub-meal-card.js';
@@ -21,6 +22,7 @@ interface ChipDescriptor {
   tone: HubChipTone;
   active: boolean;
   goto?: string; // tap navigates to this hub page
+  open?: () => void; // tap dispatches a popup-open event instead of navigating
 }
 
 const VAC_LABELS: Record<string, string> = {
@@ -160,6 +162,10 @@ export class HubHomePage extends GlassBaseElement {
     );
   }
 
+  private _openVacuum = (): void => {
+    this.dispatchEvent(new CustomEvent('hub-vacuum-open', { bubbles: true, composed: true }));
+  };
+
   private get _chips(): ChipDescriptor[] {
     const cfg = this.config;
     const chips: ChipDescriptor[] = [];
@@ -183,6 +189,7 @@ export class HubHomePage extends GlassBaseElement {
           label: VAC_LABELS[v.state] ?? 'Städar',
           tone: v.state === 'error' ? 'coral' : 'neutral',
           active: true,
+          open: this._openVacuum,
         });
       }
     }
@@ -240,12 +247,12 @@ export class HubHomePage extends GlassBaseElement {
             ${this._chips.map(
               (c) => html`
                 <hub-status-chip
-                  style=${c.goto ? 'cursor:pointer' : ''}
+                  style=${c.goto || c.open ? 'cursor:pointer' : ''}
                   .icon=${c.icon}
                   .label=${c.label}
                   .tone=${c.tone}
                   ?active=${c.active}
-                  @click=${c.goto ? () => this._gotoPage(c.goto!) : nothing}
+                  @click=${c.open ?? (c.goto ? () => this._gotoPage(c.goto!) : nothing)}
                 ></hub-status-chip>
               `,
             )}
@@ -254,6 +261,7 @@ export class HubHomePage extends GlassBaseElement {
 
         <div class="widgets">
           <hub-lighting-tile .hass=${this.hass} .config=${cfg}></hub-lighting-tile>
+          <hub-vacuum-card .hass=${this.hass} .config=${cfg}></hub-vacuum-card>
         </div>
 
         <div class="info">

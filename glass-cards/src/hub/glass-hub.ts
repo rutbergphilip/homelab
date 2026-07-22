@@ -24,6 +24,7 @@ import './widgets/hub-light-popup.js';
 import './widgets/hub-transit-popup.js';
 import './widgets/hub-weather-popup.js';
 import './widgets/hub-lights-modal.js';
+import './widgets/hub-vacuum-popup.js';
 import './widgets/hub-nav-bar.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka'];
@@ -64,6 +65,7 @@ export class GlassHub extends GlassBaseElement {
   @state() private _openTransit = false;
   @state() private _openWeather = false;
   @state() private _openLights = false;
+  @state() private _openVacuum = false;
   @state() private _weatherBgOn = getWeatherBgEnabled();
 
   private _override: ThemeOverride = getStoredOverride();
@@ -189,6 +191,7 @@ export class GlassHub extends GlassBaseElement {
     this.addEventListener('hub-popup-close', this._onPopupClose);
     this.addEventListener('hub-weather-open', this._onWeatherOpen);
     this.addEventListener('hub-lights-open', this._onLightsOpen);
+    this.addEventListener('hub-vacuum-open', this._onVacuumOpen);
     this.addEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -207,6 +210,7 @@ export class GlassHub extends GlassBaseElement {
     this.removeEventListener('hub-popup-close', this._onPopupClose);
     this.removeEventListener('hub-weather-open', this._onWeatherOpen);
     this.removeEventListener('hub-lights-open', this._onLightsOpen);
+    this.removeEventListener('hub-vacuum-open', this._onVacuumOpen);
     this.removeEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -234,6 +238,10 @@ export class GlassHub extends GlassBaseElement {
     this._openLights = true;
   };
 
+  private _onVacuumOpen = (): void => {
+    this._openVacuum = true;
+  };
+
   private _onWeatherOpen = (): void => {
     this._openWeather = true;
   };
@@ -249,6 +257,7 @@ export class GlassHub extends GlassBaseElement {
     this._openTransit = false;
     this._openWeather = false;
     this._openLights = false;
+    this._openVacuum = false;
   };
 
   willUpdate(changed: PropertyValues): void {
@@ -540,6 +549,9 @@ export class GlassHub extends GlassBaseElement {
         : nothing}
       ${this._openLights
         ? html`<hub-lights-modal .hass=${this.hass} .config=${this._cfg}></hub-lights-modal>`
+        : nothing}
+      ${this._openVacuum
+        ? html`<hub-vacuum-popup .hass=${this.hass} .config=${this._cfg}></hub-vacuum-popup>`
         : nothing}
     `;
   }

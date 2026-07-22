@@ -109,9 +109,12 @@ mirror; nothing to record here beyond the reminder).
 ### Known-broken right now
 
 The `anthropic` config entry is in `state: setup_error` — **401, "API key is invalid,
-Reauthentication required"** — pending Philip topping up/fixing credits on the Anthropic
-console for the `ha-jarvis` key. The pipeline wiring (below) is correct and will start
-working the moment the key is fixed; no HA-side change needed then.
+Reauthentication required"** — because a third-party reseller key (claudeapikey.dev) was
+pasted into the reauth dialog; HA talks to api.anthropic.com where that key is invalid.
+The fix needs BOTH: (1) working credits on the official Anthropic account (card payments
+currently failing at Stripe; Vertex AI via GCP billing is the agreed plan B), and (2) the
+official funded `ha-jarvis` key pasted into the open reauth repair. The pipeline wiring
+(below) is correct and will start working the moment that happens; no other HA-side change.
 
 ---
 
@@ -176,7 +179,7 @@ pipeline with the full current pipeline object, changing only `"tts_voice":
 "EkK5I93UQWFDigLMpZcX"`.
 
 Other auditioned voices (all premade, all free-tier-safe): Sarah (`EXAVITQu4vr4xnSDxMaL`),
-Daniel (`onwK4e9ZLuTAKqWW03F9`), plus 17 more (Adam, Alice, Bella, Bill, Brian, Callum,
+Daniel (`onwK4e9ZLuTAKqWW03F9`), plus 18 more (Adam, Alice, Bella, Bill, Brian, Callum,
 Charlie, Chris, Eric, Harry, Jessica, Laura, Liam, Lily, Matilda, River, Roger, Will).
 
 ---
@@ -300,11 +303,12 @@ domain-default rules.
 
 ## Open items
 
-- **Anthropic API key has no credit balance** (`ha-jarvis` key, console-side) — blocks the
-  Claude conversation agent end-to-end. Philip needs to add credits/a payment method, then
-  re-run the two curl smoke tests from Task 5 (Swedish general-knowledge question + light
-  control probe via `conversation.claude_conversation`). Also recommend setting a spend
-  alert on the key once it's live.
+- **Anthropic entry in 401 reauth** — a reseller key was rejected; needs the official
+  funded `ha-jarvis` key in the open reauth repair (credits currently unpayable by card —
+  Stripe failures; plan B = Claude via Vertex AI on the working GCP billing + HACS custom
+  component). Then re-run the two curl smoke tests from Task 5 (Swedish general-knowledge
+  question + light control probe via `conversation.claude_conversation`). Spend alert
+  ($10/mo) already set on the official account.
 - **ElevenLabs Starter plan upgrade** — needed before James (`EkK5I93UQWFDigLMpZcX`) can
   actually speak; the Jarvis pipeline is already wired to James's voice ID but currently
   runs George (`JBFqnCBsd6RMkjVDRZzb`) as a working stand-in. Flip `tts_voice` back to James

@@ -18,3 +18,4 @@ resources:
   - ./restock-watcher
   - ./kcal-assistant
   - ./wyoming-whisper
+  - ./wyoming-piper

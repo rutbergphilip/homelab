@@ -1,0 +1,67 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: wyoming-piper
+  labels:
+    app: wyoming-piper
+
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-piper
+  template:
+    metadata:
+      labels:
+        app: wyoming-piper
+
+    spec:
+      containers:
+        - name: wyoming-piper
+          image: rhasspy/wyoming-piper:2.3.1
+          imagePullPolicy: IfNotPresent
+
+          # Offline-resilience voice for the "Lokal" pipeline. Robotic but free
+          # and instant; the daily "Jarvis" pipeline uses cloud TTS instead.
+          args:
+            - "--voice"
+            - "sv_SE-nst-medium"
+
+          env:
+            - name: TZ
+              value: "Europe/Stockholm"
+
+          ports:
+            - name: wyoming
+              containerPort: 10200
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /data
+              subPath: wyoming-piper/data
+
+          readinessProbe:
+            tcpSocket:
+              port: 10200
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 10200
+            initialDelaySeconds: 30
+            periodSeconds: 30
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

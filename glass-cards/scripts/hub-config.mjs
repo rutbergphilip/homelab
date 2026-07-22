@@ -60,6 +60,10 @@ export const hubDashboard = {
         ],
         kcal: { today_entity: 'sensor.kcal_idag', forecast_entity: 'sensor.kcal_viktprognos', planner_entity: 'sensor.kcal_veckoplan' },
         todo_entity: 'todo.att_gora',
+        calendar: {
+          entities: ['calendar.hem', 'calendar.arbete', 'calendar.philiprutberg00_gmail_com'],
+          create_entity: 'calendar.hem',
+        },
         volvo: {
           name: 'S60 Polestar',
           battery_entity: 'sensor.volvo_s60_polestar_engineered_batteri',

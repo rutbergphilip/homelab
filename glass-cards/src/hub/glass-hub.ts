@@ -27,6 +27,7 @@ import './widgets/hub-lights-modal.js';
 import './widgets/hub-vacuum-popup.js';
 import './widgets/hub-car-popup.js';
 import './widgets/hub-todo-popup.js';
+import './widgets/hub-calendar-popup.js';
 import './widgets/hub-nav-bar.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka'];
@@ -70,6 +71,7 @@ export class GlassHub extends GlassBaseElement {
   @state() private _openVacuum = false;
   @state() private _openCar = false;
   @state() private _openTodo = false;
+  @state() private _openCalendar = false;
   @state() private _weatherBgOn = getWeatherBgEnabled();
 
   private _override: ThemeOverride = getStoredOverride();
@@ -207,6 +209,7 @@ export class GlassHub extends GlassBaseElement {
     this.addEventListener('hub-vacuum-open', this._onVacuumOpen);
     this.addEventListener('hub-car-open', this._onCarOpen);
     this.addEventListener('hub-todo-open', this._onTodoOpen);
+    this.addEventListener('hub-calendar-open', this._onCalendarOpen);
     this.addEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -228,6 +231,7 @@ export class GlassHub extends GlassBaseElement {
     this.removeEventListener('hub-vacuum-open', this._onVacuumOpen);
     this.removeEventListener('hub-car-open', this._onCarOpen);
     this.removeEventListener('hub-todo-open', this._onTodoOpen);
+    this.removeEventListener('hub-calendar-open', this._onCalendarOpen);
     this.removeEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -267,6 +271,10 @@ export class GlassHub extends GlassBaseElement {
     this._openTodo = true;
   };
 
+  private _onCalendarOpen = (): void => {
+    this._openCalendar = true;
+  };
+
   private _onWeatherOpen = (): void => {
     this._openWeather = true;
   };
@@ -285,6 +293,7 @@ export class GlassHub extends GlassBaseElement {
     this._openVacuum = false;
     this._openCar = false;
     this._openTodo = false;
+    this._openCalendar = false;
   };
 
   willUpdate(changed: PropertyValues): void {
@@ -585,6 +594,9 @@ export class GlassHub extends GlassBaseElement {
         : nothing}
       ${this._openTodo
         ? html`<hub-todo-popup .hass=${this.hass} .config=${this._cfg}></hub-todo-popup>`
+        : nothing}
+      ${this._openCalendar
+        ? html`<hub-calendar-popup .hass=${this.hass} .config=${this._cfg}></hub-calendar-popup>`
         : nothing}
     `;
   }

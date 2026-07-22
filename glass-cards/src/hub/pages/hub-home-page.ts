@@ -11,6 +11,7 @@ import '../widgets/hub-status-chip.js';
 import '../widgets/hub-lighting-tile.js';
 import '../widgets/hub-car-card.js';
 import '../widgets/hub-vacuum-card.js';
+import '../widgets/hub-calendar-card.js';
 import '../widgets/hub-todo-card.js';
 import '../widgets/hub-now-playing.js';
 import '../widgets/hub-kcal-ring.js';
@@ -295,6 +296,7 @@ export class HubHomePage extends GlassBaseElement {
           <hub-lighting-tile .hass=${this.hass} .config=${cfg}></hub-lighting-tile>
           <hub-car-card .hass=${this.hass} .config=${cfg}></hub-car-card>
           <hub-vacuum-card .hass=${this.hass} .config=${cfg}></hub-vacuum-card>
+          <hub-calendar-card class="cal" .hass=${this.hass} .config=${cfg}></hub-calendar-card>
           <hub-todo-card .hass=${this.hass} .config=${cfg}></hub-todo-card>
         </div>
 

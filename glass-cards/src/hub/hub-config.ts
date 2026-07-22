@@ -23,6 +23,10 @@ export interface HubVacuumControls {
   mop_intensity_entity?: string;    // select.roborock_s8_moppintensitet
   consumables?: { entity: string; name: string }[];
 }
+export interface HubCalendarConfig {
+  entities: string[];    // all calendars merged into the agenda
+  create_entity: string; // iCloud calendar that receives new events
+}
 export interface HubVolvoConfig {
   name?: string;                   // display name, default "Volvo"
   battery_entity?: string;         // battery charge level %
@@ -57,6 +61,7 @@ export interface HubConfig extends LovelaceCardConfig {
   media_players: { entity: string; name: string }[];
   kcal?: { today_entity: string; forecast_entity: string; planner_entity?: string };
   todo_entity?: string;             // todo.att_gora — shared to-do list
+  calendar?: HubCalendarConfig;
   scenes?: { entity: string; name: string; icon: string }[];
   idle_return_s?: number;           // default 120
   day_elevation?: number;           // default 4

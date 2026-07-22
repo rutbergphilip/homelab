@@ -21,3 +21,11 @@ export function roomTapPlan(
   const defaults = room.default_lights?.length ? room.default_lights : [room.main_entity];
   return { service: 'turn_on', entities: defaults };
 }
+
+/** Subtitle for the Hem lighting tile: "5 tända · Vardagsrum, Kök". */
+export function lightingSubtitle(count: number | null, litRooms: string[]): string {
+  if (count === null) return '–';
+  if (count === 0) return 'Allt släckt';
+  const head = `${count} ${count === 1 ? 'tänd' : 'tända'}`;
+  return litRooms.length ? `${head} · ${litRooms.join(', ')}` : head;
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { roomTapPlan } from '../src/hub/light-actions';
+import { roomTapPlan, lightingSubtitle } from '../src/hub/light-actions';
 import type { HubRoom } from '../src/hub/hub-config';
 import type { HassEntity } from '../src/types';
 
@@ -43,5 +43,23 @@ describe('roomTapPlan', () => {
   it('treats unavailable/unknown lights as off', () => {
     const states = { 'light.sovrum': st('unavailable'), 'light.lightstrip': st('unknown') };
     expect(roomTapPlan(room(), states).service).toBe('turn_on');
+  });
+});
+
+describe('lightingSubtitle', () => {
+  it('returns dash when count is unknown', () => {
+    expect(lightingSubtitle(null, [])).toBe('–');
+  });
+  it('says allt släckt at zero', () => {
+    expect(lightingSubtitle(0, [])).toBe('Allt släckt');
+  });
+  it('uses singular tänd for one light', () => {
+    expect(lightingSubtitle(1, ['Hall'])).toBe('1 tänd · Hall');
+  });
+  it('lists lit rooms after the plural count', () => {
+    expect(lightingSubtitle(5, ['Vardagsrum', 'Kök'])).toBe('5 tända · Vardagsrum, Kök');
+  });
+  it('omits the room tail when no room names resolve', () => {
+    expect(lightingSubtitle(2, [])).toBe('2 tända');
   });
 });

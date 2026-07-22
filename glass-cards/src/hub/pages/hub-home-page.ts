@@ -8,7 +8,7 @@ import '../widgets/hub-weather-bg.js';
 import type { HubTheme } from '../theme-controller.js';
 import '../widgets/hub-clock.js';
 import '../widgets/hub-status-chip.js';
-import '../widgets/hub-room-tile.js';
+import '../widgets/hub-lighting-tile.js';
 import '../widgets/hub-now-playing.js';
 import '../widgets/hub-kcal-ring.js';
 import '../widgets/hub-meal-card.js';
@@ -78,12 +78,15 @@ export class HubHomePage extends GlassBaseElement {
          size and it never shrinks below min-content — so a shrunk band can never
          be painted over. Rows are minmax(min-content, 1fr): fill slack, never
          collapse below a tile. */
-      .rooms {
+      .widgets {
         flex: 1 1 auto;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-auto-rows: minmax(min-content, 1fr);
         gap: var(--hub-gap);
+      }
+      .widgets .cal {
+        grid-column: span 2;
       }
 
       /* Two glanceable bands below the rooms, fixed-height and non-shrinking. */
@@ -131,7 +134,7 @@ export class HubHomePage extends GlassBaseElement {
           gap: 10px;
           padding: clamp(14px, 1.8vw, 22px) var(--hub-page-pad);
         }
-        .rooms {
+        .widgets {
           grid-template-columns: repeat(2, 1fr);
         }
         .info {
@@ -249,10 +252,8 @@ export class HubHomePage extends GlassBaseElement {
           </div>
         </div>
 
-        <div class="rooms">
-          ${(cfg.rooms ?? []).map(
-            (r) => html`<hub-room-tile .hass=${this.hass} .room=${r}></hub-room-tile>`,
-          )}
+        <div class="widgets">
+          <hub-lighting-tile .hass=${this.hass} .config=${cfg}></hub-lighting-tile>
         </div>
 
         <div class="info">

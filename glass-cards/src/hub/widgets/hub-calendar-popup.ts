@@ -25,6 +25,7 @@ export class HubCalendarPopup extends GlassBaseElement {
   @state() private _creating = false;
   @state() private _saving = false;
   @state() private _durMin = 60;
+  @state() private _saveError = false;
 
   static styles = [
     hubTokens,
@@ -91,6 +92,7 @@ export class HubCalendarPopup extends GlassBaseElement {
         -webkit-tap-highlight-color: transparent;
       }
       .save[disabled] { opacity: 0.5; }
+      .err { font: 500 12.5px var(--hub-font-body); color: var(--hub-coral); }
     `,
   ];
 
@@ -125,9 +127,11 @@ export class HubCalendarPopup extends GlassBaseElement {
     const time = this._input('.f-time')?.value;
     if (!cal || !title || !date) return;
     this._saving = true;
+    this._saveError = false;
     const data: Record<string, string> = { summary: title };
     if (this._durMin === 0 || !time) {
-      const next = new Date(new Date(`${date}T00:00:00`).getTime() + 86_400_000);
+      const [y, m, d] = date.split('-').map(Number);
+      const next = new Date(y, m - 1, d + 1);
       data.start_date = date;
       data.end_date = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
     } else {
@@ -145,6 +149,9 @@ export class HubCalendarPopup extends GlassBaseElement {
       clearCalendarCache();
       await this._refresh();
       this._creating = false;
+      this._durMin = 60;
+    } catch {
+      this._saveError = true;
     } finally {
       this._saving = false;
     }
@@ -201,6 +208,7 @@ export class HubCalendarPopup extends GlassBaseElement {
                 <button class="save" ?disabled=${this._saving} @click=${() => this._save()}>
                   ${this._saving ? 'Sparar…' : 'Spara'}
                 </button>
+                ${this._saveError ? html`<span class="err">Kunde inte spara — försök igen</span>` : nothing}
               </div>`
             : nothing}
           ${groups.size === 0

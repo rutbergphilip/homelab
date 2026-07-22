@@ -25,7 +25,7 @@ export interface HubVacuumControls {
 }
 export interface HubCalendarConfig {
   entities: string[];    // all calendars merged into the agenda
-  create_entity: string; // iCloud calendar that receives new events
+  create_entity: string; // calendar that receives new events
 }
 export interface HubVolvoConfig {
   name?: string;                   // display name, default "Volvo"

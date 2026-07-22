@@ -256,9 +256,6 @@ export class HubMediaPage extends GlassBaseElement {
           flex-direction: column;
           align-items: flex-start;
         }
-        .tabs {
-          flex-wrap: wrap;
-        }
       }
     `,
   ];

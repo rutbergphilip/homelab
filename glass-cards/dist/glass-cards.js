@@ -2580,8 +2580,11 @@ function t(t,e,i,a){var s,r=arguments.length,o=r<3?e:null===a?a=Object.getOwnPro
           flex-direction: column;
           height: auto;
         }
-        .info > *,
-        .bottom > * {
+        .info .energy,
+        .info .transit,
+        .bottom .np,
+        .bottom .kc,
+        .bottom .meal {
           height: 104px;
           flex: none;
         }
@@ -3190,9 +3193,6 @@ function t(t,e,i,a){var s,r=arguments.length,o=r<3?e:null===a?a=Object.getOwnPro
       }
 
       @media (max-width: 600px) {
-        .chips {
-          flex-wrap: wrap;
-        }
         .head-row {
           flex-wrap: wrap;
           gap: 10px;
@@ -3667,9 +3667,6 @@ function t(t,e,i,a){var s,r=arguments.length,o=r<3?e:null===a?a=Object.getOwnPro
         .hero {
           flex-direction: column;
           align-items: flex-start;
-        }
-        .tabs {
-          flex-wrap: wrap;
         }
       }
     `],t([gt({attribute:!1})],$i.prototype,"config",void 0),t([bt()],$i.prototype,"_sel",void 0),t([bt()],$i.prototype,"_rgb",void 0),t([bt()],$i.prototype,"_now",void 0),customElements.define("hub-media-page",$i);let Ei=0;class Ci extends ht{constructor(){super(...arguments),this.points=[],this.stroke="--hub-lavender",this.width=560,this.height=130,this._gid="hub-spark-"+Ei++}render(){const t=function(t,e,i,a=.1){const s=t.length;if(0===s)return[];if(1===s)return[{x:e,y:i/2}];const r=t.map(t=>t.value),o=Math.min(...r),n=Math.max(...r)-o,l=o-n*a,h=n*(1+2*a);return t.map((t,a)=>({x:a/(s-1)*e,y:n<=0?i/2:i-(t.value-l)/h*i}))}(this.points,this.width,this.height);if(0===t.length)return V``;const e=t.map(t=>`${t.x.toFixed(2)},${t.y.toFixed(2)}`).join(" "),i=t[t.length-1],a=t[0],s=t.length>=2,r=`${e} ${i.x.toFixed(2)},${this.height} ${a.x.toFixed(2)},${this.height}`;return V`

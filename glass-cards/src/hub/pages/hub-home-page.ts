@@ -175,8 +175,11 @@ export class HubHomePage extends GlassBaseElement {
           flex-direction: column;
           height: auto;
         }
-        .info > *,
-        .bottom > * {
+        .info .energy,
+        .info .transit,
+        .bottom .np,
+        .bottom .kc,
+        .bottom .meal {
           height: 104px;
           flex: none;
         }

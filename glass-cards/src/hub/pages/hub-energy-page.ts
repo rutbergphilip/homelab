@@ -142,9 +142,6 @@ export class HubEnergyPage extends GlassBaseElement {
       }
 
       @media (max-width: 600px) {
-        .chips {
-          flex-wrap: wrap;
-        }
         .head-row {
           flex-wrap: wrap;
           gap: 10px;

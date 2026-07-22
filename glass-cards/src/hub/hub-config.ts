@@ -45,6 +45,7 @@ export interface HubConfig extends LovelaceCardConfig {
   rooms: HubRoom[];
   media_players: { entity: string; name: string }[];
   kcal?: { today_entity: string; forecast_entity: string; planner_entity?: string };
+  todo_entity?: string;             // todo.att_gora — shared to-do list
   scenes?: { entity: string; name: string; icon: string }[];
   idle_return_s?: number;           // default 120
   day_elevation?: number;           // default 4

@@ -59,6 +59,7 @@ export const hubDashboard = {
           { entity: 'media_player.arc_sub', name: 'Vardagsrum (Arc)' },
         ],
         kcal: { today_entity: 'sensor.kcal_idag', forecast_entity: 'sensor.kcal_viktprognos', planner_entity: 'sensor.kcal_veckoplan' },
+        todo_entity: 'todo.att_gora',
         rooms: [
           { id: 'vardagsrum', name: 'Vardagsrum', icon: 'sofa', main_entity: 'light.vardagsrum',
             default_lights: ['light.vardagsrum', 'light.tv'],

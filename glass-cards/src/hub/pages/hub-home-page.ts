@@ -10,6 +10,7 @@ import '../widgets/hub-clock.js';
 import '../widgets/hub-status-chip.js';
 import '../widgets/hub-lighting-tile.js';
 import '../widgets/hub-vacuum-card.js';
+import '../widgets/hub-todo-card.js';
 import '../widgets/hub-now-playing.js';
 import '../widgets/hub-kcal-ring.js';
 import '../widgets/hub-meal-card.js';
@@ -262,6 +263,7 @@ export class HubHomePage extends GlassBaseElement {
         <div class="widgets">
           <hub-lighting-tile .hass=${this.hass} .config=${cfg}></hub-lighting-tile>
           <hub-vacuum-card .hass=${this.hass} .config=${cfg}></hub-vacuum-card>
+          <hub-todo-card .hass=${this.hass} .config=${cfg}></hub-todo-card>
         </div>
 
         <div class="info">

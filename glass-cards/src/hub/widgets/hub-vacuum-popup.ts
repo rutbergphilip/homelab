@@ -139,7 +139,7 @@ export class HubVacuumPopup extends GlassBaseElement {
     const statusText = vc?.status_entity ? this.getEntity(vc.status_entity)?.state : state;
     const batt = vc?.battery_entity ? this.getEntity(vc.battery_entity)?.state : undefined;
     const room = vc?.current_room_entity ? this.getEntity(vc.current_room_entity)?.state : undefined;
-    const busy = state === 'cleaning';
+    const busy = state === 'cleaning' || state === 'returning';
     const paused = state === 'paused';
     return html`
       <div class="scrim" @click=${this._onScrim}>

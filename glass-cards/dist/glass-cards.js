@@ -5264,7 +5264,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
             ${i}
           </button>
         `)}
-    </div>`:W}render(){if(!this.hass||!this.config)return V``;const t=this.config.vacuum_controls,e=this.config.vacuum_entity?this.getEntity(this.config.vacuum_entity):void 0,i=e?.state??"unknown",a=t?.status_entity?this.getEntity(t.status_entity)?.state:i,s=t?.battery_entity?this.getEntity(t.battery_entity)?.state:void 0,r=t?.current_room_entity?this.getEntity(t.current_room_entity)?.state:void 0,n="cleaning"===i,o="paused"===i;return V`
+    </div>`:W}render(){if(!this.hass||!this.config)return V``;const t=this.config.vacuum_controls,e=this.config.vacuum_entity?this.getEntity(this.config.vacuum_entity):void 0,i=e?.state??"unknown",a=t?.status_entity?this.getEntity(t.status_entity)?.state:i,s=t?.battery_entity?this.getEntity(t.battery_entity)?.state:void 0,r=t?.current_room_entity?this.getEntity(t.current_room_entity)?.state:void 0,n="cleaning"===i||"returning"===i,o="paused"===i;return V`
       <div class="scrim" @click=${this._onScrim}>
         <div class="card" role="dialog" aria-label="Roborock">
           <div class="head">

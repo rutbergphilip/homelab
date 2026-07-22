@@ -48,10 +48,19 @@ export class HubLightsModal extends GlassBaseElement {
         font: 500 12px var(--hub-font-body);
         color: var(--hub-text-dim);
       }
+      /* Wider card than the shared popup default — the light grid needs room. */
+      .card {
+        max-width: 780px;
+      }
       .lights {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
+      }
+      @media (max-width: 600px) {
+        .lights {
+          grid-template-columns: 1fr;
+        }
       }
       glass-light-slider {
         display: block;

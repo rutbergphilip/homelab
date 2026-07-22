@@ -5,6 +5,54 @@ import { hubTokens } from '../../styles/tokens.js';
 import { popupStyles } from './popup-styles.js';
 import { icons } from './icons.js';
 import type { HubConfig } from '../hub-config.js';
+import type { HassEntity } from '../../types.js';
+
+/** Roborock status-sensor states → Swedish. Fallback: snake_case → spaces. */
+const STATUS_LABELS: Record<string, string> = {
+  charging: 'Laddar',
+  charging_complete: 'Fulladdad',
+  cleaning: 'Städar',
+  segment_cleaning: 'Rumsstädning',
+  zoned_cleaning: 'Zonstädning',
+  spot_cleaning: 'Fläckstädning',
+  returning_home: 'Åker hem',
+  returning: 'Åker hem',
+  docked: 'Dockad',
+  idle: 'Väntar',
+  paused: 'Pausad',
+  error: 'Fel',
+  emptying: 'Tömmer dammbehållaren',
+  washing: 'Tvättar moppen',
+  drying: 'Torkar moppen',
+  sleeping: 'Vilar',
+};
+
+/** The current-room sensor reports the Roborock map's English room names. */
+const ROOM_LABELS: Record<string, string> = {
+  Kitchen: 'Kök',
+  'Living room': 'Vardagsrum',
+  'Living Room': 'Vardagsrum',
+  Bedroom: 'Sovrum',
+  Hallway: 'Hall',
+  Hall: 'Hall',
+  Bathroom: 'Badrum',
+};
+
+/** Mop mode/intensity option slugs → Swedish chip labels (raw slug is still sent). */
+const OPTION_LABELS: Record<string, string> = {
+  standard: 'Standard',
+  deep: 'Djup',
+  deep_plus: 'Djup+',
+  fast: 'Snabb',
+  custom: 'Anpassad',
+  smart_mode: 'Smart',
+  off: 'Av',
+  mild: 'Mild',
+  moderate: 'Medel',
+  intense: 'Intensiv',
+};
+
+const DEAD = new Set(['unavailable', 'unknown', '']);
 
 export class HubVacuumPopup extends GlassBaseElement {
   @property({ attribute: false }) config!: HubConfig;
@@ -115,6 +163,19 @@ export class HubVacuumPopup extends GlassBaseElement {
     this.callService('select', 'select_option', { option }, entity);
   }
 
+  /** Second-based "tid kvar" sensors → "N h kvar" (negative = overdue → "N h över"). */
+  private _consumableValue(e: HassEntity | undefined): string {
+    if (!e || DEAD.has(e.state)) return '–';
+    const unit = (e.attributes.unit_of_measurement as string | undefined) ?? '';
+    const n = Number(e.state);
+    if (Number.isNaN(n)) return unit ? `${e.state} ${unit}` : e.state;
+    if (unit === 's') {
+      const hours = Math.round(n / 3600);
+      return `${Math.abs(hours)} h ${hours < 0 ? 'över' : 'kvar'}`;
+    }
+    return unit ? `${n} ${unit}` : String(n);
+  }
+
   private _selectChips(entity: string | undefined) {
     if (!entity) return nothing;
     const ent = this.getEntity(entity);
@@ -124,7 +185,7 @@ export class HubVacuumPopup extends GlassBaseElement {
       ${options.map(
         (o) => html`
           <button class="chip ${ent?.state === o ? 'sel' : ''}" @click=${() => this._selectOption(entity, o)}>
-            ${o}
+            ${OPTION_LABELS[o] ?? o.replace(/_/g, ' ')}
           </button>
         `,
       )}
@@ -136,9 +197,17 @@ export class HubVacuumPopup extends GlassBaseElement {
     const vc = this.config.vacuum_controls;
     const vac = this.config.vacuum_entity ? this.getEntity(this.config.vacuum_entity) : undefined;
     const state = vac?.state ?? 'unknown';
-    const statusText = vc?.status_entity ? this.getEntity(vc.status_entity)?.state : state;
-    const batt = vc?.battery_entity ? this.getEntity(vc.battery_entity)?.state : undefined;
-    const room = vc?.current_room_entity ? this.getEntity(vc.current_room_entity)?.state : undefined;
+    const rawStatus = vc?.status_entity ? this.getEntity(vc.status_entity)?.state : state;
+    const statusText =
+      !rawStatus || DEAD.has(rawStatus)
+        ? '–'
+        : (STATUS_LABELS[rawStatus] ?? rawStatus.replace(/_/g, ' '));
+    const rawBatt = vc?.battery_entity ? this.getEntity(vc.battery_entity)?.state : undefined;
+    const batt = rawBatt && !Number.isNaN(Number(rawBatt)) ? rawBatt : null;
+    const rawRoom = vc?.current_room_entity
+      ? this.getEntity(vc.current_room_entity)?.state
+      : undefined;
+    const room = rawRoom && !DEAD.has(rawRoom) ? (ROOM_LABELS[rawRoom] ?? rawRoom) : undefined;
     const busy = state === 'cleaning' || state === 'returning';
     const paused = state === 'paused';
     return html`
@@ -151,7 +220,7 @@ export class HubVacuumPopup extends GlassBaseElement {
             </button>
           </div>
           <div class="status">
-            <span class="state">${statusText ?? '–'}${busy && room ? ` · ${room}` : ''}</span>
+            <span class="state">${statusText}${busy && room ? ` · ${room}` : ''}</span>
             ${batt ? html`<span class="batt">${batt}%</span>` : nothing}
           </div>
           <div class="actions">
@@ -186,9 +255,8 @@ export class HubVacuumPopup extends GlassBaseElement {
                 <div class="cons">
                   ${vc.consumables.map((c) => {
                     const e = this.getEntity(c.entity);
-                    const unit = (e?.attributes.unit_of_measurement as string | undefined) ?? '';
                     return html`<div class="cons-row">
-                      <span>${c.name}</span><span>${e?.state ?? '–'} ${unit}</span>
+                      <span>${c.name}</span><span>${this._consumableValue(e)}</span>
                     </div>`;
                   })}
                 </div>`

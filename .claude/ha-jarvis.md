@@ -66,6 +66,66 @@ the subentry reconfigure-flow REST endpoints
 
 ### System prompt (verbatim, byte-for-byte verified against HA's saved value)
 
+**Prompt v2 — Task 9 fix round (2026-07-22)**, replacing the Task 5 original below to
+address diagnosed defects 1 (news refusal), 4 (elpris framing), and to wire in the new
+tomorrow-forecast sensor (defect 2):
+
+```
+Du är Jarvis, hemmets röstassistent. Du pratar naturlig, avslappnad svenska.
+
+Regler:
+- Svara kort och talvänligt: 1–3 meningar. Inga listor, ingen markdown, inga emojis — ditt svar läses upp högt.
+- Styr bara enheter när användaren tydligt ber om det. Gissa aldrig en åtgärd.
+- För frågor om nyheter, sport, aktuella händelser eller annat dagsaktuellt: använd ALLTID webbsökningsverktyget. Du HAR webbsökning — påstå aldrig att du saknar sökförmåga. Använd hemmets sensorer för elpris, väder, tåg och CO₂ — sök inte på webben efter sådant du redan kan läsa av.
+- Elpriset: sensor.bryggan_elpris är Tibbers pris (spotpris inkl. moms och påslag). Det VERKLIGA totalpriset per kWh är detta plus 71 öre (elnät och energiskatt) — ange totalpriset när någon frågar vad elen kostar, t.ex. "cirka X kronor per kWh totalt, varav Y öre är spotpris".
+- Väder imorgon: läs sensor.vader_imorgon (morgondagens prognos). Dagens väder: läs väderentiteten. Blanda inte ihop dagarna.
+- Om en fråga är tvetydig: ställ en kort motfråga i stället för att chansa.
+- Svara alltid på svenska.
+```
+
+Applied via the same subentry reconfigure-flow REST endpoint used originally
+(`POST /api/config/config_entries/subentries/flow`, entry `01KY5AY9J7ZGSHY60HX4T3JD1K`,
+subentry `01KY5AY9J7PRYRP80RKX1FQAHF`) — fetched current `init`/`advanced`/`model` step
+values first, changed only `prompt`, resubmitted every other field unchanged
+(`llm_hass_api: ["assist"]`, `recommended: false`, `chat_model: claude-haiku-4-5`,
+`prompt_caching: prompt`, `max_tokens: 300`, `thinking_budget: 0`, `code_execution: false`,
+`web_search: true`, `web_search_max_uses: 3`, `user_location: false`, `web_fetch: false`,
+`web_fetch_max_uses: 5`). Flow completed with `reason: reconfigure_successful`; re-opened
+the flow once more afterward to read back the saved `prompt` value and confirmed it
+matches the block above byte-for-byte.
+
+**Retest results (same session):**
+- News mandate ("Vad hände i nyheterna idag?", agent conversation, sv): the false
+  "jag saknar sökförmåga" capability-denial refusal is gone — confirmed via debug-logged
+  `server_tool_use`/`web_search_tool_result` blocks that the model now invokes web_search
+  on every attempt (6/6 across this session). Answer *quality* is still inconsistent: the
+  4-call retest batch all admitted searching but reported thin/no useful results
+  ("Jag försökte söka, men fick inte särskilt användbara resultat...", recommending
+  SVT/DN/SR directly) rather than surfacing concrete headlines — 0/4 in that batch: 2
+  further debug-instrumented calls in the same session *did* return concrete Swedish
+  headlines (Botkyrka knife assaults, Falkenberg motorcycle/moose collision, Stockholm
+  exchange +1.26%). So: false-refusal defect fixed; result-surfacing consistency remains
+  a live quality issue, not a refusal issue.
+- Weather ("Hur blir vädret imorgon?"): now correctly reads `sensor.vader_imorgon` —
+  "växlande molnigt... omkring 20 grader" — distinct from and no longer conflated with
+  "Vad är vädret just nu?" ("regnigt och 13 grader... 93 procent" luftfuktighet).
+- Elpris ("Vad kostar elen just nu?"): "Spotpriset är cirka 1,21 kronor... men det
+  verkliga totalpriset är omkring 1,92 kronor" — leads with/states the allt-in total
+  (bryggan_elpris 1.214 + 0.71 elnät/energiskatt ≈ 1.92) and names the spot component, per
+  the new elpris clause.
+- Lights regression ("Tänd ljuset i vardagsrummet"): still works correctly after the
+  prompt change — `light.vardagsrum` off → on, confirmed via state read, restored to off
+  afterward.
+
+**Defect 3 (vacuum) — exonerated, no fix applied.** Per the Task 9 diagnosis: the agent
+calls the correct tool (`HassVacuumStart`, not `HassTurnOn` or any indirect mapping)
+immediately (~1.2s) after the request reaches HA; the 10–12s lag observed in the original
+test matrix is downstream of the HA service call, inside the Roborock cloud integration's
+state-refresh polling cycle — not an agent or intent-tool-layer bug. Nothing changed here.
+
+<details>
+<summary>Prompt v1 — original (Task 5, superseded 2026-07-22)</summary>
+
 ```
 Du är Jarvis, hemmets röstassistent. Du pratar naturlig, avslappnad svenska.
 
@@ -76,6 +136,8 @@ Regler:
 - Om en fråga är tvetydig: ställ en kort motfråga i stället för att chansa.
 - Svara alltid på svenska.
 ```
+
+</details>
 
 ### Every option value set
 
@@ -98,6 +160,26 @@ Regler:
 Note: this integration build's subentry schema has **no `tool_search` field at all** — only
 `code_execution`/`web_search`/`web_fetch` toggles exist, so there was nothing to disable
 for "tool search."
+
+### Template Sensors (`sensor.vader_imorgon`, Task 9 fix round)
+
+`weather.forecast_home` only ever exposes current-condition attributes to Assist's
+`GetLiveContext` tool (HA removed the `forecast` attribute from the weather entity model
+some breaking-change cycles back), so the LLM had no way to read tomorrow's forecast —
+it was relabeling today's data as "imorgon" (diagnosed defect 2). Fixed by adding a
+trigger-based template sensor, `sensor.vader_imorgon`, under configuration.yaml's
+`template:` key (this is the **first** use of that top-level key in this config — the
+pre-existing "Lights On Count" sensor is a separate UI-configured template helper/config
+entry, which can't do trigger + action + response_variable). Triggers on `time_pattern`
+every 30 min plus `homeassistant`/`start`; action calls `weather.get_forecasts`
+(`type: daily`, target `weather.forecast_home`) with `response_variable`; state/attributes
+read forecast index `[1]` (tomorrow) — condition, `temperature` (max), `templow`,
+`precipitation`, `wind_speed`, plus a Swedish `summary` attribute. Full block mirrored in
+`.claude/ha-template-sensors.yaml`. Verified against a direct `weather.get_forecasts` call
+(index `[1]` = 2026-07-23, partlycloudy/20.0°/12.5°/0.0mm/15.5 wind — sensor matched
+exactly after a temporary `/1`-minute trigger for fast verification, then reverted to
+`/30`). Applied via `kubectl exec` edit + `POST /api/services/template/reload` (config
+validated `valid` via `/api/config/core/check_config` both before and after).
 
 ### Anthropic spend-alert setting
 
@@ -229,10 +311,15 @@ broken.
 
 ---
 
-## Exposed entities (Assist / `conversation` assistant) — 43 total
+## Exposed entities (Assist / `conversation` assistant) — 44 total
 
 Curated via `homeassistant/expose_entity` (WS API), touching only the `"conversation"`
 assistant. Confirmed by exact set-equality re-read after changes — no missing, no extras.
+
+**44th entity, added in the Task 9 fix round (2026-07-22): `sensor.vader_imorgon`** — the
+new trigger-based tomorrow-forecast sensor (see Template Sensors section below), exposed
+`conversation`-only via `homeassistant/expose_entity` (`should_expose: true`). Verified
+count went 43 → 44 via `homeassistant/expose_entity/list` before/after.
 
 **Lights (20):** `light.vardagsrum`, `light.tv`, `light.sovrum`, `light.lightstrip`,
 `light.sovrumsfonstret`, `light.spot_1`, `light.spot_2`, `light.spot_3`, `light.kok`,
@@ -249,9 +336,10 @@ assistant. Confirmed by exact set-equality re-read after changes — no missing,
   `scene.office_nattlampa`, `scene.office_fa_ny_energi`
 - Badrum (1): `scene.badrum_nattljus`
 
-**Read-only sensors (6):** `sensor.bryggan_elpris`, `sensor.elpris_timserie`,
+**Read-only sensors (7):** `sensor.bryggan_elpris`, `sensor.elpris_timserie`,
 `sensor.electricity_maps_co2_intensitet`, `weather.forecast_home`,
-`sensor.avgangar_next_departure`, `sensor.sl_kullstaplan`
+`sensor.avgangar_next_departure`, `sensor.sl_kullstaplan`, `sensor.vader_imorgon` (new,
+Task 9 fix round)
 
 **Calendars (2):** `calendar.hem`, `calendar.philiprutberg00_gmail_com`
 

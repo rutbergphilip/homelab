@@ -1,0 +1,67 @@
+###############################################################################
+# Template Sensors for Bubble Dashboard
+#
+# Add this to your Home Assistant configuration.yaml under the template: key,
+# or create via Settings > Helpers > Template sensor
+###############################################################################
+
+template:
+  - sensor:
+      - name: "Lights On Count"
+        unique_id: lights_on_count
+        state: >
+          {{ states.light
+             | selectattr('state', 'eq', 'on')
+             | list | count }}
+        unit_of_measurement: "st"
+        icon: mdi:lightbulb-group
+
+###############################################################################
+# Trigger-based template sensor: tomorrow's weather forecast (Jarvis Task 9 fix —
+# defect 2). weather.forecast_home only exposes current-condition attributes to
+# Assist's GetLiveContext tool; there is no forecast-index tool exposed to the LLM.
+# This sensor periodically calls weather.get_forecasts (type: daily) and republishes
+# forecast index [1] (tomorrow) as its own state/attributes so it can be exposed to
+# Assist directly as sensor.vader_imorgon.
+#
+# NOTE: unlike "Lights On Count" above (a UI-configured template helper/config entry),
+# this one MUST live under the YAML `template:` key — trigger-based template entities
+# (trigger: + action: + response_variable) are not supported by the UI helper flow.
+###############################################################################
+  - trigger:
+      - trigger: time_pattern
+        minutes: "/30"
+      - trigger: homeassistant
+        event: start
+    action:
+      - action: weather.get_forecasts
+        target:
+          entity_id: weather.forecast_home
+        data:
+          type: daily
+        response_variable: vader_imorgon_forecast
+    sensor:
+      - name: "Väder imorgon"
+        unique_id: vader_imorgon
+        state: >
+          {{ vader_imorgon_forecast['weather.forecast_home']['forecast'][1]['condition'] }}
+        attributes:
+          temperature: >
+            {{ vader_imorgon_forecast['weather.forecast_home']['forecast'][1]['temperature'] }}
+          templow: >
+            {{ vader_imorgon_forecast['weather.forecast_home']['forecast'][1]['templow'] }}
+          precipitation: >
+            {{ vader_imorgon_forecast['weather.forecast_home']['forecast'][1]['precipitation'] }}
+          wind_speed: >
+            {{ vader_imorgon_forecast['weather.forecast_home']['forecast'][1]['wind_speed'] }}
+          summary: >
+            {% set f = vader_imorgon_forecast['weather.forecast_home']['forecast'][1] %}
+            {% set cond_map = {
+              'clear-night': 'klart', 'cloudy': 'molnigt', 'fog': 'dimma',
+              'hail': 'hagel', 'lightning': 'åska', 'lightning-rainy': 'åska med regn',
+              'partlycloudy': 'delvis molnigt', 'pouring': 'kraftigt regn',
+              'rainy': 'regnigt', 'snowy': 'snöigt', 'snowy-rainy': 'snöblandat regn',
+              'sunny': 'soligt', 'windy': 'blåsigt', 'windy-variant': 'blåsigt',
+              'exceptional': 'extremt väder'
+            } %}
+            {{ cond_map.get(f.condition, f.condition) }}, {{ f.templow | round(0) | int }} till {{ f.temperature | round(0) | int }} grader, {{ f.precipitation }} mm nederbörd

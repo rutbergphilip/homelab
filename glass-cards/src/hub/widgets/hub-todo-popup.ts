@@ -11,6 +11,7 @@ export class HubTodoPopup extends GlassBaseElement {
   @property({ attribute: false }) config!: HubConfig;
   @state() private _items: TodoItem[] | null = null;
   private _lastCount = '';
+  private _fetchSeq = 0;
 
   static styles = [
     hubTokens,
@@ -45,17 +46,25 @@ export class HubTodoPopup extends GlassBaseElement {
         border-top: 1px solid var(--hub-card-border);
       }
       .box {
-        width: 22px; height: 22px; flex-shrink: 0;
-        border-radius: 7px;
-        border: 1.5px solid var(--hub-text-dim);
+        width: 44px; height: 44px; flex-shrink: 0;
+        margin: -11px;
+        border: none;
         background: transparent;
         cursor: pointer; padding: 0;
         -webkit-tap-highlight-color: transparent;
         display: flex; align-items: center; justify-content: center;
+      }
+      .box-visual {
+        width: 22px; height: 22px;
+        box-sizing: border-box;
+        border-radius: 7px;
+        border: 1.5px solid var(--hub-text-dim);
+        background: transparent;
+        display: flex; align-items: center; justify-content: center;
         color: transparent;
       }
-      .row.done .box { color: var(--hub-text-dim); border-color: var(--hub-text-dim); }
-      .box svg { width: 14px; height: 14px; }
+      .row.done .box-visual { color: var(--hub-text-dim); border-color: var(--hub-text-dim); }
+      .box-visual svg { width: 14px; height: 14px; }
       .txt { flex: 1; min-width: 0; font: 500 14.5px var(--hub-font-body); color: var(--hub-text); }
       .row.done .txt { color: var(--hub-text-dim); text-decoration: line-through; }
       .clear {
@@ -83,7 +92,9 @@ export class HubTodoPopup extends GlassBaseElement {
 
   private async _refresh(): Promise<void> {
     if (!this.hass || !this.config?.todo_entity) return;
-    this._items = await fetchTodoItems(this.hass, this.config.todo_entity);
+    const seq = ++this._fetchSeq;
+    const items = await fetchTodoItems(this.hass, this.config.todo_entity);
+    if (seq === this._fetchSeq) this._items = items;
   }
 
   private _close(): void {
@@ -106,14 +117,16 @@ export class HubTodoPopup extends GlassBaseElement {
     if (!this.config.todo_entity) return;
     const status = item.status === 'completed' ? 'needs_action' : 'completed';
     this.callService('todo', 'update_item', { item: item.uid, status }, this.config.todo_entity);
-    // Optimistic refetch after the roundtrip; the count-change hook also fires
-    // but completed→completed transitions don't change the count.
+    // The count-change hook usually covers this, but the timer guarantees a
+    // refetch even if the state push back from HA is slow.
     window.setTimeout(() => void this._refresh(), 400);
   }
 
   private _clearDone(): void {
     if (!this.config.todo_entity) return;
     this.callService('todo', 'remove_completed_items', undefined, this.config.todo_entity);
+    // Removing completed items never changes the open count, so the
+    // count-change hook alone would never fire — the timer is the only refetch.
     window.setTimeout(() => void this._refresh(), 400);
   }
 
@@ -138,7 +151,7 @@ export class HubTodoPopup extends GlassBaseElement {
           ${[...open, ...done].map(
             (i) => html`
               <div class="row ${i.status === 'completed' ? 'done' : ''}">
-                <button class="box" aria-label="Växla" @click=${() => this._toggle(i)}>${check}</button>
+                <button class="box" aria-label="Växla" @click=${() => this._toggle(i)}><span class="box-visual">${check}</span></button>
                 <span class="txt">${i.summary}</span>
               </div>
             `,

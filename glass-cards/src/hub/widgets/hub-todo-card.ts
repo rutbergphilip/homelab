@@ -11,6 +11,7 @@ export class HubTodoCard extends GlassBaseElement {
   @property({ attribute: false }) config!: HubConfig;
   @state() private _items: TodoItem[] | null = null;
   private _lastCount = '';
+  private _fetchSeq = 0;
 
   static styles = [
     hubTokens,
@@ -34,13 +35,21 @@ export class HubTodoCard extends GlassBaseElement {
         display: flex; align-items: center; gap: 10px; min-height: 28px;
       }
       .box {
-        width: 18px; height: 18px; flex-shrink: 0;
-        border-radius: 6px;
-        border: 1.5px solid var(--hub-text-dim);
+        width: 44px; height: 44px; flex-shrink: 0;
+        margin: -13px;
+        padding: 0;
+        border: none;
         background: transparent;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
-        padding: 0;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .box-visual {
+        width: 18px; height: 18px;
+        box-sizing: border-box;
+        border-radius: 6px;
+        border: 1.5px solid var(--hub-text-dim);
+        background: transparent;
       }
       .txt {
         flex: 1; min-width: 0;
@@ -65,7 +74,9 @@ export class HubTodoCard extends GlassBaseElement {
 
   private async _refresh(): Promise<void> {
     if (!this.hass || !this.config?.todo_entity) return;
-    this._items = await fetchTodoItems(this.hass, this.config.todo_entity);
+    const seq = ++this._fetchSeq;
+    const items = await fetchTodoItems(this.hass, this.config.todo_entity);
+    if (seq === this._fetchSeq) this._items = items;
   }
 
   private _complete(e: Event, item: TodoItem): void {
@@ -89,7 +100,7 @@ export class HubTodoCard extends GlassBaseElement {
           : open.slice(0, SHOW).map(
               (i) => html`
                 <div class="row">
-                  <button class="box" aria-label="Klar: ${i.summary}" @click=${(e: Event) => this._complete(e, i)}></button>
+                  <button class="box" aria-label="Klar: ${i.summary}" @click=${(e: Event) => this._complete(e, i)}><span class="box-visual"></span></button>
                   <span class="txt">${i.summary}</span>
                 </div>
               `,

@@ -5659,7 +5659,7 @@ function t(t,e,i,a){var s,r=arguments.length,n=r<3?e:null===a?a=Object.getOwnPro
       }
       .act:active { transform: scale(0.97); }
       .act.primary { grid-column: span 2; background: var(--hub-teal-bg); color: var(--hub-teal); border-color: transparent; }
-      .act.on { background: var(--hub-amber-bg); color: var(--hub-amber-text); border-color: transparent; }
+      .act.on { background: var(--hub-teal-bg); color: var(--hub-teal); border-color: transparent; }
       .grid { margin-top: 18px; display: flex; flex-direction: column; gap: 6px; }
       .row { display: flex; justify-content: space-between; min-height: 32px; align-items: center; }
       .k { font: 500 13.5px var(--hub-font-body); color: var(--hub-text-muted); }

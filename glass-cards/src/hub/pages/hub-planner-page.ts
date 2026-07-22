@@ -78,6 +78,11 @@ export class HubPlannerPage extends GlassBaseElement {
           grid-template-columns: repeat(2, 1fr);
         }
       }
+      @media (max-width: 600px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
       .day {
         box-sizing: border-box;
         min-height: 0;

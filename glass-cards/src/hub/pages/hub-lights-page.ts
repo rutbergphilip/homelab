@@ -179,6 +179,11 @@ export class HubLightsPage extends GlassBaseElement {
           columns: 2;
         }
       }
+      @media (max-width: 600px) {
+        .body {
+          columns: 1;
+        }
+      }
 
       .section {
         break-inside: avoid;

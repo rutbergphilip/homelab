@@ -269,6 +269,15 @@ export class HubWeatherPopup extends GlassBaseElement {
         transition: transform 200ms ease;
       }
       .switch.on::after { transform: translateX(18px); }
+      @media (max-width: 600px) {
+        .scrim { padding: 0; }
+        .card {
+          max-width: none;
+          height: 100%;
+          max-height: none;
+          border-radius: 0;
+        }
+      }
     `,
   ];
 

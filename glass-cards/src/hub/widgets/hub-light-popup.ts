@@ -86,6 +86,15 @@ export class HubLightPopup extends GlassBaseElement {
       glass-light-slider {
         display: block;
       }
+      @media (max-width: 600px) {
+        .scrim { padding: 0; }
+        .card {
+          max-width: none;
+          height: 100%;
+          max-height: none;
+          border-radius: 0;
+        }
+      }
     `,
   ];
 

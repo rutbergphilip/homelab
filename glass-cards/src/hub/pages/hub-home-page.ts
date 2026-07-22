@@ -154,6 +154,33 @@ export class HubHomePage extends GlassBaseElement {
           flex: 1;
         }
       }
+
+      @media (max-width: 600px) {
+        .top {
+          flex-direction: column;
+        }
+        .chips {
+          max-width: 100%;
+          justify-content: flex-start;
+          padding-right: 0;
+        }
+        .widgets {
+          grid-template-columns: 1fr;
+        }
+        .widgets .cal {
+          grid-column: auto;
+        }
+        .info,
+        .bottom {
+          flex-direction: column;
+          height: auto;
+        }
+        .info > *,
+        .bottom > * {
+          height: 104px;
+          flex: none;
+        }
+      }
     `,
   ];
 

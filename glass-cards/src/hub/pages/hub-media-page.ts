@@ -250,6 +250,16 @@ export class HubMediaPage extends GlassBaseElement {
       .speakers.pushed {
         margin-top: auto;
       }
+
+      @media (max-width: 600px) {
+        .hero {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .tabs {
+          flex-wrap: wrap;
+        }
+      }
     `,
   ];
 

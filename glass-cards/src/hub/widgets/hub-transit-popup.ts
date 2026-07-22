@@ -193,6 +193,15 @@ export class HubTransitPopup extends GlassBaseElement {
         font: 500 12px var(--hub-font-body);
         color: var(--hub-text-dim);
       }
+      @media (max-width: 600px) {
+        .scrim { padding: 0; }
+        .card {
+          max-width: none;
+          height: 100%;
+          max-height: none;
+          border-radius: 0;
+        }
+      }
     `,
   ];
 

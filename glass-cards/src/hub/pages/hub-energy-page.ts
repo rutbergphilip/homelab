@@ -140,6 +140,16 @@ export class HubEnergyPage extends GlassBaseElement {
         gap: 8px;
         padding-bottom: 44px; /* clear the page dots */
       }
+
+      @media (max-width: 600px) {
+        .chips {
+          flex-wrap: wrap;
+        }
+        .head-row {
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+      }
     `,
   ];
 

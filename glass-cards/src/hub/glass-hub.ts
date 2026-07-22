@@ -122,6 +122,15 @@ export class GlassHub extends GlassBaseElement {
         position: relative;
       }
 
+      /* Desktop: cap and center each page's content instead of stretching. */
+      @media (min-width: 1600px) {
+        .page > * {
+          display: block;
+          max-width: 1560px;
+          margin-inline: auto;
+        }
+      }
+
       .page-placeholder {
         display: flex;
         align-items: center;

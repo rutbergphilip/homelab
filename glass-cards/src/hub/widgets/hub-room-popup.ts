@@ -128,6 +128,15 @@ export class HubRoomPopup extends GlassBaseElement {
         border-color: var(--hub-amber-border);
         color: var(--hub-amber-text);
       }
+      @media (max-width: 600px) {
+        .scrim { padding: 0; }
+        .card {
+          max-width: none;
+          height: 100%;
+          max-height: none;
+          border-radius: 0;
+        }
+      }
     `,
   ];
 

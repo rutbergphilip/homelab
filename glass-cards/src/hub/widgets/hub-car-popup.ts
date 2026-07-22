@@ -6,6 +6,17 @@ import { popupStyles } from './popup-styles.js';
 import { icons } from './icons.js';
 import type { HubConfig } from '../hub-config.js';
 
+const CHARGING_LABELS: Record<string, string> = {
+  charging: 'Laddar',
+  discharging: 'Urladdar',
+  done: 'Färdigladdad',
+  idle: 'Vilar',
+  scheduled: 'Schemalagd',
+  not_charging: 'Laddar inte',
+  error: 'Fel',
+  fault: 'Fel',
+};
+
 export class HubCarPopup extends GlassBaseElement {
   @property({ attribute: false }) config!: HubConfig;
 
@@ -69,11 +80,19 @@ export class HubCarPopup extends GlassBaseElement {
     return unit ? `${e.state} ${unit}` : e.state;
   }
 
+  private _chargingLabel(entity: string | undefined): string {
+    if (!entity) return '–';
+    const e = this.getEntity(entity);
+    if (!e || e.state === 'unavailable' || e.state === 'unknown') return '–';
+    return CHARGING_LABELS[e.state] ?? e.state.replace(/_/g, ' ');
+  }
+
   render() {
     if (!this.hass || !this.config?.volvo) return html``;
     const v = this.config.volvo;
-    const climateEnt = v.climate_entity ? this.getEntity(v.climate_entity) : undefined;
-    const climateOn = climateEnt?.state === 'on';
+    const isSwitch = v.climate_entity?.startsWith('switch.') ?? false;
+    const climateEnt = isSwitch && v.climate_entity ? this.getEntity(v.climate_entity) : undefined;
+    const climateOn = isSwitch && climateEnt?.state === 'on';
     const lockState = v.lock_entity ? this.getEntity(v.lock_entity)?.state : undefined;
     return html`
       <div class="scrim" @click=${this._onScrim}>
@@ -103,8 +122,8 @@ export class HubCarPopup extends GlassBaseElement {
           <div class="grid">
             <div class="row"><span class="k">Batteri</span><span class="v">${this._val(v.battery_entity, '%')}</span></div>
             <div class="row"><span class="k">Räckvidd</span><span class="v">${this._val(v.range_entity, 'km')}</span></div>
-            <div class="row"><span class="k">Laddning</span><span class="v">${this._val(v.charging_entity)}</span></div>
-            <div class="row"><span class="k">Lås</span><span class="v ${lockState === 'locked' ? '' : 'warn'}">${lockState === 'locked' ? 'Låst' : lockState === 'unlocked' ? 'Olåst' : '–'}</span></div>
+            <div class="row"><span class="k">Laddning</span><span class="v">${this._chargingLabel(v.charging_entity)}</span></div>
+            <div class="row"><span class="k">Lås</span><span class="v ${lockState === 'unlocked' ? 'warn' : ''}">${lockState === 'locked' ? 'Låst' : lockState === 'unlocked' ? 'Olåst' : '–'}</span></div>
             <div class="row"><span class="k">Mätarställning</span><span class="v">${this._val(v.odometer_entity)}</span></div>
             ${(v.doors ?? []).map((d) => {
               const open = this.getEntity(d.entity)?.state === 'on';

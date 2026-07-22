@@ -58,7 +58,7 @@ export class HubCarCard extends GlassBaseElement {
     const range = v.range_entity ? this.getEntity(v.range_entity)?.state : undefined;
     const lock = v.lock_entity ? this.getEntity(v.lock_entity)?.state : undefined;
     const charging = v.charging_entity ? this.getEntity(v.charging_entity)?.state : undefined;
-    const isCharging = charging === 'charging' || charging === 'Laddar';
+    const isCharging = charging === 'charging';
     const parts = [
       batt && !Number.isNaN(Number(batt)) ? `${batt}%` : null,
       range && !Number.isNaN(Number(range)) ? `${range} km` : null,
@@ -68,7 +68,7 @@ export class HubCarCard extends GlassBaseElement {
       <div class="card" role="button" tabindex="0" aria-label="Visa bilen" @click=${this._open}>
         <div class="top-row">
           <span class="ic">${icons.car}</span>
-          ${lock
+          ${lock === 'locked' || lock === 'unlocked'
             ? html`<span class="lock ${lock === 'locked' ? '' : 'unlocked'}">
                 ${lock === 'locked' ? 'Låst' : 'Olåst'}
               </span>`

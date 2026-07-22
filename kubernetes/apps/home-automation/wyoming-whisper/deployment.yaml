@@ -1,0 +1,70 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: wyoming-whisper
+  labels:
+    app: wyoming-whisper
+
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-whisper
+  template:
+    metadata:
+      labels:
+        app: wyoming-whisper
+
+    spec:
+      containers:
+        - name: wyoming-whisper
+          image: rhasspy/wyoming-whisper:3.5.0
+          imagePullPolicy: IfNotPresent
+
+          # KB-Whisper: Swedish National Library fine-tune; the small model
+          # beats stock whisper-large-v3 on Swedish at ~1s CPU latency.
+          # Model (~500MB) downloads from HuggingFace on first start into /data.
+          args:
+            - "--model"
+            - "KBLab/kb-whisper-small"
+            - "--language"
+            - "sv"
+
+          env:
+            - name: TZ
+              value: "Europe/Stockholm"
+
+          ports:
+            - name: wyoming
+              containerPort: 10300
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /data
+              subPath: wyoming-whisper/data
+
+          readinessProbe:
+            tcpSocket:
+              port: 10300
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 10300
+            initialDelaySeconds: 60
+            periodSeconds: 30
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "3"
+              memory: 2Gi
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

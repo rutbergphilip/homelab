@@ -3,21 +3,50 @@ import type { Database } from "bun:sqlite";
 import { z } from "zod";
 import { getProduct, saveProduct, searchProducts } from "../db/products";
 import { computeBatch } from "../db/batch";
-import { macrosSchema, mealItemSchema, portionSchema } from "./schemas";
+import { isValidCategory, categoryError } from "../lib/categories";
+import { categorySchema, macrosSchema, mealItemSchema, portionSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
+
+const SUGGESTION_CONTRACT =
+  "Kategori styr förslag: när Philip ber om snacks/kvällssnacks, föreslå ENDAST produkter med category 'snacks'; motsvarande för andra kategorier. Finns inga passande — säg det, ersätt aldrig från annan kategori.";
+
+// Validates a category filter/value against the closed vocabulary. Empty
+// string means "no filter" for search — never a validation target.
+function validateCategoryFilter(category: string | undefined): string | undefined {
+  if (category === undefined || category === "") return undefined;
+  if (!isValidCategory(category)) throw new Error(categoryError());
+  return category;
+}
+
+// Same vocabulary check for save_product, but with clear-vs-omit semantics:
+// - undefined: leave untouched (db layer preserves on update, stores null on create)
+// - "" on update: explicit clear, bypasses vocabulary validation (db's clearable())
+// - "" on create: nothing to clear yet — normalize to undefined so the db
+//   layer never persists a literal "" (it only normalizes "" on UPDATE)
+// - anything else: must be in the vocabulary, else Swedish error
+function resolveCategoryForSave(category: string | undefined, hasId: boolean): string | undefined {
+  if (category === undefined) return undefined;
+  if (category === "") return hasId ? "" : undefined;
+  if (!isValidCategory(category)) throw new Error(categoryError());
+  return category;
+}
 
 export function registerProductTools(server: McpServer, db: Database): void {
   server.registerTool(
     "search_products",
     {
       description:
-        "Fuzzy search the product database. Handles vague Swedish phrasing ('den där kycklingkebaben'), missing diacritics and compound words. Returns candidates; pick the right one or ask the user if ambiguous. Always search before logging or creating a product.",
+        `Fuzzy search the product database. Handles vague Swedish phrasing ('den där kycklingkebaben'), missing diacritics and compound words. Returns candidates; pick the right one or ask the user if ambiguous. Always search before logging or creating a product. ${SUGGESTION_CONTRACT}`,
       inputSchema: {
         query: z.string().min(1).describe("Free-text search, Swedish"),
         limit: z.number().int().min(1).max(20).optional(),
+        category: categorySchema.optional(),
       },
     },
-    wrap(({ query, limit }) => jsonResult({ candidates: searchProducts(db, query, limit ?? 8) })),
+    wrap(({ query, limit, category }) => {
+      const validCategory = validateCategoryFilter(category);
+      return jsonResult({ candidates: searchProducts(db, query, limit ?? 8, validCategory) });
+    }),
   );
 
   server.registerTool(
@@ -37,7 +66,7 @@ export function registerProductTools(server: McpServer, db: Database): void {
     "save_product",
     {
       description:
-        "Create a product, or update one by passing id (THE single place to correct values when packaging/recipes change). Updates are PARTIAL: omitted fields keep their current values, so updating notes never touches macros. Empty string clears a text field; aliases and portions replace the existing lists wholesale when provided. For estimated values set verified:false and round kcal/fat/carbs UP, protein DOWN. Store product-specific rules in notes (e.g. 'väg fryst', 'räknas styckvis').",
+        `Create a product, or update one by passing id (THE single place to correct values when packaging/recipes change). Updates are PARTIAL: omitted fields keep their current values, so updating notes never touches macros. Empty string clears a text field; aliases and portions replace the existing lists wholesale when provided. For estimated values set verified:false and round kcal/fat/carbs UP, protein DOWN. Store product-specific rules in notes (e.g. 'väg fryst', 'räknas styckvis'). ${SUGGESTION_CONTRACT}`,
       inputSchema: {
         id: z.number().int().optional().describe("Set to update an existing product"),
         name: z.string().min(1),
@@ -48,9 +77,13 @@ export function registerProductTools(server: McpServer, db: Database): void {
         notes: z.string().optional(),
         verified: z.boolean().optional().describe("false = estimated/uncertain values"),
         source: z.enum(["manual", "off", "estimate"]).optional(),
+        category: categorySchema.optional(),
       },
     },
-    wrap((input) => jsonResult(saveProduct(db, input))),
+    wrap((input) => {
+      const category = resolveCategoryForSave(input.category, input.id !== undefined);
+      return jsonResult(saveProduct(db, { ...input, category }));
+    }),
   );
 
   server.registerTool(

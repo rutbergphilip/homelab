@@ -200,6 +200,11 @@ const MIGRATIONS: string[] = [
 
   ALTER TABLE days ADD COLUMN plan_confirmed_at TEXT;
   `,
+  // 7: product categories — role the product plays for Philip (not a food
+  // taxonomy). Vocabulary lives in src/lib/categories.ts.
+  `
+  ALTER TABLE products ADD COLUMN category TEXT;
+  `,
 ];
 
 export function migrate(db: Database): void {

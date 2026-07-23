@@ -83,7 +83,14 @@ function ThemeToggle() {
 function App() {
   const hash = useHashRoute();
   const route = resolveRoute(hash);
-  useEffect(() => window.scrollTo(0, 0), [hash]);
+  // Block body on purpose: an arrow with an implicit-return expression body
+  // makes the effect's cleanup value whatever window.scrollTo() returns. Per
+  // spec that's undefined (harmless), but some embedding/automation contexts
+  // (observed: Playwright-driven Chromium) return a non-function object
+  // instead — React then tries to call it as the effect's destroy function on
+  // the next unmount and throws "TypeError: <x> is not a function" deep in
+  // react-dom's commit phase, leaving the view blank. Discard the return value.
+  useEffect(() => { window.scrollTo(0, 0); }, [hash]);
   return (
     <>
       <header className="masthead">

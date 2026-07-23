@@ -20,6 +20,7 @@ export interface ProductInput {
   notes?: string | null;
   verified?: boolean;
   source?: string;
+  category?: string | null;
 }
 
 export interface Portion {
@@ -42,6 +43,7 @@ export interface Product {
   notes: string | null;
   verified: boolean;
   source: string;
+  category: string | null;
   updated_at: string;
 }
 
@@ -56,6 +58,7 @@ interface ProductRow {
   notes: string | null;
   verified: number;
   source: string;
+  category: string | null;
   updated_at: string;
 }
 
@@ -93,6 +96,7 @@ function hydrate(db: Database, row: ProductRow): Product {
     notes: row.notes,
     verified: row.verified === 1,
     source: row.source,
+    category: row.category,
     updated_at: row.updated_at,
   };
 }
@@ -138,7 +142,7 @@ export function saveProduct(db: Database, input: ProductInput): Product {
       db.run(
         `UPDATE products SET
            name = ?, brand = ?, kcal_100g = ?, protein_100g = ?, fat_100g = ?, carbs_100g = ?,
-           notes = ?, verified = ?, source = ?, updated_at = datetime('now')
+           notes = ?, verified = ?, source = ?, category = ?, updated_at = datetime('now')
          WHERE id = ?`,
         [
           input.name,
@@ -150,13 +154,14 @@ export function saveProduct(db: Database, input: ProductInput): Product {
           clearable(input.notes, existing.notes),
           input.verified === undefined ? existing.verified : input.verified ? 1 : 0,
           input.source ?? existing.source,
+          clearable(input.category, existing.category),
           id,
         ],
       );
     } else {
       const result = db.run(
-        `INSERT INTO products (name, brand, kcal_100g, protein_100g, fat_100g, carbs_100g, notes, verified, source)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO products (name, brand, kcal_100g, protein_100g, fat_100g, carbs_100g, notes, verified, source, category)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           input.name,
           input.brand ?? null,
@@ -167,6 +172,7 @@ export function saveProduct(db: Database, input: ProductInput): Product {
           input.notes ?? null,
           input.verified === false ? 0 : 1,
           input.source ?? "manual",
+          input.category ?? null,
         ],
       );
       id = Number(result.lastInsertRowid);
@@ -205,7 +211,12 @@ export function listProducts(db: Database): Product[] {
     .map(({ id }) => getProduct(db, id)!);
 }
 
-export function searchProducts(db: Database, query: string, limit = 8): Product[] {
+export function searchProducts(
+  db: Database,
+  query: string,
+  limit = 8,
+  category?: string,
+): Product[] {
   const tokens = query
     .trim()
     .split(/\s+/)
@@ -218,11 +229,21 @@ export function searchProducts(db: Database, query: string, limit = 8): Product[
   // Pass 1: FTS5 prefix match over name/brand/aliases/notes, bm25-ranked.
   // remove_diacritics 2 makes "vitlokssas" hit "vitlökssås".
   const ftsQuery = tokens.map((t) => `"${t.replace(/"/g, '""')}"*`).join(" OR ");
-  const ftsHits = db
-    .query<{ rowid: number }, [string, number]>(
-      "SELECT rowid FROM products_fts WHERE products_fts MATCH ? ORDER BY bm25(products_fts) LIMIT ?",
-    )
-    .all(ftsQuery, limit);
+  const ftsHits =
+    category === undefined
+      ? db
+          .query<{ rowid: number }, [string, number]>(
+            "SELECT rowid FROM products_fts WHERE products_fts MATCH ? ORDER BY bm25(products_fts) LIMIT ?",
+          )
+          .all(ftsQuery, limit)
+      : db
+          .query<{ rowid: number }, [string, string, number]>(
+            `SELECT rowid FROM products_fts
+             WHERE products_fts MATCH ?
+               AND rowid IN (SELECT id FROM products WHERE category = ?)
+             ORDER BY bm25(products_fts) LIMIT ?`,
+          )
+          .all(ftsQuery, category, limit);
   for (const hit of ftsHits) {
     if (!seen.has(hit.rowid)) {
       seen.add(hit.rowid);
@@ -237,18 +258,34 @@ export function searchProducts(db: Database, query: string, limit = 8): Product[
     for (const token of tokens) {
       if (token.length < 3) continue;
       const like = `%${token}%`;
-      const rows = db
-        .query<{ id: number }, [string, string, string, string]>(
-          `SELECT DISTINCT p.id FROM products p
-           LEFT JOIN product_aliases a ON a.product_id = p.id
-           WHERE p.name LIKE ?1 COLLATE NOCASE
-              OR a.alias LIKE ?1 COLLATE NOCASE
-              OR (length(p.name) >= 5 AND ?2 LIKE '%' || p.name || '%' COLLATE NOCASE)
-              OR (length(a.alias) >= 4 AND ?2 LIKE '%' || a.alias || '%' COLLATE NOCASE)
-           LIMIT ?3`,
-        )
-        // @ts-expect-error bun:sqlite positional params tuple typing
-        .all(like, token, limit);
+      const rows =
+        category === undefined
+          ? db
+              .query<{ id: number }, [string, string, string, string]>(
+                `SELECT DISTINCT p.id FROM products p
+                 LEFT JOIN product_aliases a ON a.product_id = p.id
+                 WHERE p.name LIKE ?1 COLLATE NOCASE
+                    OR a.alias LIKE ?1 COLLATE NOCASE
+                    OR (length(p.name) >= 5 AND ?2 LIKE '%' || p.name || '%' COLLATE NOCASE)
+                    OR (length(a.alias) >= 4 AND ?2 LIKE '%' || a.alias || '%' COLLATE NOCASE)
+                 LIMIT ?3`,
+              )
+              // @ts-expect-error bun:sqlite positional params tuple typing
+              .all(like, token, limit)
+          : db
+              .query<{ id: number }, [string, string, string, string, number]>(
+                `SELECT DISTINCT p.id FROM products p
+                 LEFT JOIN product_aliases a ON a.product_id = p.id
+                 WHERE p.category = ?3 AND (
+                    p.name LIKE ?1 COLLATE NOCASE
+                    OR a.alias LIKE ?1 COLLATE NOCASE
+                    OR (length(p.name) >= 5 AND ?2 LIKE '%' || p.name || '%' COLLATE NOCASE)
+                    OR (length(a.alias) >= 4 AND ?2 LIKE '%' || a.alias || '%' COLLATE NOCASE)
+                 )
+                 LIMIT ?4`,
+              )
+              // @ts-expect-error bun:sqlite positional params tuple typing
+              .all(like, token, category, limit);
       for (const row of rows) {
         if (!seen.has(row.id)) {
           seen.add(row.id);

@@ -1,20 +1,30 @@
 import { useState } from "react";
 import { sv, useApi, type Product } from "../api";
 import { EmptyState, ErrorNote, macroLine } from "../components/Bits";
+import { KvittoSelect, type SelectOption } from "../components/ui/Select";
+import { CATEGORY_ALL, CATEGORY_UNCATEGORIZED, filterProducts } from "../lib/products";
+import { PRODUCT_CATEGORIES } from "../../../lib/categories";
+
+const CATEGORY_OPTIONS: SelectOption[] = [
+  { value: CATEGORY_ALL, label: "alla kategorier" },
+  ...PRODUCT_CATEGORIES.map((c) => ({ value: c, label: c })),
+  { value: CATEGORY_UNCATEGORIZED, label: "okategoriserad" },
+];
 
 export function Produkter() {
   const { data, error } = useApi<{ products: Product[] }>("/ui/api/products");
   const [q, setQ] = useState("");
+  const [category, setCategory] = useState(CATEGORY_ALL);
   if (error) return <ErrorNote message={error} />;
   if (!data) return null;
-  const needle = q.toLowerCase();
-  const hits = data.products.filter(
-    (p) => !needle || p.name.toLowerCase().includes(needle) || (p.brand || "").toLowerCase().includes(needle) || p.aliases.some((a) => a.toLowerCase().includes(needle)),
-  );
+  const hits = filterProducts(data.products, q, category);
   return (
     <>
       <h2>Produkter · {data.products.length}</h2>
-      <input className="search" type="search" placeholder="Sök produkt, alias, märke …" value={q} onChange={(e) => setQ(e.target.value)} />
+      <div className="filter-row">
+        <input className="search" type="search" placeholder="Sök produkt, alias, märke …" value={q} onChange={(e) => setQ(e.target.value)} />
+        <KvittoSelect ariaLabel="Kategori" value={category} options={CATEGORY_OPTIONS} onChange={setCategory} />
+      </div>
       {hits.length === 0 ? <EmptyState>Ingen träff.</EmptyState> : null}
       {hits.map((p) => (
         <details className="card" key={p.id}>
@@ -38,6 +48,7 @@ export function Produkter() {
             <div className="pill-flags">
               <span className={`chip ${p.verified ? "ok" : "under"}`}>{p.verified ? "verifierad" : "overifierad"}</span>
               <span className="chip">{p.source}</span>
+              {p.category ? <span className="chip">{p.category}</span> : null}
             </div>
           </div>
         </details>

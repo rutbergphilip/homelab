@@ -69,7 +69,7 @@ export interface TrendView { latest: (WeightEntry & { trend_kg: number }) | null
   weights: WeightEntry[] }
 export interface WeekView { days_logged: number; start_date: string; end_date: string; avg_logged: Macros | null; avg_target_kcal: number }
 export interface Portion { name: string; grams: number | null; kcal: number | null; protein: number | null; fat: number | null; carbs: number | null }
-export interface Product { id: number; name: string; brand: string | null; per_100g: Macros | null; portions: Portion[]; aliases: string[]; notes: string | null; verified: number | boolean; source: string }
+export interface Product { id: number; name: string; brand: string | null; per_100g: Macros | null; portions: Portion[]; aliases: string[]; notes: string | null; verified: number | boolean; source: string; category: string | null }
 export interface RecipeSummary { id: number; name: string; tags: string | null; servings: number | null; kcal_per_serving: number | null; total_minutes: number | null; incomplete?: true }
 export interface RecipeIngredient { description: string; grams: number | null; quantity: number | null; kcal?: number; unresolved?: true; reason?: string }
 export interface RecipeView { id: number; name: string; instructions: string | null; notes: string | null; tags: string | null; servings: number | null; active_minutes: number | null; total_minutes: number | null; ingredients: RecipeIngredient[]; totals: Macros; totals_incomplete?: true; per_serving: Macros | null }

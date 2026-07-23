@@ -4,6 +4,7 @@ import { getDay, getWeek } from "../db/meals";
 import { getTrend } from "../db/weights";
 import { listPreferences, getTargets, type Preference } from "../db/preferences";
 import { getProfile } from "../db/profile";
+import { PRODUCT_CATEGORIES } from "../lib/categories";
 import { dateSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
 
@@ -28,6 +29,7 @@ export function registerContextTools(server: McpServer, db: Database): void {
       const profile = getProfile(db);
       return jsonResult({
         preferences: groupPreferences(listPreferences(db)),
+        product_categories: `Produktkategorier: ${PRODUCT_CATEGORIES.join(", ")}`,
         all_targets: getTargets(db),
         ...(profile && { profile }),
         day: getDay(db, date),

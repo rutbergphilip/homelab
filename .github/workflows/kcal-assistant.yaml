@@ -5,15 +5,48 @@ on:
   push:
     branches: ["main"]
     paths: ["kcal-assistant/**"]
+  pull_request:
+    paths: ["kcal-assistant/**"]
   workflow_dispatch: {}
 
 jobs:
-  build-push:
-    name: Build and push image
+  test:
+    name: Test
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        working-directory: kcal-assistant
+        run: bun install --frozen-lockfile
+
+      - name: Run tests
+        working-directory: kcal-assistant
+        run: bun test
+
+  build-push:
+    name: Build and push image
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        working-directory: kcal-assistant
+        run: bun install --frozen-lockfile
+
+      - name: Run tests
+        working-directory: kcal-assistant
+        run: bun test
 
       - name: Read version
         id: version

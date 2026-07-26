@@ -41,6 +41,21 @@ describe("computeTrend", () => {
     { date: day(27), weight_kg: 97.8 },
   ];
 
+  test("exposes the delta span's date bounds, matching the days intake is averaged over", () => {
+    // These bounds are what the Oura burn cross-check averages over, so that
+    // the two TDEE figures describe the same period rather than merely
+    // overlapping ones. spanStart = ceil(3.333) = day 4, spanEnd = floor(24).
+    const t = computeTrend({
+      weights,
+      intakeByDate: intakeRange(day(4), day(24), 1500),
+      windowDays: 28,
+      today: day(27),
+    }).trend!;
+    expect(t.span_from).toBe(day(4));
+    expect(t.span_to).toBe(day(24));
+    expect(t.span_total_days).toBe(21); // inclusive
+  });
+
   test("matches the hand-computed reference", () => {
     const result = computeTrend({
       weights,

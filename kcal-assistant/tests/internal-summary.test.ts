@@ -33,6 +33,23 @@ describe("buildInternalSummary", () => {
     expect(s.forecast === null || typeof s.forecast!.goal_kg === "number").toBe(true);
   });
 
+  it("reports when the latest weight was recorded and where it came from", () => {
+    // The Kcal page shows "senast vägd 26 juli" from the record the model
+    // actually uses, not from a sensor timestamp — those diverge whenever the
+    // morning-window rule declines a weigh-in.
+    const db = seededDb();
+    const s = buildInternalSummary(db);
+    expect(s.latest_weight_date).toBe(todayStockholm());
+    expect(s.weight_source).toBe("manual");
+  });
+
+  it("marks an automatically logged weight as coming from the scale", () => {
+    const db = openDb(":memory:");
+    logWeight(db, { weight_kg: 79.91, date: todayStockholm(), source: "withings" });
+    const s = buildInternalSummary(db);
+    expect(s.weight_source).toBe("withings");
+  });
+
   it("empty db → zeros, not errors", () => {
     const emptyDb = openDb(":memory:");
     const s = buildInternalSummary(emptyDb);

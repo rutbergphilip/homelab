@@ -18,6 +18,8 @@ export interface Trend {
   avg_intake: number | null;
   intake_days: number;
   span_total_days: number;
+  span_from: string; // first day intake is averaged over (inclusive)
+  span_to: string; // last day (inclusive)
   est_tdee: number | null;
   uncertain: boolean; // < 50% of span days have logged intake
 }
@@ -98,6 +100,8 @@ export function computeTrend(input: {
       avg_intake: avgIntake,
       intake_days: intakeDays,
       span_total_days: spanTotalDays,
+      span_from: epochDaysToDate(spanStart),
+      span_to: epochDaysToDate(spanEnd),
       est_tdee: estTdee,
       uncertain: intakeDays / spanTotalDays < 0.5,
     },

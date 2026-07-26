@@ -4,9 +4,12 @@ import type { Database } from "bun:sqlite";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { buildMcpServer } from "./mcp";
 import { handleUiApi } from "./ui/api";
-import { buildInternalSummary, buildInternalPlanner } from "./ui/internal";
+import { buildInternalSummary, buildInternalPlanner, buildInternalHealth } from "./ui/internal";
 import { confirmDay } from "./db/plan";
-import { isValidDate } from "./lib/dates";
+import { logWeight } from "./db/weights";
+import { upsertDailyMetrics, type DailyMetricsInput } from "./db/daily";
+import { buildForecast } from "./db/forecast";
+import { isValidDate, todayStockholm } from "./lib/dates";
 import type { UiAuthState } from "./ui/auth";
 
 function safeEqual(a: string, b: string): boolean {
@@ -225,6 +228,97 @@ export function createInternalServer(opts: { db: Database }): Server {
         res
           .writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
           .end(JSON.stringify(buildInternalPlanner(opts.db)));
+        return;
+      }
+
+      if (pathname === "/internal/health") {
+        if (req.method !== "GET") {
+          res.writeHead(405, { allow: "GET" }).end();
+          return;
+        }
+        res
+          .writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+          .end(JSON.stringify(buildInternalHealth(opts.db)));
+        return;
+      }
+
+      // The Withings scale's morning weigh-in, pushed by an HA automation the
+      // moment the webhook lands. db/weights.ts owns the conflict rules (first
+      // weigh-in of the day wins; a chat correction is never reverted), which
+      // is what lets the automation re-fire harmlessly. A declined duplicate is
+      // therefore a 200 with applied:false — NOT an error, because rest_command
+      // renders any non-2xx as a failed action in the automation trace.
+      if (pathname === "/internal/weight") {
+        if (req.method !== "POST") {
+          res.writeHead(405, { allow: "POST" }).end();
+          return;
+        }
+        const rawBody = await readBody(req, 4096);
+        let body: { weight_kg?: unknown; date?: unknown } = {};
+        try {
+          if (rawBody !== null && rawBody.length > 0) body = JSON.parse(rawBody);
+        } catch {
+          /* handled by the validation below */
+        }
+        const weight = body.weight_kg;
+        if (typeof weight !== "number" || !Number.isFinite(weight)) {
+          res.writeHead(400, { "content-type": "application/json" }).end('{"error":"ogiltig vikt"}');
+          return;
+        }
+        if (body.date !== undefined && (typeof body.date !== "string" || !isValidDate(body.date))) {
+          res.writeHead(400, { "content-type": "application/json" }).end('{"error":"ogiltigt datum"}');
+          return;
+        }
+        const date = body.date ?? todayStockholm();
+        try {
+          const { applied } = logWeight(opts.db, { weight_kg: weight, date, source: "withings" });
+          if (applied) {
+            try {
+              buildForecast(opts.db); // canonical → snapshot, same as log_weight
+            } catch (e) {
+              console.error("snapshot after auto weight:", e instanceof Error ? e.message : e);
+            }
+          }
+          res
+            .writeHead(200, { "content-type": "application/json" })
+            .end(JSON.stringify({ ok: true, applied, date }));
+        } catch (e) {
+          res
+            .writeHead(400, { "content-type": "application/json" })
+            .end(JSON.stringify({ error: e instanceof Error ? e.message : "fel" }));
+        }
+        return;
+      }
+
+      // Nightly Oura roll-up (23:50, when the day's numbers have settled).
+      // Merge semantics: an absent or null metric preserves what is stored, so
+      // a sensor that was `unavailable` cannot erase a good value.
+      if (pathname === "/internal/daily") {
+        if (req.method !== "POST") {
+          res.writeHead(405, { allow: "POST" }).end();
+          return;
+        }
+        const rawBody = await readBody(req, 4096);
+        let body: DailyMetricsInput = {};
+        try {
+          if (rawBody !== null && rawBody.length > 0) body = JSON.parse(rawBody);
+        } catch {
+          /* handled by the validation below */
+        }
+        if (body.date !== undefined && (typeof body.date !== "string" || !isValidDate(body.date))) {
+          res.writeHead(400, { "content-type": "application/json" }).end('{"error":"ogiltigt datum"}');
+          return;
+        }
+        try {
+          const row = upsertDailyMetrics(opts.db, body);
+          res
+            .writeHead(200, { "content-type": "application/json" })
+            .end(JSON.stringify({ ok: true, date: row.date }));
+        } catch (e) {
+          res
+            .writeHead(400, { "content-type": "application/json" })
+            .end(JSON.stringify({ error: e instanceof Error ? e.message : "fel" }));
+        }
         return;
       }
 

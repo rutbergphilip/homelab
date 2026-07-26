@@ -205,6 +205,32 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE products ADD COLUMN category TEXT;
   `,
+  // 8: where a weigh-in came from. Existing rows are all chat-logged, so the
+  // 'manual' default is correct history, not a placeholder. Drives the upsert
+  // rules in db/weights.ts: an automatic weigh-in never overwrites an existing
+  // row (first of the day wins), a manual one always takes the date.
+  `
+  ALTER TABLE weights ADD COLUMN source TEXT NOT NULL DEFAULT 'manual';
+  `,
+  // 9: per-day Oura metrics — the TDEE cross-check (oura_total_kcal, which the
+  // forecast model deliberately does NOT consume) plus recovery context for
+  // correlating sleep against intake. Every metric is nullable: Oura documents
+  // several as needing baseline data, and a sensor can be `unavailable` at
+  // push time. Written nightly by HA and in bulk by scripts/backfill-health.ts.
+  `
+  CREATE TABLE daily_metrics (
+    date               TEXT PRIMARY KEY,
+    oura_total_kcal    REAL,
+    oura_active_kcal   REAL,
+    oura_steps         INTEGER,
+    sleep_score        INTEGER,
+    sleep_duration_min INTEGER,
+    readiness_score    INTEGER,
+    hrv_ms             REAL,
+    resting_hr         REAL,
+    updated_at         TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  `,
 ];
 
 export function migrate(db: Database): void {

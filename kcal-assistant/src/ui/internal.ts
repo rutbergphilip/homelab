@@ -1,8 +1,9 @@
 import type { Database } from "bun:sqlite";
 import { readDay } from "../db/meals";
 import { getPlanWeek } from "../db/plan";
-import { todayStockholm } from "../lib/dates";
+import { addDays, todayStockholm } from "../lib/dates";
 import { getTrend, listWeights } from "../db/weights";
+import { listDailyMetrics, type DailyMetrics } from "../db/daily";
 import { buildForecast } from "../db/forecast";
 import { getProfile } from "../db/profile";
 
@@ -33,6 +34,8 @@ export interface InternalSummary {
   protein_target_g: number;
   meals: InternalSummaryMeal[];
   current_kg: number;
+  latest_weight_date: string | null;
+  weight_source: string | null;
   weight_trend: InternalSummaryWeightPoint[];
   forecast: InternalSummaryForecast | null;
 }
@@ -98,6 +101,30 @@ export function buildInternalPlanner(db: Database): InternalPlanner {
   };
 }
 
+export interface InternalHealth {
+  status: "ok";
+  latest: DailyMetrics | null;
+  days: DailyMetrics[];
+}
+
+const HEALTH_WINDOW_DAYS = 14;
+
+// Read-only projection backing sensor.kcal_halsa, which gives the wall hub's
+// Hälsa page its trend sparklines — a Lovelace card cannot read history, so
+// this table is the history store. Today's values on that page come live from
+// the Oura entities instead, so a 15-minute poll here is ample.
+// Never throws: an empty or missing window degrades to no days, not a 500.
+export function buildInternalHealth(db: Database): InternalHealth {
+  let days: DailyMetrics[] = [];
+  try {
+    const today = todayStockholm();
+    days = listDailyMetrics(db, { from: addDays(today, -(HEALTH_WINDOW_DAYS - 1)), to: today });
+  } catch (e) {
+    console.error("internal health:", e instanceof Error ? e.message : e);
+  }
+  return { status: "ok", latest: days.at(-1) ?? null, days };
+}
+
 // Read-only projection for the in-cluster wall-hub poller (no auth — see
 // server.ts). Reuses the same read functions as ui/api.ts's overview/forecast
 // cases; never throws — a forecast failure (no profile, no weights, no goal)
@@ -135,7 +162,11 @@ export function buildInternalSummary(db: Database): InternalSummary {
   // weight_trend follows the product's own trend concept (the Vikt page
   // draws the EWMA line; raw weigh-ins are only dots) — trend_kg per date,
   // falling back to the raw value for a date the trend map somehow misses.
-  const trendByDate = new Map(listWeights(db).map((w) => [w.date, w.trend_kg]));
+  const allWeights = listWeights(db); // DESC by date
+  const trendByDate = new Map(allWeights.map((w) => [w.date, w.trend_kg]));
+  // Latest RECORDED weigh-in, which is not the same as the newest weight sensor
+  // reading: the morning-window rule declines weigh-ins outside 03:00–12:00.
+  const latestWeight = allWeights[0] ?? null;
 
   return {
     status: "ok",
@@ -146,6 +177,8 @@ export function buildInternalSummary(db: Database): InternalSummary {
     protein_target_g: r1(day.targets.protein_min),
     meals: day.meals.map((m) => ({ name: m.name, kcal: Math.round(m.kcal) })),
     current_kg: trend.latest ? r1(trend.latest.weight_kg) : 0,
+    latest_weight_date: latestWeight?.date ?? null,
+    weight_source: latestWeight?.source ?? null,
     weight_trend: trend.weights.map((w) => ({ date: w.date, kg: r1(trendByDate.get(w.date) ?? w.weight_kg) })),
     forecast,
   };

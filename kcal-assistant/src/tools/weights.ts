@@ -11,7 +11,7 @@ export function registerWeightTools(server: McpServer, db: Database): void {
     "log_weight",
     {
       description:
-        "Log a morning weight ('82.1 idag'). Upserts by date, so a correction is just re-logging the same date. Returns the computed trend: rate kg/week and backwards-computed TDEE (snittintag + viktförändring × 7700 / dagar, averaged over the same period as the weight delta). Present the trend numbers as-is, never recompute.",
+        "Log a morning weight ('82.1 idag'). NOTE: the Withings scale already logs the morning weight automatically every day, so this is normally only needed as a CORRECTION — a manual entry always wins over the automatic one and can never be overwritten by it. Upserts by date, so a correction is just re-logging the same date. Returns the computed trend: rate kg/week and backwards-computed TDEE (snittintag + viktförändring × 7700 / dagar, averaged over the same period as the weight delta). Present the trend numbers as-is, never recompute.",
       inputSchema: {
         weight_kg: z.number().positive().lt(500),
         date: dateSchema.optional(),
@@ -33,7 +33,7 @@ export function registerWeightTools(server: McpServer, db: Database): void {
     "get_trend",
     {
       description:
-        "Weight trend and real TDEE over a window ENDING AT THE LATEST WEIGHING (not today; stale:true means the latest weighing is over a week old). trend is null with a reason when data is too sparse; uncertain:true means under half the span days have logged intake. Use for 'hur går det?' and for calibrating targets.",
+        "Weight trend and real TDEE over a window ENDING AT THE LATEST WEIGHING (not today; stale:true means the latest weighing is over a week old). trend is null with a reason when data is too sparse; uncertain:true means under half the span days have logged intake. Use for 'hur går det?' and for calibrating targets. `oura_burn` is Oura's measured expenditure averaged over the SAME span (from/to given) — a sanity check only: trend.est_tdee stays authoritative because intake plus weight change is stronger evidence than a ring's estimate. If the two diverge a lot, say so and trust est_tdee.",
       inputSchema: {
         window_days: z.number().int().min(14).max(365).optional().describe("Default 28"),
       },

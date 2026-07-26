@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
 import { getDay, getWeek } from "../db/meals";
 import { getTrend } from "../db/weights";
+import { getDailyMetrics, listDailyMetrics } from "../db/daily";
 import { listPreferences, getTargets, type Preference } from "../db/preferences";
 import { getProfile } from "../db/profile";
 import { PRODUCT_CATEGORIES } from "../lib/categories";
@@ -21,7 +22,7 @@ export function registerContextTools(server: McpServer, db: Database): void {
     "get_context",
     {
       description:
-        "Call this at the START of every conversation. Returns Philip's standing rules and style preferences (follow them exactly; user-facing text is Swedish), all day-type targets, and today's log with totals and remaining vs targets. Always use the server's numbers, never compute macros yourself.",
+        "Call this at the START of every conversation. Returns Philip's standing rules and style preferences (follow them exactly; user-facing text is Swedish), all day-type targets, and today's log with totals and remaining vs targets. Always use the server's numbers, never compute macros yourself. `metrics` carries today's Oura data (sleep_score, sleep_duration_min, readiness_score, hrv_ms, resting_hr, oura_total_kcal/active/steps) or null — use it as context for how the day is likely to go, never as a reason to change targets on your own.",
       inputSchema: { date: dateSchema.optional() },
     },
     wrap(({ date }) => {
@@ -33,6 +34,7 @@ export function registerContextTools(server: McpServer, db: Database): void {
         all_targets: getTargets(db),
         ...(profile && { profile }),
         day: getDay(db, date),
+        metrics: getDailyMetrics(db, date),
         ...(trend.latest && {
           weight: {
             latest: trend.latest,
@@ -50,19 +52,31 @@ export function registerContextTools(server: McpServer, db: Database): void {
     "get_day",
     {
       description:
-        "Get the meal log for a day (default today): day type, targets, meals in display order (post-gym shake last), per-meal macros, totals and remaining.",
+        "Get the meal log for a day (default today): day type, targets, meals in display order (post-gym shake last), per-meal macros, totals and remaining. `metrics` carries that day's Oura data (sleep, readiness, burn, steps) or null.",
       inputSchema: { date: dateSchema.optional() },
     },
-    wrap(({ date }) => jsonResult(getDay(db, date))),
+    wrap(({ date }) => jsonResult({ ...getDay(db, date), metrics: getDailyMetrics(db, date) })),
   );
 
   server.registerTool(
     "get_week",
     {
       description:
-        "Week summary (veckosnitt) for the 7 days ending at end_date (default today): per-day totals and day types, averages over logged days, and the average kcal target. Use to evaluate kalori-cykling — the weekly average is what counts.",
+        "Week summary (veckosnitt) for the 7 days ending at end_date (default today): per-day totals and day types, averages over logged days, and the average kcal target. Use to evaluate kalori-cykling — the weekly average is what counts. Each day also carries `metrics` (that day's Oura sleep/readiness/burn/steps, or null), which is what lets you relate a bad night to how the day was eaten.",
       inputSchema: { end_date: dateSchema.optional() },
     },
-    wrap(({ end_date }) => jsonResult(getWeek(db, end_date))),
+    wrap(({ end_date }) => {
+      const week = getWeek(db, end_date);
+      const metrics = new Map(
+        listDailyMetrics(db, {
+          from: week.days[0]!.date,
+          to: week.days.at(-1)!.date,
+        }).map((m) => [m.date, m]),
+      );
+      return jsonResult({
+        ...week,
+        days: week.days.map((d) => ({ ...d, metrics: metrics.get(d.date) ?? null })),
+      });
+    }),
   );
 }

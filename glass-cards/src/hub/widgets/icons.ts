@@ -46,6 +46,11 @@ export const icons: Record<string, TemplateResult> = {
   ring: wrap(svg`
     <path d="M14.7 4.5A8 8 0 0 1 12 20 8 8 0 0 1 9.3 4.5"></path>
   `),
+  // Recovery/health. A pulse trace rather than a heart: this stands for sleep and
+  // readiness, not for cardio.
+  pulse: wrap(svg`
+    <path d="M2.5 12h3.2l2-5 3.4 10 2.6-6.4 1.7 3.4h5.6"></path>
+  `),
   sun: wrap(svg`
     <circle cx="12" cy="12" r="4"></circle>
     <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path>

@@ -1,7 +1,20 @@
 # Withings + Oura Health Integration — Design Spec
 
 **Date:** 2026-07-26
-**Status:** Approved. Phase 0 complete (2026-07-26): Oura Ring v2.8.3 installed via HACS, OAuth connected, 71 entities live. Two design corrections from phase 0 findings, both recorded below — Oura history **is** reachable (§8, reversing the original "no backfill" decision), and the deferred entity/unit unknowns are resolved (§6.3).
+**Status:** **Implemented 2026-07-26.** All phases shipped and verified against live data.
+
+Deltas from the design, each with its reason:
+
+- **Migrations 8 and 9, not a single migration 8.** Editing an applied migration is unsafe once a database has stamped `user_version`.
+- **`oura_burn` object instead of a bare `oura_tdee_avg` number** — carries `avg_kcal`, `days`, `from`, `to`, so the assistant can state the period and how many days actually had data. `lib/trend.ts` gained `span_from`/`span_to` to make the two TDEE figures cover the identical span.
+- **One `hub-health-popup` with a `section` property, not four popup components.** All four sections are the same key/value shape; four shells would have been duplication.
+- **Kropp's headline weight comes from kcal-assistant, not the scale** (§7.4 said live). Caught in visual review: the scale read 79.747 while the recorded morning weight was 79.91, so the page contradicted the Kcal page. Body composition is still live.
+- **Kropp's trend footer states the change, not the EWMA endpoint** — the endpoint (81.1) legitimately lags the headline (79.9) and printing both read as a bug.
+- **Oura history IS reachable** (§8, reversing the original "no backfill" decision); the deferred entity/unit unknowns are resolved (§6.3).
+- **Two nap artifacts rejected during backfill** (§5.6) — a discovery, not a planned feature.
+- **Unplanned fix: HA memory raised 800Mi → 1536Mi and CPU 500m → 2** after an OOMKill (exit 137). 71 new entities plus a statistics import on an instance already restarting daily left no headroom. Also added a `recorder: exclude` block for the five Oura heart-rate entities that change every poll — deliberately *not* the eight the backfill reads from statistics.
+
+Verified end-to-end: 79.91 kg auto-logged with `source='withings'`, a later weigh-in correctly declined, 70 days seeded (spot-checks match §9), `est_tdee` 2490 vs `oura_burn` 3108 over the identical span, and all four popup sections populated on the wall panel in kiosk mode.
 **Scope:** Automatic weight logging from the Withings scale into the kcal database (retiring manual `log_weight` through chat), a new **Hälsa** page on the wall hub covering body composition and Oura recovery/activity, and Oura daily metrics stored in the kcal DB as TDEE cross-check and day context. Apple Health is explicitly out of scope — see §2.
 
 ---

@@ -19,6 +19,8 @@ import './pages/hub-energy-page.js';
 import './pages/hub-media-page.js';
 import './pages/hub-kcal-page.js';
 import './pages/hub-planner-page.js';
+import './pages/hub-health-page.js';
+import type { HealthSection } from './widgets/hub-health-popup.js';
 import './widgets/hub-room-popup.js';
 import './widgets/hub-light-popup.js';
 import './widgets/hub-transit-popup.js';
@@ -28,9 +30,10 @@ import './widgets/hub-vacuum-popup.js';
 import './widgets/hub-car-popup.js';
 import './widgets/hub-todo-popup.js';
 import './widgets/hub-calendar-popup.js';
+import './widgets/hub-health-popup.js';
 import './widgets/hub-nav-bar.js';
 
-const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka'];
+const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka', 'halsa'];
 
 const PAGE_TITLES: Record<string, string> = {
   hem: 'Hem',
@@ -39,6 +42,7 @@ const PAGE_TITLES: Record<string, string> = {
   energi: 'Energi',
   kcal: 'Kcal',
   vecka: 'Vecka',
+  halsa: 'Hälsa',
 };
 
 function pageTitle(id: string): string {
@@ -72,6 +76,7 @@ export class GlassHub extends GlassBaseElement {
   @state() private _openCar = false;
   @state() private _openTodo = false;
   @state() private _openCalendar = false;
+  @state() private _openHealth: HealthSection | null = null;
   @state() private _weatherBgOn = getWeatherBgEnabled();
 
   private _override: ThemeOverride = getStoredOverride();
@@ -210,6 +215,7 @@ export class GlassHub extends GlassBaseElement {
     this.addEventListener('hub-car-open', this._onCarOpen);
     this.addEventListener('hub-todo-open', this._onTodoOpen);
     this.addEventListener('hub-calendar-open', this._onCalendarOpen);
+    this.addEventListener('hub-health-open', this._onHealthOpen as EventListener);
     this.addEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -232,6 +238,7 @@ export class GlassHub extends GlassBaseElement {
     this.removeEventListener('hub-car-open', this._onCarOpen);
     this.removeEventListener('hub-todo-open', this._onTodoOpen);
     this.removeEventListener('hub-calendar-open', this._onCalendarOpen);
+    this.removeEventListener('hub-health-open', this._onHealthOpen as EventListener);
     this.removeEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -257,6 +264,10 @@ export class GlassHub extends GlassBaseElement {
 
   private _onLightsOpen = (): void => {
     this._openLights = true;
+  };
+
+  private _onHealthOpen = (e: CustomEvent<{ section: HealthSection }>): void => {
+    this._openHealth = e.detail?.section ?? null;
   };
 
   private _onVacuumOpen = (): void => {
@@ -294,6 +305,7 @@ export class GlassHub extends GlassBaseElement {
     this._openCar = false;
     this._openTodo = false;
     this._openCalendar = false;
+    this._openHealth = null;
   };
 
   willUpdate(changed: PropertyValues): void {
@@ -533,7 +545,12 @@ export class GlassHub extends GlassBaseElement {
                               .hass=${this.hass}
                               .config=${this._cfg}
                             ></hub-planner-page>`
-                          : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
+                          : id === 'halsa'
+                            ? html`<hub-health-page
+                                .hass=${this.hass}
+                                .config=${this._cfg}
+                              ></hub-health-page>`
+                            : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
             </section>
           `,
         )}
@@ -597,6 +614,13 @@ export class GlassHub extends GlassBaseElement {
         : nothing}
       ${this._openCalendar
         ? html`<hub-calendar-popup .hass=${this.hass} .config=${this._cfg}></hub-calendar-popup>`
+        : nothing}
+      ${this._openHealth
+        ? html`<hub-health-popup
+            .hass=${this.hass}
+            .config=${this._cfg}
+            .section=${this._openHealth}
+          ></hub-health-popup>`
         : nothing}
     `;
   }

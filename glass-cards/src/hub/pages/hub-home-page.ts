@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
+import { numericState, scoreTone, formatSleepDuration } from '../health-model.js';
 import type { HubConfig } from '../hub-config.js';
 import '../widgets/hub-weather-bg.js';
 import type { HubTheme } from '../theme-controller.js';
@@ -225,6 +226,26 @@ export class HubHomePage extends GlassBaseElement {
           open: this._openVacuum,
         });
       }
+    }
+
+    // Recovery — the morning glance, so it needs no swipe. Tone is semantic
+    // (Oura's own bands via scoreTone), not the Hälsa page's domain colour: a
+    // score is the one thing here that can be good or bad. Hidden entirely when
+    // there is no readiness yet, rather than showing a dash.
+    const readinessEntity = cfg.health?.oura?.readiness_score_entity;
+    const readiness = readinessEntity ? numericState(this.getState(readinessEntity)) : null;
+    if (readiness !== null) {
+      const sleepEntity = cfg.health?.oura?.sleep_duration_entity;
+      const sleepH = sleepEntity ? numericState(this.getState(sleepEntity)) : null;
+      const sleep = sleepH === null ? '' : ` · ${formatSleepDuration(Math.round(sleepH * 60))}`;
+      const tone = scoreTone(readiness);
+      chips.push({
+        icon: 'pulse',
+        label: `${Math.round(readiness)} redo${sleep}`,
+        tone: tone === 'neutral' ? 'lavender' : tone,
+        active: true,
+        goto: 'halsa',
+      });
     }
 
     // (The meal plan lives in the bottom band's hub-meal-card, not a chip.)

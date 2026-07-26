@@ -22,6 +22,7 @@ const NAV_MAP: Record<string, Omit<NavItem, 'id'>> = {
   energi: { label: 'Energi', icon: 'bolt', tone: 'green' },
   kcal: { label: 'Kcal', icon: 'ring', tone: 'lavender' },
   vecka: { label: 'Vecka', icon: 'calendar', tone: 'lavender' },
+  halsa: { label: 'Hälsa', icon: 'pulse', tone: 'lavender' },
 };
 
 /** Page id → tab bar item (label, icon, domain tone). Unknown ids fall back to

@@ -47,13 +47,19 @@ spec:
           image: homeassistant/home-assistant:2026.7.3
           imagePullPolicy: Always
 
+          # Raised from 800Mi/500m on 2026-07-26 after an OOMKill (exit 137).
+          # The Oura integration added 71 entities plus a rolling statistics
+          # import on top of an instance that was already restarting daily, and
+          # 800Mi left no headroom. CPU raised too: the container was pinned at
+          # its 500m ceiling during startup, which is what makes boot slow enough
+          # for the ingress to serve 502s.
           resources:
             limits:
-              memory: 800Mi
-              cpu: 500m
+              memory: 1536Mi
+              cpu: "2"
             requests:
-              memory: 400Mi
-              cpu: 200m
+              memory: 640Mi
+              cpu: 300m
 
           ports:
             - containerPort: 8123

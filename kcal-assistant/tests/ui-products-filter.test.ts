@@ -14,6 +14,7 @@ function product(overrides: Partial<Product>): Product {
     verified: true,
     source: "manual",
     category: null,
+    has_image: false,
     ...overrides,
   };
 }

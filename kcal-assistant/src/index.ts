@@ -2,6 +2,7 @@ import { config } from "./config";
 import { getDb } from "./db/index";
 import { createHttpServer, createInternalServer } from "./server";
 import { resolveUiAuthState } from "./ui/auth";
+import { scheduleBackfill } from "./services/product-images";
 
 const db = getDb(); // opens + migrates before we accept traffic
 const uiAuth = resolveUiAuthState({
@@ -22,6 +23,10 @@ server.listen(config.port, () => {
 internalServer.listen(config.internalPort, () => {
   console.log(`kcal-assistant internal API listening on :${config.internalPort}`);
 });
+
+// Product photos fill in behind the scenes at 1 req/s. Delayed so probes and
+// real traffic get served first; unref'd so it can never hold up shutdown.
+scheduleBackfill(db, 15_000);
 
 function shutdown(signal: string): void {
   console.log(`${signal} received, shutting down`);

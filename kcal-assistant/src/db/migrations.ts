@@ -231,6 +231,26 @@ const MIGRATIONS: string[] = [
     updated_at         TEXT NOT NULL DEFAULT (datetime('now'))
   );
   `,
+  // 10: cached product photos for the /ui grid. Bytes are stored verbatim as
+  // fetched (ICA already serves 300x300 webp) so no image library and no
+  // native deps enter the container. A row with bytes IS NULL is a NEGATIVE
+  // cache — proof we looked and found nothing good enough — without it every
+  // restart would re-search ICA for the handful of products it cannot know
+  // ("Gin & Tonic", "Mealprep Köttfärsblandning"). locked=1 marks a photo set
+  // by hand via set_product_image; the backfill never touches those.
+  `
+  CREATE TABLE product_images (
+    product_id   INTEGER PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
+    bytes        BLOB,
+    content_type TEXT,
+    source       TEXT NOT NULL DEFAULT 'ica',
+    source_ref   TEXT,
+    matched_name TEXT,
+    score        REAL,
+    fetched_at   TEXT NOT NULL DEFAULT (datetime('now')),
+    locked       INTEGER NOT NULL DEFAULT 0
+  );
+  `,
 ];
 
 export function migrate(db: Database): void {

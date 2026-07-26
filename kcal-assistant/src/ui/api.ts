@@ -1,6 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { readDay, listDays, getWeek } from "../db/meals";
 import { listProducts } from "../db/products";
+import { productIdsWithImage } from "../db/product-images";
 import { findRecipes, getRecipe } from "../db/recipes";
 import { getTrend, listWeights } from "../db/weights";
 import { listPreferences, getTargets } from "../db/preferences";
@@ -78,8 +79,12 @@ export function handleUiApi(db: Database, req: UiApiRequest): UiApiResponse {
         return { status: 200, body: listDays(db, limit, offset) };
       }
       case "products": {
+        // /ui/api/products/:id/image is served as bytes by server.ts and
+        // never reaches this JSON handler.
         if (param !== undefined) return NOT_FOUND;
-        return { status: 200, body: { products: listProducts(db) } };
+        const withImage = productIdsWithImage(db);
+        const products = listProducts(db).map((p) => ({ ...p, has_image: withImage.has(p.id) }));
+        return { status: 200, body: { products } };
       }
       case "recipes": {
         if (param !== undefined) {

@@ -26,6 +26,8 @@ export interface IcaSearchHit {
   pack_size: string | null;
   price_sek: string | null;
   available: boolean;
+  /** Base path for the packshot; sizes/formats are appended (see icaImageUrl). */
+  image_path: string | null;
 }
 
 export interface IcaDetail {
@@ -76,8 +78,18 @@ interface SearchResponse {
       packSizeDescription?: string;
       price?: { amount?: string };
       available?: boolean;
+      imagePaths?: string[];
     }>;
   }>;
+}
+
+/**
+ * ICA serves packshots from a base path plus "/<w>x<h>.<ext>". We take the
+ * 300x300 webp: big enough for the grid plate on a retina panel, ~15-25 KB,
+ * and already encoded — so nothing in this app needs an image library.
+ */
+export function icaImageUrl(imagePath: string, size = 300): string {
+  return `${imagePath}/${size}x${size}.webp`;
 }
 
 export async function searchIca(storeId: string, term: string, limit = 8): Promise<IcaSearchHit[]> {
@@ -97,7 +109,33 @@ export async function searchIca(storeId: string, term: string, limit = 8): Promi
       pack_size: p.packSizeDescription ?? null,
       price_sek: p.price?.amount ?? null,
       available: p.available ?? false,
+      image_path: p.imagePaths?.[0] ?? null,
     }));
+}
+
+/**
+ * Fetches a packshot as raw bytes. Returns null rather than throwing on any
+ * non-image, oversized or failed response — a missing photo must never break
+ * the caller (backfill loop or an MCP correction).
+ */
+export async function fetchIcaImage(
+  imagePath: string,
+  maxBytes = 300_000,
+): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+  try {
+    const res = await fetch(icaImageUrl(imagePath), {
+      headers: { "User-Agent": USER_AGENT, Accept: "image/webp,image/*" },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.startsWith("image/")) return null;
+    const buffer = await res.arrayBuffer();
+    if (buffer.byteLength === 0 || buffer.byteLength > maxBytes) return null;
+    return { bytes: new Uint8Array(buffer), contentType };
+  } catch {
+    return null;
+  }
 }
 
 interface BopResponse {

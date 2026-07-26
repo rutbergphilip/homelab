@@ -4,6 +4,7 @@ import type { Database } from "bun:sqlite";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { buildMcpServer } from "./mcp";
 import { handleUiApi } from "./ui/api";
+import { getProductImage } from "./db/product-images";
 import { buildInternalSummary, buildInternalPlanner, buildInternalHealth } from "./ui/internal";
 import { confirmDay } from "./db/plan";
 import { logWeight } from "./db/weights";
@@ -32,6 +33,9 @@ const STATIC_ROUTES: Record<string, { file: URL; type: string }> = {
 };
 
 const API_ROUTE = /^\/ui\/api\/[a-z]+(\/[A-Za-z0-9-]+)?$/;
+// Three segments deep and binary, so it cannot go through API_ROUTE (two
+// segments) or handleUiApi (JSON bodies only).
+const IMAGE_ROUTE = /^\/ui\/api\/products\/(\d+)\/image$/;
 
 function uiHeaders(res: ServerResponse): void {
   res.setHeader("Cache-Control", "no-store");
@@ -141,6 +145,28 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
           uiHeaders(res);
           res.writeHead(200, { "content-type": staticRoute.type });
           res.end(await Bun.file(staticRoute.file).bytes());
+          return;
+        }
+        // Cached product photo. uiHeaders() sets no-store for the app's data;
+        // an image is immutable until we re-match it, so it overrides that
+        // with a short private max-age plus an ETag derived from fetched_at.
+        const imageMatch = pathname.match(IMAGE_ROUTE);
+        if (imageMatch) {
+          const image = getProductImage(opts.db, Number(imageMatch[1]));
+          if (!image) {
+            uiJson(res, 404, { error: "ingen bild" });
+            return;
+          }
+          const etag = `"${imageMatch[1]}-${image.fetched_at}"`;
+          uiHeaders(res);
+          res.setHeader("Cache-Control", "private, max-age=3600, must-revalidate");
+          res.setHeader("ETag", etag);
+          if (req.headers["if-none-match"] === etag) {
+            res.writeHead(304).end();
+            return;
+          }
+          res.writeHead(200, { "content-type": image.content_type });
+          res.end(image.bytes);
           return;
         }
         if (API_ROUTE.test(pathname)) {

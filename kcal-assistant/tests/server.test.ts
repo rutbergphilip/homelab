@@ -128,7 +128,7 @@ describe("createInternalServer — cluster-internal-only :3001-style listener", 
 });
 
 describe("mcp over streamable http", () => {
-  test("lists all 27 tools", async () => {
+  test("lists all 28 tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
@@ -138,6 +138,7 @@ describe("mcp over streamable http", () => {
         "search_products",
         "get_product",
         "save_product",
+        "set_product_image",
         "lookup_nutrition",
         "log_meal",
         "edit_meal",

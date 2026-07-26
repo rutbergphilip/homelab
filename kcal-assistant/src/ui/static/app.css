@@ -23,6 +23,22 @@
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"] { color-scheme: dark; }
 
+/* Product photos are ICA packshots on flat white. Unmodified they would glare
+   as bright squares against the near-black dark theme, so the plate carries a
+   warm tone and the photo a small damping — dark mode only. light-dark() can
+   only produce colours, not filters, so this needs the media query AND the
+   [data-theme] overrides: without the latter the manual theme toggle would be
+   overruled by the OS setting in one direction and ignored in the other. */
+:root {
+  --plate: #f6f2ea;
+  --photo-filter: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --plate: #ded7c8; --photo-filter: brightness(0.88) saturate(0.9); }
+}
+:root[data-theme="light"] { --plate: #f6f2ea; --photo-filter: none; }
+:root[data-theme="dark"] { --plate: #ded7c8; --photo-filter: brightness(0.88) saturate(0.9); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { background: var(--bg); }
@@ -42,7 +58,7 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  max-width: 680px;
+  max-width: var(--view-max);
   margin: 0 auto;
   padding: 18px 16px 10px;
   border-bottom: 3px double var(--hair-2);
@@ -76,8 +92,15 @@ body {
 .theme-toggle:hover { color: var(--accent); border-color: var(--accent-dim); }
 
 /* ---------- layout ---------- */
+/* Width is per view, not per app: a hero number and a weight chart gain
+   nothing from 1240px, a 121-item catalogue gains a lot. The route table
+   (app/lib/routes.ts) decides which; this is the whole mechanism. */
+.app { --view-max: 720px; }
+.app--narrow { --view-max: 720px; }
+.app--wide { --view-max: 1240px; }
+
 .view {
-  max-width: 680px;
+  max-width: var(--view-max);
   margin: 0 auto;
   padding: 18px 16px calc(84px + env(safe-area-inset-bottom));
 }
@@ -107,7 +130,9 @@ body {
   left: 0;
   right: 0;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  /* Seven tabs. At six columns REGLER wrapped alone onto a second row; a
+     4+3 split is the balanced shape until there is room for one row. */
+  grid-template-columns: repeat(4, 1fr);
   background: color-mix(in oklab, var(--surface) 92%, transparent);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--hair);
@@ -128,6 +153,9 @@ body {
 .tabbar a.active {
   color: var(--accent);
   border-top-color: var(--accent);
+}
+@media (min-width: 560px) {
+  .tabbar { grid-template-columns: repeat(7, 1fr); }
 }
 
 /* ---------- section headers ---------- */
@@ -295,11 +323,23 @@ h2::after { content: ""; flex: 1; border-top: 1px solid var(--hair); }
 .rowlink .num { font-variant-numeric: tabular-nums; }
 
 /* ---------- search ---------- */
-.filter-row { display: flex; gap: 8px; align-items: flex-start; margin: 4px 0 12px; }
+/* Capped independently of the view: a 1240px-wide search field would be the
+   same readability mistake as a 680px-wide catalogue, just mirrored. */
+.filter-row { display: flex; gap: 8px; align-items: flex-start; margin: 4px 0 12px; max-width: 640px; }
 .filter-row .search { margin: 0; flex: 1 1 auto; }
 .filter-row .kselect-trigger { flex: 0 0 auto; width: auto; min-width: 160px; }
+/* Side by side, the 160px select squeezes the search field until its own
+   placeholder is cut off. Below this width they stack instead. */
+@media (max-width: 480px) {
+  .filter-row { flex-wrap: wrap; }
+  .filter-row .search { flex: 1 1 100%; }
+  .filter-row .kselect-trigger { width: 100%; }
+}
 .search {
   width: 100%;
+  /* Same readable measure as .filter-row — a search field that spans a wide
+     view looks like an input error, not a feature. */
+  max-width: 640px;
   font-family: var(--mono);
   font-size: 14px;
   color: var(--ink);
@@ -342,6 +382,230 @@ details.card .body { padding: 10px 12px 12px; }
   margin-top: 10px;
 }
 .alias { color: var(--ink-3); font-size: 11px; font-family: var(--mono); }
+
+/* ---------- product grid (v0.14) ---------- */
+/* clamp() inside minmax() gives 6 columns at 1240px and 2 on a phone with no
+   media queries: 16vw is the natural column, the bounds stop it collapsing to
+   one column on narrow screens or ballooning on very wide ones. */
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(150px, 16vw, 180px), 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.ptile {
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  color: var(--ink);
+  transition: border-color 0.15s ease-out;
+}
+.ptile:hover { border-color: var(--hair-2); }
+.ptile:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 1px; }
+.ptile-plate-wrap { position: relative; }
+.ptile-plate {
+  aspect-ratio: 1;
+  background: var(--plate);
+  border-bottom: 1px solid var(--hair);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ptile-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8%;
+  filter: var(--photo-filter);
+  transition: filter 0.2s ease-out;
+}
+.ptile:hover .ptile-plate img { filter: none; }
+/* An empty plate stays on the card surface rather than the bright photo
+   plate — a missing photo should read as quiet, not as a blank light box. */
+.ptile-plate.empty { background: var(--surface-2); }
+.ptile-monogram {
+  font-family: var(--mono);
+  font-size: clamp(18px, 3.4vw, 26px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  border: 1px dotted var(--hair-2);
+  border-radius: 2px;
+  padding: 10px 12px;
+}
+.ptile-flag {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  background: color-mix(in oklab, var(--surface) 85%, transparent);
+  border: 1px solid var(--hair-2);
+  border-radius: 2px;
+  padding: 0 5px;
+}
+.ptile-body { display: flex; flex-direction: column; gap: 3px; flex: 1; padding: 8px 9px 9px; }
+.ptile-name {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.32;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ptile-num {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  margin-top: auto;
+  padding-top: 3px;
+}
+
+/* Recipes have no photo, so the card is typographic: title, tags, then the
+   number pinned to the bottom edge so a row of cards shares one baseline. */
+.rgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(200px, 22vw, 260px), 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.rcard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+  min-height: 100px;
+  min-width: 0;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 13px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out;
+}
+.rcard:hover { border-color: var(--hair-2); }
+.rcard:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 1px; }
+.rcard-name { line-height: 1.35; max-width: 100%; overflow-wrap: anywhere; }
+/* Tags arrive comma-joined with no spaces, so they are one unbreakable token
+   and would run straight through the card's right border. */
+.rcard-tags {
+  font-size: 11px;
+  color: var(--ink-3);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.rcard-foot {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+.rcard-foot .dim { color: var(--ink-3); }
+
+/* ---------- drawer (v0.14) ---------- */
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 40;
+  animation: fade 0.2s ease-out;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 92vw);
+  z-index: 41;
+  overflow-y: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--hair-2);
+  padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
+  animation: drawer-in 0.25s ease-out;
+}
+.drawer-head { display: flex; justify-content: flex-end; }
+.drawer-close {
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-2);
+  background: none;
+  border: 1px solid var(--hair-2);
+  border-radius: 2px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.drawer-close:hover { color: var(--accent); border-color: var(--accent-dim); }
+.drawer-close:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 1px; }
+.drawer .ptile-plate.large {
+  max-width: 240px;
+  margin: 4px auto 14px;
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+}
+.drawer-title {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.drawer-brand { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.drawer-block { margin-top: 16px; }
+.drawer-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+}
+.drawer .pill-flags { margin-top: 18px; }
+
+@media (max-width: 720px) {
+  .drawer {
+    top: auto;
+    left: 0;
+    width: auto;
+    max-height: 85dvh;
+    border-left: none;
+    border-top: 1px solid var(--hair-2);
+    animation: sheet-in 0.25s ease-out;
+  }
+}
+
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes drawer-in { from { transform: translateX(100%) } to { transform: none } }
+@keyframes sheet-in { from { transform: translateY(100%) } to { transform: none } }
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer, .drawer-scrim { animation: none; }
+  .ptile, .ptile-plate img { transition: none; }
+}
 
 /* ---------- tables ---------- */
 .tablewrap { overflow-x: auto; margin: 8px 0; }
@@ -533,7 +797,11 @@ button.chip:focus-visible { outline: 2px solid var(--accent-dim); outline-offset
 .vnav button:hover { border-color: var(--accent-dim); }
 .vnav button:focus-visible { outline: 2px solid var(--accent-dim); outline-offset: 0; }
 .vnav-range { flex: 1; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
-.vday { margin: 14px 0; padding: 12px 12px 10px; background: var(--surface); border: 1px solid var(--hair); border-radius: 2px; }
+/* Two-up on a wide screen: each day card is self-contained, so splitting the
+   week into columns keeps every dotted leader short AND puts more of the week
+   on screen at once. One column below 900px. */
+.vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 430px), 1fr)); gap: 12px; align-items: start; }
+.vday { margin: 0; padding: 12px 12px 10px; background: var(--surface); border: 1px solid var(--hair); border-radius: 2px; }
 .vday.today { border-color: var(--accent-dim); }
 .vday.confirmed { background: var(--surface-2); }
 .vday-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }

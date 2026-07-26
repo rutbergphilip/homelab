@@ -1,8 +1,14 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
 import { z } from "zod";
-import { getProduct, saveProduct, searchProducts } from "../db/products";
+import { getProduct, saveProduct, searchProducts, type Product } from "../db/products";
 import { computeBatch } from "../db/batch";
+import { clearProductImage, getImageStatus } from "../db/product-images";
+import {
+  findImageCandidates,
+  scheduleBackfill,
+  setImageFromCandidate,
+} from "../services/product-images";
 import { isValidCategory, categoryError } from "../lib/categories";
 import { categorySchema, macrosSchema, mealItemSchema, portionSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
@@ -29,6 +35,24 @@ function resolveCategoryForSave(category: string | undefined, hasId: boolean): s
   if (category === "") return hasId ? "" : undefined;
   if (!isValidCategory(category)) throw new Error(categoryError());
   return category;
+}
+
+// set_product_image accepts an id or a name so the LLM does not have to run
+// search_products first for the common "fixa bilden för knäckebrödet" phrasing.
+function resolveProductRef(db: Database, ref: number | string): Product {
+  if (typeof ref === "number") {
+    const product = getProduct(db, ref);
+    if (!product) throw new Error(`Product ${ref} not found`);
+    return product;
+  }
+  const hits = searchProducts(db, ref, 2);
+  if (hits.length === 0) throw new Error(`Hittade ingen produkt som matchar "${ref}"`);
+  if (hits.length > 1) {
+    throw new Error(
+      `"${ref}" matchar flera produkter (${hits.map((h) => `${h.id}: ${h.name}`).join(", ")}) — ange id`,
+    );
+  }
+  return hits[0]!;
 }
 
 export function registerProductTools(server: McpServer, db: Database): void {
@@ -82,7 +106,70 @@ export function registerProductTools(server: McpServer, db: Database): void {
     },
     wrap((input) => {
       const category = resolveCategoryForSave(input.category, input.id !== undefined);
-      return jsonResult(saveProduct(db, { ...input, category }));
+      const product = saveProduct(db, { ...input, category });
+      // A new product has no photo yet; nudge the backfill so the /ui grid
+      // fills in within a minute instead of at the next restart.
+      scheduleBackfill(db, 2_000);
+      return jsonResult(product);
+    }),
+  );
+
+  server.registerTool(
+    "set_product_image",
+    {
+      description:
+        "Correct or set the photo shown for a product in KCAL·DB's /ui grid. Photos are normally matched automatically against Philip's ICA store, but ICA's search is fuzzy — call this when a product shows the WRONG photo or none at all. Two steps: call with only `product` to see scored candidates, then call again with `retailer_product_id` from the chosen candidate to save it. A photo set this way is locked and the automatic backfill will never overwrite it. Use `clear:true` to remove a wrong photo and let automatic matching retry.",
+      inputSchema: {
+        product: z.union([z.number().int(), z.string()]).describe("Product id, or a name/alias to search for"),
+        retailer_product_id: z
+          .string()
+          .optional()
+          .describe("From a candidate returned by the first call — saves that photo"),
+        query: z.string().optional().describe("Override the ICA search term when the product name finds nothing"),
+        clear: z.boolean().optional().describe("Remove the stored photo instead of setting one"),
+      },
+    },
+    wrap(async ({ product, retailer_product_id, query, clear }) => {
+      const target = resolveProductRef(db, product);
+
+      if (clear) {
+        clearProductImage(db, target.id);
+        return jsonResult({ product: { id: target.id, name: target.name }, cleared: true });
+      }
+
+      const candidates = await findImageCandidates(target.name, target.brand, query);
+
+      if (retailer_product_id === undefined) {
+        return jsonResult({
+          product: { id: target.id, name: target.name, brand: target.brand },
+          current: getImageStatus(db, target.id),
+          candidates: candidates.map(({ candidate, score }) => ({
+            retailer_product_id: candidate.retailer_product_id,
+            name: candidate.name,
+            brand: candidate.brand,
+            score: Number(score.toFixed(2)),
+          })),
+          next_step:
+            candidates.length === 0
+              ? "Inga träffar med bild. Prova ett annat `query`."
+              : "Anropa igen med retailer_product_id för den kandidat Philip väljer.",
+        });
+      }
+
+      const chosen = candidates.find((c) => c.candidate.retailer_product_id === retailer_product_id);
+      if (!chosen) {
+        throw new Error(
+          `retailer_product_id ${retailer_product_id} fanns inte bland kandidaterna — sök om utan retailer_product_id först`,
+        );
+      }
+      const saved = await setImageFromCandidate(db, target.id, chosen.candidate, chosen.score);
+      if (!saved) throw new Error("Kunde inte hämta bilden från ICA");
+      return jsonResult({
+        product: { id: target.id, name: target.name },
+        saved: true,
+        matched_name: chosen.candidate.name,
+        locked: true,
+      });
     }),
   );
 

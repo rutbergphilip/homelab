@@ -9,6 +9,7 @@ import { ReceptDetalj } from "./views/ReceptDetalj";
 import { Vikt } from "./views/Vikt";
 import { Regler } from "./views/Regler";
 import { Vecka } from "./views/Vecka";
+import { matchRoute, type ViewName, type ViewWidth } from "./lib/routes";
 
 const TABS = [
   ["idag", "Idag"], ["vecka", "Vecka"], ["dagar", "Dagar"], ["produkter", "Produkter"],
@@ -25,21 +26,27 @@ export function useHashRoute(): string {
   return hash;
 }
 
-export interface Route { tab: string; el: ReactNode }
+export interface Route { tab: string; width: ViewWidth; el: ReactNode }
+
+const VIEWS: Record<ViewName, (param?: string) => ReactNode> = {
+  idag: () => <Idag />,
+  vecka: () => <Vecka />,
+  dagar: () => <Dagar />,
+  dagDetalj: (param) => <DagDetalj date={param!} />,
+  produkter: () => <Produkter />,
+  recept: () => <Recept />,
+  receptDetalj: (param) => <ReceptDetalj id={param!} />,
+  vikt: () => <Vikt />,
+  regler: () => <Regler />,
+};
 
 export function resolveRoute(hash: string): Route {
-  let m: RegExpMatchArray | null;
-  if (/^#\/idag$/.test(hash)) return { tab: "idag", el: <Idag /> };
-  if (/^#\/vecka$/.test(hash)) return { tab: "vecka", el: <Vecka /> };
-  if (/^#\/dagar$/.test(hash)) return { tab: "dagar", el: <Dagar /> };
-  if ((m = hash.match(/^#\/dagar\/(\d{4}-\d{2}-\d{2})$/))) return { tab: "dagar", el: <DagDetalj date={m[1]!} /> };
-  if (/^#\/produkter$/.test(hash)) return { tab: "produkter", el: <Produkter /> };
-  if (/^#\/recept$/.test(hash)) return { tab: "recept", el: <Recept /> };
-  if ((m = hash.match(/^#\/recept\/(\d+)$/))) return { tab: "recept", el: <ReceptDetalj id={m[1]!} /> };
-  if (/^#\/vikt$/.test(hash)) return { tab: "vikt", el: <Vikt /> };
-  if (/^#\/regler$/.test(hash)) return { tab: "regler", el: <Regler /> };
-  location.hash = "#/idag";
-  return { tab: "idag", el: null };
+  const match = matchRoute(hash);
+  if (!match) {
+    location.hash = "#/idag";
+    return { tab: "idag", width: "narrow", el: null };
+  }
+  return { tab: match.tab, width: match.width, el: VIEWS[match.view](match.param) };
 }
 
 type Theme = "system" | "light" | "dark";
@@ -92,7 +99,7 @@ function App() {
   // react-dom's commit phase, leaving the view blank. Discard the return value.
   useEffect(() => { window.scrollTo(0, 0); }, [hash]);
   return (
-    <>
+    <div className={`app app--${route.width}`}>
       <header className="masthead">
         <span className="brand">KCAL<span className="brand-sep">·</span>DB</span>
         <span className="masthead-meta">
@@ -108,7 +115,7 @@ function App() {
           <a key={tab} href={`#/${tab}`} data-tab={tab} className={route.tab === tab ? "active" : ""}>{label}</a>
         ))}
       </nav>
-    </>
+    </div>
   );
 }
 

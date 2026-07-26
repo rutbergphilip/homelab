@@ -31,7 +31,19 @@ lägger klassen på en yttre wrapper; CSS gör resten:
 
 | smal (720px) | bred (1240px) |
 |---|---|
-| Idag, Vikt, Regler, DagDetalj, ReceptDetalj | Produkter, Recept, Dagar, Vecka |
+| Idag, Vikt, Regler, Dagar, DagDetalj, ReceptDetalj | Produkter, Recept, Vecka |
+
+**Rättad efter mätning.** Första utkastet satte Dagar till bred, med
+motiveringen "katalog vs detalj". Fel skiljelinje: det som avgör är om
+innehållet blir ett **rutnät** eller förblir **kvittorader med ledare**. Dagar
+i 1240px lägger datumet och dess siffror en meter isär med en prickad linje
+emellan — precis den läsbarhetsförlust bredden skulle undvika. Dagar är därför
+smal, medan Recept och Vecka blev breda genom att faktiskt bli rutnät:
+
+- **Recept** — 4-kolumners textkort (namn, taggar, kcal/portion, tid). 12
+  recept syns samtidigt i stället för en lista.
+- **Vecka** — 2-kolumners rutnät av dagkort. Sex dagar syns i stället för två,
+  och varje ledare halveras.
 
 Mastheaden följer vyns bredd så `KCAL·DB`-linjalen alltid ligger i linje med
 innehållet under. Inget imperativt DOM-pillande: `resolveRoute` är en ren
@@ -111,6 +123,21 @@ produktlistan 2026-07-26:
    i `svartvitknäckesticks…`, så bruset avvisas ändå.
 5. Märkesbonus +0.15 om vårt `brand` återfinns hos dem.
 6. Tröskel 0.6. Alla topp-5-träffar poängsätts; bästa vinner, inte första.
+
+**Två sökförsök, inte ett.** Första körningen mot riktiga data gav 72/121.
+Diagnosen: ICA:s sökning verkar AND:a termerna, så långa namn med kvalificerare
+ICA inte använder ger **noll träffar** — "Estrella Ugnsbakade Chips Sourcream &
+Onion", "Findus Oxpytt Originalet" och "Arla Protein Shake Chocolate"
+returnerade alla ingenting. Ett omförsök med namnets två första tokens hittar
+dem. Andra körningen: **90/121 (74%)**.
+
+Omförsöket vidgar nätet men aldrig godkännandet — kandidaterna går genom samma
+tröskel. Det är vad som hindrar "FAGE Total" från att montera flaskan Listerine
+Total Care som ICA faktiskt returnerar för den förkortade frågan.
+
+De ~31 som återstår utan bild är genuint omatchbara: hemlagat
+("Mealprep Köttfärsblandning"), takeaway ("Kao Pad Krapao (Golden Kitchen)"),
+alkohol och referensposter. De visar monogramplåt, som designat.
 
 **Körning.** `src/services/product-images.ts` har en kö över produkter som
 saknar rad. Seriell, 1 req/s (ICA:s WAF är känd sedan tidigare), en körning i

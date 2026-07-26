@@ -477,9 +477,11 @@ export function Vecka() {
         ) : null}
       </div>
       {writeError ? <ErrorNote message={writeError} /> : null}
-      {data.days.map((day) => (
-        <DayCard key={day.date} day={day} week={data} writer={writer} reload={reload} />
-      ))}
+      <div className="vgrid">
+        {data.days.map((day) => (
+          <DayCard key={day.date} day={day} week={data} writer={writer} reload={reload} />
+        ))}
+      </div>
       {data.week.planned_days === 0 ? <EmptyState>Inget planerat den här veckan. Planera i chatten eller med + lägg till.</EmptyState> : null}
       {data.shopping_list.length > 0 ? (
         <details className="vshop">

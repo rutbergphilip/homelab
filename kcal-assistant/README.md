@@ -53,6 +53,29 @@ The Deployment must keep `replicas: 1` and `strategy: Recreate` — SQLite on NF
 
 Read-only database browser (KCAL·DB) at `https://kcal.rutberg.dev/ui`: dagar, måltider, produkter, recept, vikt/TDEE, regler. Editing stays in chat via MCP — the UI has zero mutation endpoints.
 
+Layout width is per route, not per app (`src/ui/app/lib/routes.ts` sets `narrow` 720px / `wide` 1240px); `.app--narrow`/`.app--wide` drive a `--view-max` custom property that both the masthead and the view read.
+
+### Product photos
+
+Produkter is a grid of photo tiles. Photos are matched automatically against
+Philip's ICA store and cached as bytes in `product_images` (~20 KB webp each) —
+the CSP is `img-src 'self'`, so hotlinking ICA would be blocked even if we
+wanted it.
+
+Matching is **confidence-gated** (`src/lib/image-match.ts`): ICA's search is
+fuzzy and personalized, and its top hit for "Knäckebröd" is a Vilmas
+knäckesticks followed by two olive spreads. Every candidate is scored by token
+containment against our own name — with substring matching on tokens ≥ 4 chars
+so Swedish compounds resolve ("baby" + "plommontomater" inside
+"babyplommontomater") — and the best must clear 0.6 or the product simply shows
+an empty plate. A wrong photo is worse than none.
+
+The backfill runs in-process at 1 req/s, on startup (delayed 15 s) and after
+`save_product`. A row with `bytes IS NULL` is a negative cache so unmatchable
+products ("Gin & Tonic") are not re-queried every restart; those retry after 30
+days. Corrections happen in chat via `set_product_image`, which locks the photo
+against future backfills — the UI stays read-only.
+
 **Security model (defense in depth):** `/ui` is gated by self-hosted **Authentik**
 forward-auth (single-application pattern — the whole handshake runs on
 kcal.rutberg.dev so the session cookie and auth check share one host).

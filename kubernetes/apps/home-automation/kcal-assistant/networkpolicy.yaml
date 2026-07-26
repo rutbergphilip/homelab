@@ -4,10 +4,19 @@
 #     arrive via nginx), restricted to port 3000 (the ingress-facing handler;
 #     /internal/summary does NOT exist there), and
 #   - host + remote-node entities: port 3000 L7-limited to GET /healthz
-#     (kubelet probes); port 3001 L7-limited to GET /internal/summary +
-#     /healthz (Home Assistant runs with hostNetwork for HomeKit/mDNS, so its
-#     wall-hub REST sensors arrive with host identity). /ui and /mcp stay
-#     unreachable except via nginx, preserving the header-forgery protection.
+#     (kubelet probes); port 3001 L7-limited to the /internal/* reads and the
+#     three writes below (Home Assistant runs with hostNetwork for HomeKit/mDNS,
+#     so its wall-hub REST sensors and rest_commands arrive with host identity).
+#     /ui and /mcp stay unreachable except via nginx, preserving the
+#     header-forgery protection.
+#
+# The port-3001 writes are all idempotent and self-limiting by design, which is
+# what makes an unauthenticated (network-gated only) write surface acceptable:
+#   /internal/weight  — db/weights.ts declines any weigh-in for a date that is
+#                       already taken, so a replay cannot alter history.
+#   /internal/daily   — COALESCE merge; a replay of the same payload is a no-op
+#                       and a null can never erase a stored value.
+#   /internal/planner/confirm — whole-day confirm only; refuses a second time.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -46,7 +55,13 @@ spec:
                 path: "/internal/summary"
               - method: "GET"
                 path: "/internal/planner"
+              - method: "GET"
+                path: "/internal/health"
               - method: "POST"
                 path: "/internal/planner/confirm"
+              - method: "POST"
+                path: "/internal/weight"
+              - method: "POST"
+                path: "/internal/daily"
               - method: "GET"
                 path: "/healthz"

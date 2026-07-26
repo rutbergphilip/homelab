@@ -1,7 +1,7 @@
 # Withings + Oura Health Integration — Design Spec
 
 **Date:** 2026-07-26
-**Status:** Approved, not yet implemented.
+**Status:** Approved. Phase 0 complete (2026-07-26): Oura Ring v2.8.3 installed via HACS, OAuth connected, 71 entities live. Two design corrections from phase 0 findings, both recorded below — Oura history **is** reachable (§8, reversing the original "no backfill" decision), and the deferred entity/unit unknowns are resolved (§6.3).
 **Scope:** Automatic weight logging from the Withings scale into the kcal database (retiring manual `log_weight` through chat), a new **Hälsa** page on the wall hub covering body composition and Oura recovery/activity, and Oura daily metrics stored in the kcal DB as TDEE cross-check and day context. Apple Health is explicitly out of scope — see §2.
 
 ---
@@ -18,7 +18,7 @@
 
 - Oura's burn does **not** feed the forecast model. The backwards-computed TDEE (intake + weight change over the trend window) stays authoritative; Oura is displayed beside it as a comparison only.
 - Body composition is **not** stored in the kcal DB (user decision). It is read live from HA and shown only on the Hälsa page.
-- No Oura history backfill in v1 (§8).
+- Oura history **is** backfilled (~70 days), via HA long-term statistics (§8).
 
 ---
 
@@ -34,7 +34,9 @@ Should an Apple Watch arrive later, the bridge becomes worthwhile; the `POST /in
 
 **Withings** — integration live. Config entry carries a `webhook_id`, and `external_url` is `https://home.rutberg.dev`, so Withings POSTs to `/api/webhook/<id>` and sensors update within seconds of a weigh-in (confirmed: all body sensors updated together at 08:25 UTC / 10:25 local). Entities: `sensor.withings_vikt`, `_fettforhallande`, `_fettmassa`, `_fettfri_massa`, `_muskelmassa`, `_benmassa`, `_hjartpuls`, `_batteri`, last-workout sensors (`_typ_pa_senaste_traningspasset`, `_forbranda_kalorier_...`, `_langd_tid_...`, `_tillryggalagd_stracka_...`), and `calendar.withings_traningspass`. No steps or sleep sensors (no ScanWatch, no Sleep mat).
 
-**Oura** — not yet installed. No core integration exists as of 2026. Route: `louispires/Oura-Home-Assistant-Integration` (HACS default repository, OAuth2 via HA application credentials, ~60 sensors + 2 binary sensors, configurable 1–60 min polling). HACS is already present in this cluster via the `install-hacs` init container (`hasl3` installed the same way).
+**Oura** — installed in phase 0 (2026-07-26). No core integration exists as of 2026; the route taken was `louispires/Oura-Home-Assistant-Integration` v2.8.3 (HACS default repository, OAuth2 via HA application credentials). Installed *through* HACS — via its `hacs/repository/download` WebSocket command rather than by copying files into the PVC — so HACS continues to manage updates. Result: **71 entities** (`sensor.oura_ring_*`, two binary sensors, one update entity) on an Oura Ring 4. The integration declares `application_credentials` and `recorder` as dependencies and has no Python requirements, so it needs no pip step at startup; it requests exactly 11 OAuth scopes (`email`, `personal`, `daily`, `heartrate`, `workout`, `session`, `tag`, `spo2`, `ring_configuration`, `stress`, `heart_health`).
+
+The integration and HACS both live on the HA PVC, outside git — pre-existing drift (`hacs`, `hasl3`) rather than new, but it means Flux will not restore them. Documented in phase 5.
 
 **Critical constraint:** Oura **deprecated personal access tokens in December 2025** — new ones cannot be created. Any direct Oura client in the cluster would need its own OAuth2 app registration plus refresh-token storage and rotation. This is what rules out `kcal-assistant` polling Oura itself.
 
@@ -154,7 +156,16 @@ Adding a tool for this would fragment the assistant's mental model; the data bel
 
 ### 5.6 `scripts/backfill-health.ts`
 
-Reads HA's `/api/history/period` for the Oura sensors using the token at `.claude/ha-token`, rolls values up per Stockholm day, and POSTs each day to `/internal/daily`. Run from the laptop; not deployed. Purpose is **gap repair** (a day lost to an HA restart or a failed automation), bounded by the recorder's retention — see §8.
+Reads HA **long-term statistics** over the WebSocket API (`recorder/statistics_during_period`, `period: 'day'`) using the token at `.claude/ha-token`, and POSTs each day to `/internal/daily`. Run from the laptop; not deployed. Serves two purposes: the **initial seed** of ~70 days (§8) and later **gap repair** for any day a nightly push missed.
+
+Field selection depends on the sensor's `state_class`, verified in phase 0:
+
+- `total` / `total_increasing` (`total_calories`, `active_calories`, `steps`, `total_sleep_duration`) → take **`state`**, the day's final value. `mean` is null for these.
+- `measurement` (`sleep_score`, `readiness_score`, `average_sleep_hrv`, `lowest_sleep_heart_rate`) → take **`mean`**, rounded to the column's precision. Only `mean` is populated, and it equals the true value exactly because each of these holds one constant value for the whole day.
+
+Day periods align to Stockholm midnight, so a period's `start` maps directly to the `date` primary key with no timezone arithmetic.
+
+The one caveat worth stating: `mean` is exact *only* while a measurement sensor stays constant across the day. If Oura ever revises a score mid-day (a recorded nap, a late sync), the mean blends the two values. The blend is small and self-corrects the next night, and the nightly push — which reads the live state, not statistics — is unaffected.
 
 ### 5.7 Tests (`bun test`)
 
@@ -220,12 +231,25 @@ kcal_log_daily:
      "hrv_ms": <average sleep HRV>, "resting_hr": <lowest sleep heart rate>}
 ```
 
-The eight metric fields are exactly the `daily_metrics` columns. The entity IDs behind each placeholder are filled in during phase 2, once phase 0 has established what the Oura integration actually names them — writing them earlier would be guesswork.
+**Resolved in phase 0** — the eight metric fields map to these verified entities:
+
+| Column | Entity | Notes |
+|---|---|---|
+| `oura_total_kcal` | `sensor.oura_ring_total_calories` | TDEE incl. BMR; complete days observed 2437–3738 kcal |
+| `oura_active_kcal` | `sensor.oura_ring_active_calories` | |
+| `oura_steps` | `sensor.oura_ring_steps` | `total_increasing`, resets daily |
+| `sleep_score` | `sensor.oura_ring_sleep_score` | |
+| `sleep_duration_min` | `sensor.oura_ring_total_sleep_duration` | **unit is hours** → `× 60`, round |
+| `readiness_score` | `sensor.oura_ring_readiness_score` | |
+| `hrv_ms` | `sensor.oura_ring_average_sleep_hrv` | |
+| `resting_hr` | `sensor.oura_ring_lowest_sleep_heart_rate` | Oura's resting-HR concept is the sleep minimum, not `average_sleep_heart_rate` |
 
 Two template requirements:
 
-- **Emit JSON `null`, not the string `"unknown"`,** for any sensor that is `unknown`/`unavailable`, so a missing metric arrives as null and `COALESCE` preserves whatever was already stored. In practice: `{{ states('sensor.x') | float(default='null') }}`-style guards, verified per field against the real entity.
-- **Convert sleep duration to whole minutes** in the template. The integration exposes total sleep duration as a duration sensor whose unit must be confirmed in phase 0 (hours vs minutes vs seconds); `sleep_duration_min` is minutes by definition, and the conversion belongs in the automation so the stored column needs no unit metadata.
+- **Emit JSON `null`, not the string `"unknown"`,** for any sensor that is `unknown`/`unavailable`, so a missing metric arrives as null and `COALESCE` preserves whatever was already stored. This is not hypothetical: at phase-0 time `vo2_max`, `stress_day_summary`, `optimal_bedtime_*` and `tags_today` were all `unavailable`, and Oura documents that several metrics need baseline data before they populate.
+- **Convert sleep duration to whole minutes** in the template — the sensor reports **hours** (`8.44166…`), verified in phase 0. `sleep_duration_min` is minutes by definition, so the conversion belongs in the automation and the column needs no unit metadata.
+
+**Why 23:50 is the right capture time, confirmed empirically:** `total_calories` read 1907 kcal at 11:15 while `active_calories` was 2 — the sensor front-loads a full day's BMR, so it is *not* a "so far today" figure and cannot be sampled early. Daily statistics for complete days (3035, 3052, 3672 kcal) sit in a plausible TDEE range, so a late-evening sample is sound.
 
 ### 6.4 Automations
 
@@ -312,36 +336,49 @@ Deploy as usual: `npm test`, `npm run build`, `./scripts/upload.sh`, `node scrip
 
 ---
 
-## 8. Accepted limitation: no Oura backfill
+## 8. Oura backfill — reversed after phase 0
 
-The HACS integration's 3-month historical load writes **HA long-term statistics**, which the REST `history` API does not serve, and the recorder keeps only 10 days by default. Reaching that data would require a WebSocket `recorder/statistics_during_period` client, and it would return hourly means rather than the daily values `daily_metrics` is shaped for.
+**The original design accepted "no backfill" on the assumption that statistics only yield hourly means. Phase 0 disproved this, so the decision is reversed.** Querying `recorder/statistics_during_period` with `period: 'day'` returns one row per day carrying a real daily value, and the integration's historical import has already populated it.
 
-That is disproportionate for the payoff. The value of sleep/readiness in the kcal DB is correlation over time, which accrues from day one going forward. So:
+Verified 2026-07-26 across all eight source sensors:
 
-- `daily_metrics` starts empty and fills nightly.
-- The Hälsa page's 14-day sparklines start empty and fill over two weeks. Cards must render correctly with zero, one, and few points — an explicit test case, not an afterthought.
-- `scripts/backfill-health.ts` repairs gaps within the recorder's retention window.
-- If a longer repair window is ever wanted, `recorder.purge_keep_days` is the lever.
+- **70 days available**, back to **2026-05-18** (69 for the sleep-derived ones, starting 2026-05-19). Less than the 3 months configured — the import reaches back only as far as the account's data — but far more than nothing.
+- Day periods align to **Stockholm midnight**, matching the `date` primary key exactly.
+- Every sensor yields a usable value via the state/mean rule in §5.6, with plausible ranges throughout (total_calories 3035–3672, sleep 7.27–8.44 h, sleep scores 71–88).
+
+Consequences, all improvements over the original plan:
+
+- `daily_metrics` is **seeded with ~70 days** before the first nightly push.
+- The Hälsa page's 14-day sparklines are **fully populated on first render** — no two-week cold start.
+- `get_week` correlation and the `get_trend` Oura cross-check are useful **immediately**, with ten weeks of history to calibrate against rather than accruing from zero.
+
+Cards must still render correctly with zero, one, and few points — the seed can fail, a fresh install has none, and the empty state is cheap to test. That remains an explicit test case.
+
+The recorder's own 10-day `purge_keep_days` is now irrelevant to backfill: statistics are not purged on that schedule, which is precisely why this works.
 
 ---
 
 ## 9. Sequencing
 
-One hard dependency drives the order: **the Oura entity IDs must exist before any config, automation, or card that names them can be written**, and obtaining them needs Philip's hands for the OAuth flow.
+One hard dependency drove the order: **the Oura entity IDs had to exist before any config, automation, or card naming them could be written**, and obtaining them needed Philip's hands for the OAuth flow. That is now done.
 
 | Phase | Work | Blocked by |
 |---|---|---|
-| 0 | Oura dev app, application credentials, HACS install, OAuth, record entity IDs | Philip |
-| 1 | kcal-assistant v0.13.0: migration, weights source, `daily.ts`, three endpoints, tool outputs, tests. Deploy. | — (schema is Oura-agnostic; can run parallel to phase 0) |
-| 2 | Cilium policy, `rest_command`s, two automations, `sensor.kcal_halsa`, mirrors | 0 and 1 |
-| 3 | Hälsa page: config block, page, four cards, Hem chip, `health-model.ts` + tests | 0; sparklines need 2 |
+| 0 | ~~Oura dev app, application credentials, HACS install, OAuth, record entity IDs~~ | **Complete 2026-07-26** |
+| 1 | kcal-assistant v0.13.0: migration, weights source, `daily.ts`, three endpoints, tool outputs, tests. Deploy. | — |
+| 2 | Cilium policy, `rest_command`s, two automations, `sensor.kcal_halsa`, mirrors | 1 |
+| 2b | **Seed `daily_metrics` with ~70 days** via `scripts/backfill-health.ts` | 1 |
+| 3 | Hälsa page: config block, page, four cards, Hem chip, `health-model.ts` + tests | 2, 2b |
 | 4 | The four popups | 3 |
-| 5 | `CLAUDE.md`, `.claude` mirrors, memory update | all |
+| 5 | `CLAUDE.md`, `.claude` mirrors (incl. the out-of-git HACS integrations), memory update | all |
+
+Phase 2b is deliberately separate from 2: the seed only needs phase 1's endpoint, not the automations, so it can land as soon as the endpoint is deployed — and it should, because phase 3's sparklines are far easier to judge visually against real history than against an empty series.
 
 ### Verification
 
 - **Phase 1:** `bun test` covers the upsert invariants; `curl` the three endpoints from inside the cluster.
 - **Phase 2:** call `rest_command.kcal_log_weight` manually from HA Developer Tools → Actions and confirm the row appears with `source='withings'`; then confirm the idempotency path returns `applied: false`. **The real acceptance test is the next morning's weigh-in appearing in the DB with nothing typed.**
+- **Phase 2b:** row count ≈ 70; spot-check three dates against the statistics values already recorded in this spec (2026-07-24 → 3052 kcal, 2026-07-25 → 3672 kcal, sleep score 80 and 85 respectively).
 - **Phase 3:** `npm test` for `health-model`; visual verification of the page in both themes at wall-panel size, including the empty-sparkline state.
 
 ---
@@ -352,9 +389,10 @@ One hard dependency drives the order: **the Oura entity IDs must exist before an
 |---|---|
 | An HA restart re-populates `sensor.withings_vikt` and re-logs a stale value | `not_from: [unknown, unavailable]` on the trigger, plus SQL first-wins making a duplicate a no-op |
 | An evening weigh-in becomes the day's data point and drags the EWMA trend | 03:00–12:00 window condition in the automation |
-| HA down at 23:50 loses a day of Oura metrics | Nullable columns, `COALESCE` upsert, and `backfill-health.ts` for repair within the recorder window |
-| Oura sensors `unavailable` early on (documented baseline requirement) | Every metric column nullable; cards render a dash, not a crash |
-| ~60 new recorder entities grow the HA database | Measure first; `recorder.exclude` for the heart-rate variants if needed |
+| HA down at 23:50 loses a day of Oura metrics | Nullable columns, `COALESCE` upsert, and `backfill-health.ts` re-run to repair from statistics — which are not purged, so the repair window is the full history |
+| Oura sensors `unavailable` early on (documented baseline requirement) | Every metric column nullable; cards render a dash, not a crash. Observed already: `vo2_max`, `stress_day_summary`, `optimal_bedtime_*`, `tags_today` |
+| 71 new recorder entities grow the HA database | Measure first; `recorder.exclude` for the heart-rate variants if needed |
+| A `measurement` sensor changes mid-day, blending its statistics `mean` during backfill | Small, self-correcting next night, and the nightly push reads live state rather than statistics (§5.6) |
 | Oura changes OAuth terms again, or the custom integration is abandoned | Nothing in the cluster depends on Oura being present: `daily_metrics` columns are nullable and the Hälsa page degrades card by card |
 
 ---

@@ -524,6 +524,9 @@ details.card .body { padding: 10px 12px 12px; }
   font-variant-numeric: tabular-nums;
 }
 .rcard-foot .dim { color: var(--ink-3); }
+.rcard-rating { color: var(--accent); margin-left: auto; }
+
+.rating-editor input[type="range"] { width: 100%; accent-color: var(--accent); }
 
 /* ---------- drawer (v0.14) ---------- */
 .drawer-scrim {

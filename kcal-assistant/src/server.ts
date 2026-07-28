@@ -131,10 +131,12 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
             return;
           }
         }
-        // The only writable UI routes: profile plus plan/confirm per-date.
+        // The only writable UI routes: profile, plan/confirm per-date, and
+        // recipe rating (PUT /ui/api/recipes/:id carries only { rating }).
         const putRoute =
           pathname === "/ui/api/profile" ||
-          /^\/ui\/api\/(plan|confirm)\/\d{4}-\d{2}-\d{2}$/.test(pathname);
+          /^\/ui\/api\/(plan|confirm)\/\d{4}-\d{2}-\d{2}$/.test(pathname) ||
+          /^\/ui\/api\/recipes\/\d+$/.test(pathname);
         if (req.method !== "GET" && !(req.method === "PUT" && putRoute)) {
           uiHeaders(res);
           res.writeHead(405, { allow: putRoute ? "GET, PUT" : "GET" }).end();

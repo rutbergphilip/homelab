@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Database } from "bun:sqlite";
 import { z } from "zod";
-import { saveRecipe, getRecipe, findRecipes, deleteRecipe } from "../db/recipes";
+import { saveRecipe, getRecipe, findRecipes, deleteRecipe, rateRecipe } from "../db/recipes";
 import { mealItemSchema } from "./schemas";
 import { jsonResult, wrap } from "./util";
 
@@ -47,10 +47,31 @@ export function registerRecipeTools(server: McpServer, db: Database): void {
     "find_recipes",
     {
       description:
-        "List/search recipes by name or tag ('vad kan jag laga?'). Returns summaries with kcal per serving; incomplete:true means an ingredient no longer resolves.",
-      inputSchema: { query: z.string().optional() },
+        "List/search recipes by name or tag ('vad kan jag laga?'). Returns summaries with kcal per serving and rating (betyg 1-10, null = obetygsatt); incomplete:true means an ingredient no longer resolves. min_rating filters to rated recipes at or above it ('nåt jag gillat').",
+      inputSchema: {
+        query: z.string().optional(),
+        min_rating: z.number().min(1).max(10).optional()
+          .describe("Bara recept med betyg >= detta; obetygsatta utesluts"),
+      },
     },
-    wrap(({ query }) => jsonResult({ recipes: findRecipes(db, query) })),
+    wrap(({ query, min_rating }) => jsonResult({ recipes: findRecipes(db, query, min_rating) })),
+  );
+
+  server.registerTool(
+    "rate_recipe",
+    {
+      description:
+        "Set Philip's betyg on a recipe he has cooked: 1.0-10.0, decimals allowed (same scale as meal betyg), null clears. Server rounds to one decimal — confirm back the SAVED value. Rating is NOT settable via save_recipe; this is the only write path.",
+      inputSchema: {
+        id: z.number().int(),
+        rating: z.number().nullable()
+          .describe("1.0-10.0 med en decimal; null rensar betyget"),
+      },
+    },
+    wrap(({ id, rating }) => {
+      const recipe = rateRecipe(db, id, rating);
+      return jsonResult({ id: recipe.id, name: recipe.name, rating: recipe.rating });
+    }),
   );
 
   server.registerTool(

@@ -2,7 +2,7 @@ import { describe, expect, test, beforeEach } from "bun:test";
 import type { Database } from "bun:sqlite";
 import { openDb } from "../src/db/index";
 import { saveProduct } from "../src/db/products";
-import { saveRecipe, getRecipe, findRecipes, deleteRecipe } from "../src/db/recipes";
+import { saveRecipe, getRecipe, findRecipes, deleteRecipe, rateRecipe } from "../src/db/recipes";
 
 // Synthetic fixtures only — public repo.
 let db: Database;
@@ -222,5 +222,61 @@ describe("cooking times", () => {
     timeRecipe({ active_minutes: 10, total_minutes: 35 });
     const summary = findRecipes(db, "Tidsrecept")[0]!;
     expect(summary.total_minutes).toBe(35);
+  });
+});
+
+describe("rateRecipe / rating", () => {
+  test("new recipes are unrated", () => {
+    const r = makeRecipe();
+    expect(r.rating).toBeNull();
+    expect(findRecipes(db, "Testgryta")[0]!.rating).toBeNull();
+  });
+
+  test("sets a decimal rating and rounds to one decimal", () => {
+    const r = makeRecipe();
+    expect(rateRecipe(db, r.id, 8.55).rating).toBe(8.6);
+    expect(getRecipe(db, r.id)!.rating).toBe(8.6);
+  });
+
+  test("updates overwrite, null clears, bounds 1 and 10 are valid", () => {
+    const r = makeRecipe();
+    rateRecipe(db, r.id, 7.2);
+    expect(rateRecipe(db, r.id, 10).rating).toBe(10);
+    expect(rateRecipe(db, r.id, 1).rating).toBe(1);
+    expect(rateRecipe(db, r.id, null).rating).toBeNull();
+  });
+
+  test("rejects out-of-range and non-finite ratings in Swedish", () => {
+    const r = makeRecipe();
+    expect(() => rateRecipe(db, r.id, 0.9)).toThrow("betyg måste vara mellan 1 och 10");
+    expect(() => rateRecipe(db, r.id, 10.1)).toThrow("betyg måste vara mellan 1 och 10");
+    expect(() => rateRecipe(db, r.id, NaN)).toThrow("betyg måste vara mellan 1 och 10");
+  });
+
+  test("unknown recipe throws", () => {
+    expect(() => rateRecipe(db, 999, 5)).toThrow("Recipe 999 not found");
+  });
+
+  test("rating survives a save_recipe partial update", () => {
+    const r = makeRecipe();
+    rateRecipe(db, r.id, 9.1);
+    const upd = saveRecipe(db, { id: r.id, name: r.name, notes: "extra vitlök" });
+    expect(upd.rating).toBe(9.1);
+  });
+
+  test("findRecipes min_rating filters out lower-rated and unrated", () => {
+    const a = makeRecipe();
+    rateRecipe(db, a.id, 8);
+    const b = saveRecipe(db, {
+      name: "Lågbetyg",
+      ingredients: [{ product_id: chickenId, grams: 100 }],
+    });
+    rateRecipe(db, b.id, 6.5);
+    saveRecipe(db, { name: "Obetygsatt", ingredients: [{ product_id: chickenId, grams: 100 }] });
+    const hits = findRecipes(db, undefined, 8);
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.name).toBe("Testgryta");
+    expect(hits[0]!.rating).toBe(8);
+    expect(findRecipes(db)).toHaveLength(3);
   });
 });

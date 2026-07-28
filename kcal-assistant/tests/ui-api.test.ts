@@ -280,3 +280,59 @@ describe("profile api", () => {
     expect((await fetch(`${pbase}/ui/api/weights`, { method: "PUT" })).status).toBe(405);
   });
 });
+
+describe("PUT /ui/api/recipes/:id — rating", () => {
+  const put = (path: string, body: unknown, headers: Record<string, string> = {}) =>
+    fetch(`${base}${path}`, {
+      method: "PUT",
+      headers: { "content-type": "application/json", "sec-fetch-site": "same-origin", ...headers },
+      body: JSON.stringify(body),
+    });
+
+  async function recipeId(): Promise<number> {
+    const body = await (await get("/ui/api/recipes")).json();
+    return body.recipes[0].id;
+  }
+
+  test("sets a decimal rating, returns the rounded recipe, GET reflects it", async () => {
+    const id = await recipeId();
+    const res = await put(`/ui/api/recipes/${id}`, { rating: 8.55 });
+    expect(res.status).toBe(200);
+    expect((await res.json()).rating).toBe(8.6);
+    const list = await (await get("/ui/api/recipes")).json();
+    expect(list.recipes[0].rating).toBe(8.6);
+    const detail = await (await get(`/ui/api/recipes/${id}`)).json();
+    expect(detail.rating).toBe(8.6);
+  });
+
+  test("null clears", async () => {
+    const id = await recipeId();
+    const res = await put(`/ui/api/recipes/${id}`, { rating: null });
+    expect(res.status).toBe(200);
+    expect((await res.json()).rating).toBeNull();
+  });
+
+  test("CSRF gates: cross-site and wrong content-type are 403", async () => {
+    const id = await recipeId();
+    expect((await put(`/ui/api/recipes/${id}`, { rating: 5 }, { "sec-fetch-site": "cross-site" })).status).toBe(403);
+    const wrongType = await fetch(`${base}/ui/api/recipes/${id}`, {
+      method: "PUT",
+      headers: { "content-type": "text/plain", "sec-fetch-site": "same-origin" },
+      body: "{}",
+    });
+    expect(wrongType.status).toBe(403);
+  });
+
+  test("strict shape: unknown field, wrong type, out-of-range are 400", async () => {
+    const id = await recipeId();
+    expect((await put(`/ui/api/recipes/${id}`, { rating: 5, note: "x" })).status).toBe(400);
+    expect((await put(`/ui/api/recipes/${id}`, { rating: "8" })).status).toBe(400);
+    expect((await put(`/ui/api/recipes/${id}`, { rating: 0.5 })).status).toBe(400);
+    expect((await put(`/ui/api/recipes/${id}`, {})).status).toBe(400);
+  });
+
+  test("unknown recipe is 404; non-numeric id is not a writable route (405)", async () => {
+    expect((await put("/ui/api/recipes/9999", { rating: 5 })).status).toBe(404);
+    expect((await put("/ui/api/recipes/abc", { rating: 5 })).status).toBe(405);
+  });
+});

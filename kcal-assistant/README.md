@@ -1,6 +1,6 @@
 # kcal-assistant
 
-Personal MCP server for Philip's calorie tracking, used as a custom connector in the Claude app. Holds the product database, meal log, standing preferences/rules, an Open Food Facts lookup, live discovery against his ICA store (Maxi ICA Stormarknad Nynäshamn via handlaprivatkund.ica.se, `search_store`), week summaries (`get_week`), a weight log with backwards-computed TDEE (`log_weight`/`get_trend`), a mealprep batch calculator (`compute_batch`), and dry-run day planning (`preview_day`), and executable recipes (`save_recipe`/`get_recipe`/`find_recipes`/`delete_recipe`) whose ingredients resolve against current product data at every read. Runs on the homelab cluster at `https://kcal.rutberg.dev/mcp/<token>`.
+Personal MCP server for Philip's calorie tracking, used as a custom connector in the Claude app. Holds the product database, meal log, standing preferences/rules, an Open Food Facts lookup, live discovery against his ICA store (Maxi ICA Stormarknad Nynäshamn via handlaprivatkund.ica.se, `search_store`), week summaries (`get_week`), a weight log with backwards-computed TDEE (`log_weight`/`get_trend`), a mealprep batch calculator (`compute_batch`), and dry-run day planning (`preview_day`), and executable recipes (`save_recipe`/`get_recipe`/`find_recipes`/`delete_recipe`, with decimal betyg 1–10 via `rate_recipe`) whose ingredients resolve against current product data at every read. Runs on the homelab cluster at `https://kcal.rutberg.dev/mcp/<token>`.
 
 The server owns ALL nutrition math: item/meal/day computation at logging, plan previews, batch per-100g derivation, and the TDEE trend (`TDEE = snittintag + Δkg × 7700 ÷ dagar`, intake averaged over the same span as the weight delta, with staleness and uncertainty flags). Weight data lives only in the SQLite database, never in this repo.
 
@@ -51,7 +51,7 @@ The Deployment must keep `replicas: 1` and `strategy: Recreate` — SQLite on NF
 
 ## Web UI (`/ui`)
 
-Read-only database browser (KCAL·DB) at `https://kcal.rutberg.dev/ui`: dagar, måltider, produkter, recept, vikt/TDEE, regler. Editing stays in chat via MCP — the UI has zero mutation endpoints.
+Read-only database browser (KCAL·DB) at `https://kcal.rutberg.dev/ui`: dagar, måltider, produkter, recept, vikt/TDEE, regler. Editing stays in chat via MCP — the UI's only writes are profile settings, the week planner (plan/confirm) and recipe betyg (`PUT /ui/api/recipes/:id`), all CSRF-gated.
 
 Layout width is per route, not per app (`src/ui/app/lib/routes.ts` sets `narrow` 720px / `wide` 1240px); `.app--narrow`/`.app--wide` drive a `--view-max` custom property that both the masthead and the view read.
 

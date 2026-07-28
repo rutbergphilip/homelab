@@ -48,9 +48,11 @@ konversation).
   ändras inte.
 - **Receptdetalj** (`ReceptDetalj.tsx`): Betyg-tile + inline-redigering:
   slider 1,0–10,0 (steg 0,1) med värdesiffra, Spara och Rensa. Skrivningen
-  går till `PUT /ui/api/recipes/:id/rating` med body `{ rating: number|null }`
-  genom befintliga `writeGate` (Sec-Fetch-Site same-origin + JSON-typ) —
-  tredje UI-skrivningen, samma mönster som profil och plan.
+  går till `PUT /ui/api/recipes/:id` med strikt body `{ rating: number|null }`
+  (enda tillåtna fältet) genom befintliga `writeGate` (Sec-Fetch-Site
+  same-origin + JSON-typ) — tredje UI-skrivningen, samma mönster som profil
+  och plan. (Ursprungligt förslag `/recipes/:id/rating` föll på API_ROUTE-
+  regexen som bara tillåter två segment.)
 - README-invarianten uppdateras: UI:t är läs-bart utom profil, plan och
   receptbetyg.
 

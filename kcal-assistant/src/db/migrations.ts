@@ -251,6 +251,12 @@ const MIGRATIONS: string[] = [
     locked       INTEGER NOT NULL DEFAULT 0
   );
   `,
+  // 11: recipe rating — Philip's decimal betyg 1.0–10.0 (same scale as the
+  // per-meal betyg in his style rules). NULL = unrated. Validation lives in
+  // db/recipes.ts rateRecipe, shared by the MCP tool and the UI write.
+  `
+  ALTER TABLE recipes ADD COLUMN rating REAL;
+  `,
 ];
 
 export function migrate(db: Database): void {

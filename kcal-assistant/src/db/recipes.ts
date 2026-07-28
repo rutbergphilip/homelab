@@ -39,6 +39,7 @@ export interface RecipeView {
   active_minutes: number | null;
   total_minutes: number | null;
   product_id: number | null;
+  rating: number | null;
   updated_at: string;
   ingredients: RecipeIngredientView[];
   totals: Macros;
@@ -52,6 +53,7 @@ export interface RecipeSummary {
   tags: string | null;
   servings: number | null;
   total_minutes: number | null;
+  rating: number | null;
   kcal_per_serving: number | null;
   incomplete?: true;
 }
@@ -66,6 +68,7 @@ interface RecipeRow {
   active_minutes: number | null;
   total_minutes: number | null;
   product_id: number | null;
+  rating: number | null;
   updated_at: string;
 }
 
@@ -183,6 +186,7 @@ export function getRecipe(db: Database, id: number): RecipeView | null {
     active_minutes: row.active_minutes,
     total_minutes: row.total_minutes,
     product_id: row.product_id,
+    rating: row.rating,
     updated_at: row.updated_at,
     ingredients,
     totals,
@@ -295,7 +299,7 @@ export function saveRecipe(db: Database, input: RecipeInput): RecipeView {
   return getRecipe(db, save())!;
 }
 
-export function findRecipes(db: Database, query?: string): RecipeSummary[] {
+export function findRecipes(db: Database, query?: string, minRating?: number): RecipeSummary[] {
   const rows = query
     ? db
         .query<RecipeRow, [string]>(
@@ -304,7 +308,12 @@ export function findRecipes(db: Database, query?: string): RecipeSummary[] {
         .all(`%${query}%`)
     : db.query<RecipeRow, []>("SELECT * FROM recipes ORDER BY name").all();
 
-  return rows.map((row) => {
+  const filtered =
+    minRating === undefined
+      ? rows
+      : rows.filter((row) => row.rating !== null && row.rating >= minRating);
+
+  return filtered.map((row) => {
     const full = getRecipe(db, row.id)!;
     return {
       id: row.id,
@@ -312,10 +321,24 @@ export function findRecipes(db: Database, query?: string): RecipeSummary[] {
       tags: row.tags,
       servings: row.servings,
       total_minutes: row.total_minutes,
+      rating: row.rating,
       kcal_per_serving: full.per_serving?.kcal ?? null,
       ...(full.totals_incomplete && { incomplete: true as const }),
     };
   });
+}
+
+// Betyg 1,0–10,0 med en decimal — samma skala som måltidsbetygen i stilreglerna.
+// null rensar. Shared by the rate_recipe tool and PUT /ui/api/recipes/:id.
+export function rateRecipe(db: Database, id: number, rating: number | null): RecipeView {
+  if (rating !== null && (!Number.isFinite(rating) || rating < 1 || rating > 10)) {
+    throw new Error("betyg måste vara mellan 1 och 10");
+  }
+  const exists = db.query("SELECT 1 FROM recipes WHERE id = ?").get(id);
+  if (!exists) throw new Error(`Recipe ${id} not found`);
+  const rounded = rating === null ? null : Math.round(rating * 10) / 10;
+  db.run("UPDATE recipes SET rating = ?, updated_at = datetime('now') WHERE id = ?", [rounded, id]);
+  return getRecipe(db, id)!;
 }
 
 export function deleteRecipe(db: Database, id: number): void {

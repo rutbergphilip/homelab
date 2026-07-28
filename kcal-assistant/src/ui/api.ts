@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 import { readDay, listDays, getWeek } from "../db/meals";
 import { listProducts } from "../db/products";
 import { productIdsWithImage } from "../db/product-images";
-import { findRecipes, getRecipe } from "../db/recipes";
+import { findRecipes, getRecipe, rateRecipe } from "../db/recipes";
 import { getTrend, listWeights } from "../db/weights";
 import { listPreferences, getTargets } from "../db/preferences";
 import { buildForecast, type IntakeSource } from "../db/forecast";
@@ -90,6 +90,27 @@ export function handleUiApi(db: Database, req: UiApiRequest): UiApiResponse {
         if (param !== undefined) {
           const id = Number(param);
           if (!Number.isInteger(id)) return { status: 400, body: { error: "ogiltigt id" } };
+          if (req.method === "PUT") {
+            // Rating is the recipe's ONLY UI-writable field — strict single-key
+            // body; everything else about recipes stays chat-only.
+            const gate = writeGate(req);
+            if (gate) return gate;
+            const body = req.body as Record<string, unknown>;
+            const keys = Object.keys(body);
+            if (keys.length !== 1 || keys[0] !== "rating") {
+              return { status: 400, body: { error: "body måste vara exakt { rating }" } };
+            }
+            const rating = body.rating;
+            if (rating !== null && typeof rating !== "number") {
+              return { status: 400, body: { error: "ogiltigt värde för rating" } };
+            }
+            if (!getRecipe(db, id)) return NOT_FOUND;
+            try {
+              return { status: 200, body: rateRecipe(db, id, rating) };
+            } catch (e) {
+              return { status: 400, body: { error: e instanceof Error ? e.message : "ogiltigt betyg" } };
+            }
+          }
           const recipe = getRecipe(db, id);
           return recipe ? { status: 200, body: recipe } : NOT_FOUND;
         }

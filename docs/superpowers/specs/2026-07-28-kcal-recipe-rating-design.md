@@ -30,8 +30,10 @@ och UI-vägen), inte i en CHECK — samma mönster som övriga kolumner.
 ## MCP-yta (28 → 29 verktyg)
 
 - **Nytt verktyg `rate_recipe`**: `{ id, rating: number | null }`. `null`
-  rensar. Svarar med uppdaterad receptsammanfattning. Beskrivningen säger åt
-  Claude att bekräfta med betyget som sparades (avrundat).
+  rensar. Svarar minimalt med `{ id, name, rating }` — det räcker för att
+  bekräfta det SPARADE (avrundade) betyget, och hela receptvyn vore
+  tokenslöseri. Beskrivningen säger åt Claude att bekräfta med det sparade
+  värdet.
 - **`find_recipes`**: nytt valfritt `min_rating` (obetygsatta filtreras bort
   när det anges); sammanfattningar får `rating`.
 - **`get_recipe`**: returnerar `rating`.

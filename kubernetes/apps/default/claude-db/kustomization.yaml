@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: default
+
+resources:
+  - ./secret.sops.yaml
+  - ./deployment.yaml
+  - ./service.yaml
+  - ./ingress.yaml
+  - ./backup-cronjob.yaml
+
+configMapGenerator:
+  - name: claude-db-backup-script
+    files:
+      - backup.ts

@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "house": "Prada",
+    "name": "Paradigme",
+    "concentration": "EdP",
+    "year": 2025,
+    "perfumer": "Marie Salamagne, Bruno Jovanovic, Nicolas Bonneville",
+    "fragrantica_url": "https://www.fragrantica.com/perfume/Prada/Paradigme-110661.html"
+  },
+  "fragrantica": {
+    "rating": 3.97,
+    "rating_count": 4798,
+    "accords": [
+      { "name": "fresh spicy", "strength": 100 },
+      { "name": "amber", "strength": 99 },
+      { "name": "aromatic", "strength": 82 },
+      { "name": "woody", "strength": 75 },
+      { "name": "balsamic", "strength": 72 },
+      { "name": "citrus", "strength": 72 },
+      { "name": "musky", "strength": 64 },
+      { "name": "warm spicy", "strength": 63 },
+      { "name": "rose", "strength": 55 },
+      { "name": "powdery", "strength": 54 }
+    ],
+    "notes": {
+      "top": ["Calabrian bergamot", "Musk"],
+      "heart": ["Bourbon Geranium", "Rose Geranium"],
+      "base": ["Benzoin", "Peru Balsam", "Guaiac Wood"]
+    },
+    "seasons": { "winter": 56, "spring": 100, "summer": 76, "fall": 88, "day": 88, "night": 64 },
+    "season_votes_raw": { "winter": 1400, "spring": 2500, "summer": 1900, "fall": 2200, "day": 2200, "night": 1600 },
+    "longevity": null,
+    "sillage": null,
+    "gender_vote": null,
+    "price_value": null,
+    "description": "Paradigme by Prada is an Oriental Fougère fragrance for men, launched in 2025, created by Marie Salamagne, Bruno Jovanovic and Nicolas Bonneville. Top notes are Calabrian bergamot and Musk; middle notes are Bourbon Geranium and Rose Geranium; base notes are Benzoin, Peru Balsam and Guaiac Wood. Modern amber-fougère versatile across spring/fall days."
+  }
+}

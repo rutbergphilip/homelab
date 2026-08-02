@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "house": "Valentino",
+    "name": "Uomo Born In Roma Coral Fantasy",
+    "concentration": "EdT",
+    "year": 2022,
+    "perfumer": "Nicolas Beaulieu",
+    "fragrantica_url": "https://www.fragrantica.com/perfume/Valentino/Valentino-Uomo-Born-In-Roma-Coral-Fantasy-71761.html"
+  },
+  "fragrantica": {
+    "rating": 4.57,
+    "rating_count": 9332,
+    "accords": [
+      { "name": "aromatic", "strength": 100 },
+      { "name": "fruity", "strength": 76 },
+      { "name": "tobacco", "strength": 74 },
+      { "name": "sweet", "strength": 71 },
+      { "name": "warm spicy", "strength": 70 },
+      { "name": "fresh spicy", "strength": 67 },
+      { "name": "lavender", "strength": 62 },
+      { "name": "woody", "strength": 52 },
+      { "name": "citrus", "strength": 52 },
+      { "name": "patchouli", "strength": 47 }
+    ],
+    "notes": {
+      "top": ["Red Apple", "Cardamom", "Calabrian bergamot"],
+      "heart": ["Lavender", "Bourbon Geranium", "Clary Sage"],
+      "base": ["Tobacco Leaf", "Patchouli", "Haitian Vetiver"]
+    },
+    "seasons": { "winter": 86, "spring": 100, "summer": 78, "fall": 97, "day": 93, "night": 92 },
+    "season_votes_raw": { "winter": 5100, "spring": 5900, "summer": 4600, "fall": 5700, "day": 5500, "night": 5400 },
+    "longevity": null,
+    "sillage": null,
+    "gender_vote": null,
+    "price_value": null,
+    "description": "Valentino Uomo Born In Roma Coral Fantasy by Valentino is a Woody Aromatic fragrance for men, launched in 2022, created by Nicolas Beaulieu. Sweet fruity-tobacco take on the Born In Roma DNA: red apple and cardamom over lavender, with a tobacco-patchouli base."
+  }
+}

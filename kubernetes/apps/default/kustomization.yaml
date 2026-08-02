@@ -7,4 +7,6 @@ components:
   - ../../components/common
   - ../../components/repos/app-template
 resources:
+  - ./storage.yaml
   - ./echo/ks.yaml
+  - ./claude-db

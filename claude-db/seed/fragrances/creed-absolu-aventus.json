@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "house": "Creed",
+    "name": "Absolu Aventus",
+    "concentration": "Parfum",
+    "year": 2025,
+    "perfumer": null,
+    "fragrantica_url": "https://www.fragrantica.com/perfume/Creed/Absolu-Aventus-106624.html"
+  },
+  "fragrantica": {
+    "rating": 4.46,
+    "rating_count": 1630,
+    "accords": [
+      { "name": "fruity", "strength": 100 },
+      { "name": "citrus", "strength": 96 },
+      { "name": "aromatic", "strength": 80 },
+      { "name": "warm spicy", "strength": 77 },
+      { "name": "woody", "strength": 70 },
+      { "name": "sweet", "strength": 69 },
+      { "name": "fresh spicy", "strength": 62 },
+      { "name": "soft spicy", "strength": 55 },
+      { "name": "fresh", "strength": 54 },
+      { "name": "earthy", "strength": 53 }
+    ],
+    "notes": {
+      "top": ["Pineapple", "Black Currant", "Grapefruit", "Pink Pepper", "Bergamot", "Lemon"],
+      "heart": ["Cardamom", "Cinnamon", "Ginger"],
+      "base": ["Vetiver", "Patchouli"]
+    },
+    "seasons": { "winter": 90, "spring": 100, "summer": 95, "fall": 94, "day": 95, "night": 93 },
+    "season_votes_raw": { "winter": 775, "spring": 864, "summer": 819, "fall": 815, "day": 818, "night": 805 },
+    "longevity": null,
+    "sillage": null,
+    "gender_vote": null,
+    "price_value": null,
+    "description": "Absolu Aventus by Creed is a Chypre Fruity fragrance for men, launched in 2025. Top notes are Pineapple, Black Currant, Grapefruit, Pink Pepper, Bergamot and Lemon; middle notes are Cardamom, Cinnamon and Ginger; base notes are Vetiver and Patchouli. Intensified spicier take on Aventus, near-universal season/occasion votes."
+  }
+}

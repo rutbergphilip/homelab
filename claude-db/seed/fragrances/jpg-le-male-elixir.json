@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "house": "Jean Paul Gaultier",
+    "name": "Le Male Elixir",
+    "concentration": "Parfum",
+    "year": 2023,
+    "perfumer": "Quentin Bisch",
+    "fragrantica_url": "https://www.fragrantica.com/perfume/Jean-Paul-Gaultier/Le-Male-Elixir-81642.html"
+  },
+  "fragrantica": {
+    "rating": 4.51,
+    "rating_count": 25233,
+    "accords": [
+      { "name": "vanilla", "strength": 100 },
+      { "name": "sweet", "strength": 81 },
+      { "name": "honey", "strength": 71 },
+      { "name": "aromatic", "strength": 60 },
+      { "name": "amber", "strength": 59 },
+      { "name": "lavender", "strength": 54 },
+      { "name": "tobacco", "strength": 50 },
+      { "name": "green", "strength": 48 },
+      { "name": "fresh spicy", "strength": 46 },
+      { "name": "powdery", "strength": 46 }
+    ],
+    "notes": {
+      "top": ["Lavender", "Mint"],
+      "heart": ["Vanilla", "Benzoin"],
+      "base": ["Honey", "Tonka Bean", "Tobacco"]
+    },
+    "seasons": { "winter": 100, "spring": 27, "summer": 13, "fall": 77, "day": 35, "night": 83 },
+    "season_votes_raw": { "winter": 19200, "spring": 5100, "summer": 2400, "fall": 14800, "day": 6800, "night": 15900 },
+    "longevity": null,
+    "sillage": null,
+    "gender_vote": null,
+    "price_value": null,
+    "description": "Le Male Elixir by Jean Paul Gaultier is an Oriental Fougère fragrance for men, launched in 2023. The nose behind this fragrance is Quentin Bisch. Top notes are Lavender and Mint; middle notes are Vanilla and Benzoin; base notes are Honey, Tonka Bean and Tobacco. A dense honeyed-vanilla winter powerhouse."
+  }
+}

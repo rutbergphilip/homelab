@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "house": "By Kilian",
+    "name": "Angels' Share",
+    "concentration": "EdP",
+    "year": 2020,
+    "perfumer": "Benoist Lapouza",
+    "fragrantica_url": "https://www.fragrantica.com/perfume/By-Kilian/Angels-Share-62615.html"
+  },
+  "fragrantica": {
+    "rating": 4.35,
+    "rating_count": 22946,
+    "accords": [
+      { "name": "warm spicy", "strength": 100 },
+      { "name": "woody", "strength": 100 },
+      { "name": "sweet", "strength": 90 },
+      { "name": "vanilla", "strength": 81 },
+      { "name": "cinnamon", "strength": 79 },
+      { "name": "amber", "strength": 51 },
+      { "name": "powdery", "strength": 48 }
+    ],
+    "notes": {
+      "top": ["Cognac"],
+      "heart": ["Cinnamon", "Tonka Bean", "Oak", "Hedione"],
+      "base": ["Vanilla", "Praline", "Sandalwood", "Candied Almond"]
+    },
+    "seasons": { "winter": 100, "spring": 20, "summer": 11, "fall": 89, "day": 34, "night": 82 },
+    "season_votes_raw": { "winter": 12600, "spring": 2500, "summer": 1400, "fall": 11200, "day": 4300, "night": 10300 },
+    "longevity": null,
+    "sillage": null,
+    "gender_vote": null,
+    "price_value": null,
+    "description": "Angels' Share by By Kilian is an Oriental Vanilla fragrance for women and men, launched in 2020, created by Benoist Lapouza. Top note is Cognac; middle notes are Cinnamon, Tonka Bean, Oak and Hedione; base notes are Vanilla, Praline, Sandalwood and Candied Almond. Luxurious boozy cognac-vanilla gourmand — cold-weather evenings, dates, special occasions."
+  }
+}

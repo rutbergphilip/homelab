@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "house": "Yves Saint Laurent",
+    "name": "Y Eau de Parfum",
+    "concentration": "EdP",
+    "year": 2018,
+    "perfumer": "Dominique Ropion, Claire Liégent",
+    "fragrantica_url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Y-Eau-de-Parfum-50757.html"
+  },
+  "fragrantica": {
+    "rating": 4.42,
+    "rating_count": 27849,
+    "accords": [
+      { "name": "aromatic", "strength": 100 },
+      { "name": "fresh spicy", "strength": 98 },
+      { "name": "woody", "strength": 81 },
+      { "name": "fruity", "strength": 71 },
+      { "name": "fresh", "strength": 67 },
+      { "name": "amber", "strength": 67 },
+      { "name": "citrus", "strength": 62 },
+      { "name": "herbal", "strength": 58 },
+      { "name": "green", "strength": 55 },
+      { "name": "warm spicy", "strength": 45 }
+    ],
+    "notes": {
+      "top": ["Apple", "Ginger", "Bergamot"],
+      "heart": ["Sage", "Juniper Berries", "Geranium"],
+      "base": ["Amberwood", "Tonka Bean", "Cedar", "Vetiver", "Olibanum"]
+    },
+    "seasons": { "winter": 53, "spring": 100, "summer": 98, "fall": 83, "day": 97, "night": 78 },
+    "season_votes_raw": { "winter": 9500, "spring": 17800, "summer": 17500, "fall": 14700, "day": 17200, "night": 13800 },
+    "longevity": null,
+    "sillage": null,
+    "gender_vote": null,
+    "price_value": null,
+    "description": "Y Eau de Parfum by Yves Saint Laurent is an Aromatic Fougère fragrance for men, launched in 2018, created by Dominique Ropion and Claire Liégent. Top notes are Apple, Ginger and Bergamot; middle notes are Sage, Juniper Berries and Geranium; base notes are Amberwood, Tonka Bean, Cedar, Vetiver and Olibanum. Fresh-woody crowd-pleaser, strongest in spring/summer daytime — the safe versatile pick."
+  }
+}

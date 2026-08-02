@@ -70,12 +70,18 @@ export function parseKicks(json: string, limit: number): RetailerHit[] {
   }));
 }
 
+const ENTITIES: Record<string, string> = { "&amp;": "&", "&quot;": '"', "&#039;": "'", "&#8217;": "’", "&lt;": "<", "&gt;": ">" };
+
+export function decodeEntities(s: string): string {
+  return s.replace(/&(?:amp|quot|lt|gt|#039|#8217);/g, (m) => ENTITIES[m] ?? m);
+}
+
 export function parseDelooxSuggest(html: string, limit: number): Array<{ name: string; url: string }> {
   const out: Array<{ name: string; url: string }> = [];
   const re = /<a[^>]+href="(https:\/\/www\.deloox\.se\/produkt\/[^"]+)"[\s\S]*?<span class="c-name">([^<]+)<\/span>/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null && out.length < limit) {
-    out.push({ url: m[1]!, name: m[2]!.trim() });
+    out.push({ url: m[1]!, name: decodeEntities(m[2]!.trim()) });
   }
   return out;
 }

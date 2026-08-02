@@ -69,6 +69,11 @@ describe("deloox parsers", () => {
       <span class="c-name">Creed Absolu Aventus Eau de Parfum Limited edition</span>
     </a>`;
 
+  test("suggest decodes html entities in names", () => {
+    const html = `<a href="https://www.deloox.se/produkt/1/x.html"><span class="c-name">Kilian Angels&#039; Share &amp; Co</span></a>`;
+    expect(parseDelooxSuggest(html, 5)[0]!.name).toBe("Kilian Angels' Share & Co");
+  });
+
   test("suggest extracts product urls + names", () => {
     const hits = parseDelooxSuggest(SUGGEST, 5);
     expect(hits).toHaveLength(2);

@@ -39,6 +39,28 @@ export const FRAGRANCE_MIGRATIONS: string[] = [
   CREATE INDEX idx_wear_fragrance ON wear_log(fragrance_id);
   CREATE INDEX idx_wear_date ON wear_log(worn_on);
   `,
+  // 2: acquisition advisor — taste preferences + retail offers
+  `
+  CREATE TABLE fragrance_preferences (
+    id         INTEGER PRIMARY KEY,
+    category   TEXT NOT NULL CHECK (category IN ('gillar','ogillar','regel','budget')),
+    content    TEXT NOT NULL,
+    active     INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE fragrance_offers (
+    id           INTEGER PRIMARY KEY,
+    fragrance_id INTEGER NOT NULL REFERENCES fragrances(id) ON DELETE CASCADE,
+    retailer     TEXT NOT NULL,
+    url          TEXT,
+    price_sek    REAL,
+    size_ml      REAL,
+    note         TEXT,
+    found_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX idx_offers_fragrance ON fragrance_offers(fragrance_id);
+  `,
 ];
 
 export interface FragranceRow {
@@ -211,8 +233,143 @@ export function getFragranceDetail(db: Database, row: FragranceRow): Record<stri
       "SELECT * FROM wear_log WHERE fragrance_id = ? ORDER BY worn_on DESC, id DESC LIMIT 10",
     )
     .all(row.id);
+  const offers = db
+    .query<OfferRow, [number]>(
+      "SELECT * FROM fragrance_offers WHERE fragrance_id = ? ORDER BY found_at DESC, id DESC LIMIT 10",
+    )
+    .all(row.id);
   const { fragrantica_json, ...rest } = row;
-  return { ...rest, fragrantica: parseSnapshot(fragrantica_json), recent_wears: wears };
+  return { ...rest, fragrantica: parseSnapshot(fragrantica_json), recent_wears: wears, offers };
+}
+
+export interface PreferenceRow {
+  id: number;
+  category: string;
+  content: string;
+  active: number;
+  created_at: string;
+}
+
+export function savePreference(db: Database, category: string, content: string): PreferenceRow {
+  const row = db
+    .query<PreferenceRow, [string, string]>(
+      "INSERT INTO fragrance_preferences (category, content) VALUES (?, ?) RETURNING *",
+    )
+    .get(category, content);
+  if (!row) throw new Error("insert failed");
+  return row;
+}
+
+export function listPreferences(db: Database): PreferenceRow[] {
+  return db
+    .query<PreferenceRow, []>("SELECT * FROM fragrance_preferences WHERE active = 1 ORDER BY category, id")
+    .all();
+}
+
+export function deletePreference(db: Database, id: number): void {
+  const changes = db.run("UPDATE fragrance_preferences SET active = 0 WHERE id = ? AND active = 1", [id]).changes;
+  if (changes === 0) throw new Error(`preference ${id} not found`);
+}
+
+export interface OfferRow {
+  id: number;
+  fragrance_id: number;
+  retailer: string;
+  url: string | null;
+  price_sek: number | null;
+  size_ml: number | null;
+  note: string | null;
+  found_at: string;
+}
+
+export interface OfferInput {
+  fragrance_id: number;
+  retailer: string;
+  url?: string;
+  price_sek?: number;
+  size_ml?: number;
+  note?: string;
+}
+
+export function saveOffer(db: Database, input: OfferInput): OfferRow {
+  const row = db
+    .query<OfferRow, SqlParams>(
+      `INSERT INTO fragrance_offers (fragrance_id, retailer, url, price_sek, size_ml, note)
+       VALUES ($fid, $retailer, $url, $price, $size, $note) RETURNING *`,
+    )
+    .get({
+      $fid: input.fragrance_id,
+      $retailer: input.retailer.toLowerCase().trim(),
+      $url: input.url ?? null,
+      $price: input.price_sek ?? null,
+      $size: input.size_ml ?? null,
+      $note: input.note ?? null,
+    });
+  if (!row) throw new Error("insert failed");
+  return row;
+}
+
+// Advisor payload: taste + collection profile + wishlist w/ offers, one call.
+export function buildAcquisitionContext(db: Database, today: string): Record<string, unknown> {
+  const preferences = listPreferences(db).map((p) => ({ id: p.id, category: p.category, content: p.content }));
+
+  const owned = db
+    .query<FragranceRow, []>("SELECT * FROM fragrances WHERE status = 'owned' ORDER BY house, name")
+    .all();
+  const wearStats = new Map<number, { wear_count: number; last_worn: string; avg_rating: number | null }>();
+  for (const s of db
+    .query<{ fragrance_id: number; wear_count: number; last_worn: string; avg_rating: number | null }, []>(
+      "SELECT fragrance_id, COUNT(*) AS wear_count, MAX(worn_on) AS last_worn, ROUND(AVG(rating),1) AS avg_rating FROM wear_log GROUP BY fragrance_id",
+    )
+    .all()) {
+    wearStats.set(s.fragrance_id, s);
+  }
+
+  const accordCoverage: Record<string, number> = {};
+  const collection = owned.map((r) => {
+    const snapshot = parseSnapshot(r.fragrantica_json) as {
+      accords?: Array<{ name: string; strength: number | null }>;
+      seasons?: Record<string, number | null>;
+      rating?: number;
+    } | null;
+    for (const a of snapshot?.accords ?? []) {
+      accordCoverage[a.name] = (accordCoverage[a.name] ?? 0) + 1;
+    }
+    return {
+      id: r.id,
+      house: r.house,
+      name: r.name,
+      personal_notes: r.personal_notes,
+      rating: snapshot?.rating ?? null,
+      accords: (snapshot?.accords ?? []).slice(0, 5).map((a) => a.name),
+      seasons: snapshot?.seasons ?? null,
+      wear_stats: wearStats.get(r.id) ?? null,
+    };
+  });
+
+  const wishlist = db
+    .query<FragranceRow, []>("SELECT * FROM fragrances WHERE status = 'wishlist' ORDER BY house, name")
+    .all()
+    .map((r) => {
+      const snapshot = parseSnapshot(r.fragrantica_json) as { rating?: number; accords?: Array<{ name: string }> } | null;
+      const offers = db
+        .query<OfferRow, [number]>(
+          "SELECT * FROM fragrance_offers WHERE fragrance_id = ? ORDER BY found_at DESC, id DESC LIMIT 5",
+        )
+        .all(r.id)
+        .map((o) => ({ retailer: o.retailer, price_sek: o.price_sek, size_ml: o.size_ml, url: o.url, found_at: o.found_at, note: o.note }));
+      return {
+        id: r.id,
+        house: r.house,
+        name: r.name,
+        personal_notes: r.personal_notes,
+        rating: snapshot?.rating ?? null,
+        accords: (snapshot?.accords ?? []).slice(0, 5).map((a) => a.name),
+        offers,
+      };
+    });
+
+  return { today, preferences, collection, accord_coverage: accordCoverage, wishlist };
 }
 
 export interface WearInput {

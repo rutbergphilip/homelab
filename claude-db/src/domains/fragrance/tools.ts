@@ -4,16 +4,21 @@ import { z } from "zod";
 import { jsonResult, wrap, todayStockholm, isValidDate } from "../../core/tool-util";
 import {
   addFragrance,
+  buildAcquisitionContext,
   buildContext,
+  deletePreference,
   getFragranceDetail,
   listFragrances,
   logWear,
   removeFragrance,
   resolveFragrance,
+  saveOffer,
+  savePreference,
   saveSnapshot,
   updateFragrance,
   wearHistory,
 } from "./db";
+import { searchRetailers } from "./retailers";
 
 // The Fragrantica snapshot blob, validated on every save. Scraped by a Claude
 // with browser access (the server never calls Fragrantica — their anti-bot
@@ -194,6 +199,89 @@ export function registerFragranceTools(server: McpServer, db: Database): void {
       const fragrance_id = id !== undefined || name !== undefined ? resolveFragrance(db, { id, name }).id : undefined;
       return jsonResult(wearHistory(db, { fragrance_id, ...filters }));
     }),
+  );
+
+  server.registerTool(
+    "fragrance_save_preference",
+    {
+      description:
+        "Persist a lasting taste preference or buying rule, so future 'what should I buy?' chats know Philip. " +
+        "category: gillar (loves: notes/accords/styles), ogillar (dislikes/dealbreakers), regel (rules like " +
+        "'inga dupes', 'nischigt till dejter'), budget ('max ~2500 kr per flaska'). Save when Philip expresses " +
+        "a durable opinion — not one-off remarks.",
+      inputSchema: {
+        category: z.enum(["gillar", "ogillar", "regel", "budget"]),
+        content: z.string().min(1),
+      },
+    },
+    wrap(({ category, content }) => jsonResult(savePreference(db, category, content))),
+  );
+
+  server.registerTool(
+    "fragrance_delete_preference",
+    {
+      description: "Deactivate a preference by id (they're listed in fragrance_acquisition_context).",
+      inputSchema: { id: z.number().int() },
+    },
+    wrap(({ id }) => {
+      deletePreference(db, id);
+      return jsonResult({ ok: true, deleted: id });
+    }),
+  );
+
+  server.registerTool(
+    "fragrance_search_retailers",
+    {
+      description:
+        "Live-search Swedish perfume retailers server-side and return {retailer, name, brand, price_sek, " +
+        "size_ml, url} per hit. Covers ONLY Kicks and Deloox (the ones reachable server-side). Notino, Lyko, " +
+        "Parfym.se and Fragrantica block servers — search those YOURSELF with web search when comparing " +
+        "prices, and persist good finds with fragrance_save_offer. A retailer entry may carry an `error` " +
+        "field; report it casually rather than failing the comparison.",
+      inputSchema: {
+        query: z.string().min(2).describe("Fragrance name, e.g. 'le male elixir'"),
+        limit: z.number().int().min(1).max(10).optional().describe("Max hits per retailer, default 5"),
+      },
+    },
+    wrap(async ({ query, limit }) => jsonResult(await searchRetailers(query, limit ?? 5))),
+  );
+
+  server.registerTool(
+    "fragrance_save_offer",
+    {
+      description:
+        "Record a retail price/availability find for a fragrance (typically a wishlist candidate). Use after " +
+        "fragrance_search_retailers or your own web search of Notino/Lyko/Parfym.se etc. The fragrance must " +
+        "exist — add candidates with fragrance_add status=wishlist first.",
+      inputSchema: {
+        ...refShape,
+        retailer: z.string().min(2).describe("kicks, deloox, notino, lyko, parfym.se, ..."),
+        price_sek: z.number().positive().optional(),
+        size_ml: z.number().positive().optional(),
+        url: z.string().url().optional(),
+        note: z.string().optional().describe("E.g. 'kampanj -20%', 'slut i lager'"),
+      },
+    },
+    wrap(({ id, name, ...offer }) => {
+      const row = resolveFragrance(db, { id, name });
+      return jsonResult({ ...saveOffer(db, { fragrance_id: row.id, ...offer }), fragrance: `${row.house} ${row.name}` });
+    }),
+  );
+
+  server.registerTool(
+    "fragrance_acquisition_context",
+    {
+      description:
+        "THE tool for 'what should my next fragrance be?' — one call returns Philip's taste preferences, the " +
+        "owned collection profile (top accords, seasons, wear stats incl. ratings), an accord-coverage tally " +
+        "(what's overrepresented vs missing), and the wishlist with saved retail offers. Reason from: gaps in " +
+        "accord/season coverage, what he actually wears and rates highly, stated preferences and budget. " +
+        "Propose specific candidates; for each serious one: fragrance_add as wishlist, scrape its Fragrantica " +
+        "page into a snapshot if you can browse, then price it via fragrance_search_retailers + your own web " +
+        "search (Notino/Lyko/Parfym.se) and persist with fragrance_save_offer.",
+      inputSchema: {},
+    },
+    wrap(() => jsonResult(buildAcquisitionContext(db, todayStockholm()))),
   );
 
   server.registerTool(

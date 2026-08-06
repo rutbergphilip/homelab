@@ -130,8 +130,8 @@ body {
   left: 0;
   right: 0;
   display: grid;
-  /* Seven tabs. At six columns REGLER wrapped alone onto a second row; a
-     4+3 split is the balanced shape until there is room for one row. */
+  /* Eight tabs since Träning: 4+4 is the balanced split until there is
+     room for one row. */
   grid-template-columns: repeat(4, 1fr);
   background: color-mix(in oklab, var(--surface) 92%, transparent);
   backdrop-filter: blur(10px);
@@ -155,7 +155,7 @@ body {
   border-top-color: var(--accent);
 }
 @media (min-width: 560px) {
-  .tabbar { grid-template-columns: repeat(7, 1fr); }
+  .tabbar { grid-template-columns: repeat(8, 1fr); }
 }
 
 /* ---------- section headers ---------- */

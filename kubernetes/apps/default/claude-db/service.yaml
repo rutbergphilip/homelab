@@ -13,3 +13,8 @@ spec:
     - name: http
       port: 3000
       targetPort: 3000
+    # Cluster-internal lyfta projections for kcal-assistant; the ingress
+    # routes only port 3000, and a CiliumNetworkPolicy gates who may connect.
+    - name: internal
+      port: 3001
+      targetPort: 3001

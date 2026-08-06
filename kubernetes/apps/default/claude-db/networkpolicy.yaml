@@ -1,0 +1,51 @@
+# Same pattern as kcal-assistant's policy: the ingress-facing port stays
+# reachable only via nginx (everything on :3000 is token-gated anyway), and
+# the unauthenticated internal listener on :3001 is reachable only by the one
+# consumer that needs it — the kcal-assistant pod's Träning view/tool — plus
+# kubelet probes on /healthz. The :3001 surface is read-only by construction
+# (the listener rejects everything but GET).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: claude-db
+spec:
+  endpointSelector:
+    matchLabels:
+      app: claude-db
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: network
+            app.kubernetes.io/instance: external-ingress-nginx
+            app.kubernetes.io/component: controller
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+          rules:
+            http:
+              - method: "GET"
+                path: "/healthz"
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: home-automation
+            app: kcal-assistant
+      toPorts:
+        - ports:
+            - port: "3001"
+              protocol: TCP
+          rules:
+            http:
+              - method: "GET"
+                path: "/internal/lyfta/summary"
+              - method: "GET"
+                path: "/internal/lyfta/progress"
+              - method: "GET"
+                path: "/healthz"

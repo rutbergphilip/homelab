@@ -6,6 +6,7 @@ import { buildMcpServer } from "./mcp";
 import { handleUiApi } from "./ui/api";
 import { getProductImage } from "./db/product-images";
 import { buildInternalSummary, buildInternalPlanner, buildInternalHealth } from "./ui/internal";
+import { getTrainingProgress, getTrainingSummary } from "./services/training";
 import { confirmDay } from "./db/plan";
 import { logWeight } from "./db/weights";
 import { upsertDailyMetrics, type DailyMetricsInput } from "./db/daily";
@@ -36,6 +37,9 @@ const API_ROUTE = /^\/ui\/api\/[a-z]+(\/[A-Za-z0-9-]+)?$/;
 // Three segments deep and binary, so it cannot go through API_ROUTE (two
 // segments) or handleUiApi (JSON bodies only).
 const IMAGE_ROUTE = /^\/ui\/api\/products\/(\d+)\/image$/;
+// Träning data is fetched from claude-db (async), so it cannot go through the
+// synchronous handleUiApi — it gets its own branch, like the image route.
+const TRAINING_ROUTE = /^\/ui\/api\/training(?:\/(\d+))?$/;
 
 function uiHeaders(res: ServerResponse): void {
   res.setHeader("Cache-Control", "no-store");
@@ -169,6 +173,18 @@ export function createHttpServer(opts: { token: string; db: Database; uiAuth: Ui
           }
           res.writeHead(200, { "content-type": image.content_type });
           res.end(image.bytes);
+          return;
+        }
+        const trainingMatch = pathname.match(TRAINING_ROUTE);
+        if (trainingMatch) {
+          const search = new URL(raw, "http://internal").searchParams;
+          if (trainingMatch[1] !== undefined) {
+            const daysRaw = Number(search.get("days") ?? 365);
+            const days = Number.isInteger(daysRaw) ? Math.min(Math.max(daysRaw, 7), 3650) : 365;
+            uiJson(res, 200, await getTrainingProgress(Number(trainingMatch[1]), days));
+          } else {
+            uiJson(res, 200, await getTrainingSummary());
+          }
           return;
         }
         if (API_ROUTE.test(pathname)) {

@@ -7,13 +7,14 @@ import { Produkter } from "./views/Produkter";
 import { Recept } from "./views/Recept";
 import { ReceptDetalj } from "./views/ReceptDetalj";
 import { Vikt } from "./views/Vikt";
+import { Traning } from "./views/Traning";
 import { Regler } from "./views/Regler";
 import { Vecka } from "./views/Vecka";
 import { matchRoute, type ViewName, type ViewWidth } from "./lib/routes";
 
 const TABS = [
   ["idag", "Idag"], ["vecka", "Vecka"], ["dagar", "Dagar"], ["produkter", "Produkter"],
-  ["recept", "Recept"], ["vikt", "Vikt"], ["regler", "Regler"],
+  ["recept", "Recept"], ["vikt", "Vikt"], ["traning", "Träning"], ["regler", "Regler"],
 ] as const;
 
 export function useHashRoute(): string {
@@ -37,6 +38,7 @@ const VIEWS: Record<ViewName, (param?: string) => ReactNode> = {
   recept: () => <Recept />,
   receptDetalj: (param) => <ReceptDetalj id={param!} />,
   vikt: () => <Vikt />,
+  traning: () => <Traning />,
   regler: () => <Regler />,
 };
 

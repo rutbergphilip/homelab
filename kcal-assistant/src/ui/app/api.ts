@@ -92,5 +92,18 @@ export interface PlanDay { date: string; weekday: string; day_type: string; targ
 export interface ShoppingLine { product_id: number | null; description: string; grams: number | null; quantity: number | null; portion_name: string | null }
 export interface PlanWeek { start_date: string; end_date: string; days: PlanDay[]; week: { planned_days: number; confirmed_days: number; avg_planned_kcal: number | null; avg_target_kcal: number }; shopping_list: ShoppingLine[] }
 
+export interface TrainingWeeklyPoint { week_start: string; workouts: number; volume_kg: number; sets: number; duration_min: number | null }
+export interface TrainingWorkout { id: number; date: string; title: string | null; duration_min: number | null; volume_kg: number; sets: number; exercises: number }
+export interface TrainingTopExercise { exercise_id: number; name: string; sessions: number; last_performed: string; best_weight_kg: number | null; best_e1rm_kg: number | null; latest_e1rm_kg: number | null }
+export type TrainingView =
+  | { available: true; configured: boolean; last_synced: string | null; last_error: string | null; workout_count: number;
+      this_week: { workouts: number; volume_kg: number; sets: number };
+      weekly: TrainingWeeklyPoint[]; recent_workouts: TrainingWorkout[]; top_exercises: TrainingTopExercise[] }
+  | { available: false; reason: string };
+export interface TrainingProgressPoint { date: string; best_weight_kg: number | null; best_reps: number | null; e1rm_kg: number | null; volume_kg: number; sets: number }
+export type TrainingProgressView =
+  | { available: true; exercise: { id: number; name: string; equipment: string | null; body_part: string | null } | null; days: number; points: TrainingProgressPoint[] }
+  | { available: false; reason: string };
+
 export const putJson = <T,>(path: string, body: unknown): Promise<T> =>
   api<T>(path, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });

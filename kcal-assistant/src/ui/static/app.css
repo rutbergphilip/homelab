@@ -638,6 +638,9 @@ td {
   white-space: nowrap;
 }
 td:first-child { text-align: left; color: var(--ink-2); padding-left: 2px; }
+/* Träning: valbara övningsrader */
+tr.row-selected td { background: var(--surface-2); }
+tr.row-selected td:first-child { color: var(--accent); }
 
 /* ---------- chart ---------- */
 .chart-frame { margin: 8px 0 4px; }

@@ -12,6 +12,7 @@ export type ViewName =
   | "recept"
   | "receptDetalj"
   | "vikt"
+  | "traning"
   | "regler";
 
 export interface RouteMatch {
@@ -36,6 +37,8 @@ const ROUTES: Array<{ pattern: RegExp; tab: string; view: ViewName; width: ViewW
   { pattern: /^#\/recept$/, tab: "recept", view: "recept", width: "wide" },
   { pattern: /^#\/recept\/(\d+)$/, tab: "recept", view: "receptDetalj", width: "narrow" },
   { pattern: /^#\/vikt$/, tab: "vikt", view: "vikt", width: "narrow" },
+  // Träning is a chart + two tables side by side on desktop — grid content.
+  { pattern: /^#\/traning$/, tab: "traning", view: "traning", width: "wide" },
   { pattern: /^#\/regler$/, tab: "regler", view: "regler", width: "narrow" },
 ];
 

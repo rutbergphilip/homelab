@@ -8,8 +8,20 @@ comes next). Design spec: `docs/superpowers/specs/2026-08-02-claude-db-mcp-platf
 
 - `POST /mcp/<token>` — MCP, all domains
 - `POST /mcp/<token>/<domain>` — MCP, one domain (use per-domain connectors in claude.ai
-  to keep tool lists small): `/fragrance`, `/collections`
+  to keep tool lists small): `/fragrance`, `/collections`, `/lyfta`
 - `GET /healthz`
+- `GET :3001/internal/lyfta/{summary,progress}` — cluster-internal only (no auth,
+  CiliumNetworkPolicy admits just the kcal-assistant pod); backs kcal's Träning
+  view and `get_training` tool.
+
+## Lyfta domain
+
+Syncs Philip's gym log from the Lyfta API (`LYFTA_API_KEY`, optional env — without it
+the domain serves previously synced data and skips the hourly auto-sync). Local tools
+(`lyfta_workouts/workout/progress/stats/status`) read SQLite; live tools
+(`lyfta_sync`, `lyfta_search_library`, `lyfta_push_program`) hit the API
+(60 req/min, 5000/day). Design spec:
+`docs/superpowers/specs/2026-08-06-lyfta-training-integration-design.md`.
 
 ## Commands
 

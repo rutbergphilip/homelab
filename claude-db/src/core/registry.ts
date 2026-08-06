@@ -3,9 +3,10 @@ import type { Database } from "bun:sqlite";
 import type { Domain } from "./domain";
 import { fragranceDomain } from "../domains/fragrance";
 import { collectionsDomain } from "../domains/collections";
+import { lyftaDomain } from "../domains/lyfta";
 
 // Adding a new domain to the platform is this one line plus its folder.
-export const DOMAINS: Domain[] = [fragranceDomain, collectionsDomain];
+export const DOMAINS: Domain[] = [fragranceDomain, collectionsDomain, lyftaDomain];
 
 const NAME_RE = /^[a-z][a-z0-9]*$/;
 for (const d of DOMAINS) {
@@ -23,7 +24,7 @@ export function findDomain(name: string): Domain | undefined {
 // A fresh McpServer per request (stateless Streamable HTTP). The Database is
 // the shared singleton — safe because bun:sqlite is synchronous.
 export function buildMcpServer(db: Database, domains: Domain[]): McpServer {
-  const server = new McpServer({ name: "claude-db", version: "0.2.1" });
+  const server = new McpServer({ name: "claude-db", version: "0.3.0" });
   for (const domain of domains) {
     domain.register(server, db);
   }

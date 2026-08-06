@@ -14,6 +14,9 @@ export const config = {
   // through the ingress, gated by a CiliumNetworkPolicy instead of auth.
   internalPort: Number(process.env.INTERNAL_PORT ?? 3001),
   icaStoreId: process.env.ICA_STORE_ID ?? "1003421", // Maxi ICA Stormarknad Nynäshamn
+  // claude-db's cluster-internal listener — source of the Träning view and
+  // get_training (Lyfta workouts synced by the lyfta domain over there).
+  claudeDbUrl: process.env.CLAUDE_DB_INTERNAL_URL ?? "http://claude-db.default.svc.cluster.local:3001",
   authentikAllowedEmail: process.env.AUTHENTIK_ALLOWED_EMAIL,
   cfAccessTeamDomain: process.env.CF_ACCESS_TEAM_DOMAIN,
   cfAccessAud: process.env.CF_ACCESS_AUD,

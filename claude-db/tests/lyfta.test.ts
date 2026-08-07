@@ -319,6 +319,20 @@ describe("lyfta stats", () => {
     expect(empty.weekly).toHaveLength(12);
   });
 
+  // Live-API regression: performed sets arrive with is_completed:false, so
+  // the flag must not gate volume/e1RM/top-exercise stats.
+  test("sets flagged is_completed:false still count in stats", () => {
+    const db = freshDb();
+    const w = sampleWorkout(1, "2026-08-03", "100");
+    for (const ex of w.exercises!) for (const s of ex.sets!) s.is_completed = false;
+    upsertWorkout(db, w);
+    const points = exerciseProgress(db, 192, 365);
+    expect(points).toHaveLength(1);
+    expect(points[0]!.best_weight_kg).toBe(100);
+    const top = topExercises(db, { days: 30, limit: 5 });
+    expect(top.find((t) => t.exercise_id === 192)!.best_e1rm_kg).not.toBeNull();
+  });
+
   test("workout detail groups sets under exercises with records", () => {
     const db = freshDb();
     upsertWorkout(db, sampleWorkout(1, "2026-08-03"));

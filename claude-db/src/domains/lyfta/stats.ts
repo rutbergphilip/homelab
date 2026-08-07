@@ -48,7 +48,7 @@ function workoutAggregates(db: Database, opts: { from?: string; limit?: number }
   return db
     .query<WorkoutAggRow, Record<string, string | number>>(
       `SELECT w.*, COUNT(s.rowid) AS set_count,
-              COALESCE(SUM(CASE WHEN s.is_completed = 1 THEN COALESCE(s.weight_kg, 0) * COALESCE(s.reps, 0) END), 0) AS set_volume_kg,
+              COALESCE(SUM(COALESCE(s.weight_kg, 0) * COALESCE(s.reps, 0)), 0) AS set_volume_kg,
               COUNT(DISTINCT s.exercise_id) AS exercise_count
        FROM lyfta_workouts w LEFT JOIN lyfta_sets s ON s.workout_id = w.id
        ${where}
@@ -126,6 +126,11 @@ interface ExerciseSetRow extends SetRow {
   perform_date: string;
 }
 
+// NOTE: no stats query filters on is_completed. The live API (2026-08-07)
+// ships performed sets — weights, reps, even PR records — with
+// is_completed:false, so the flag does not mean "performed". A set logged in
+// a finished workout counts; the raw flag is still stored for reference.
+
 function exerciseSets(db: Database, exerciseId: number, from?: string): ExerciseSetRow[] {
   const params: Record<string, string | number> = { $eid: exerciseId };
   let dateCond = "";
@@ -137,7 +142,7 @@ function exerciseSets(db: Database, exerciseId: number, from?: string): Exercise
     .query<ExerciseSetRow, Record<string, string | number>>(
       `SELECT s.*, w.perform_date FROM lyfta_sets s
        JOIN lyfta_workouts w ON w.id = s.workout_id
-       WHERE s.exercise_id = $eid AND s.is_completed = 1 ${dateCond}
+       WHERE s.exercise_id = $eid ${dateCond}
        ORDER BY w.perform_date, w.id, s.set_index`,
     )
     .all(params);
@@ -162,7 +167,7 @@ export function topExercises(db: Database, opts: { days: number; limit: number }
       `SELECT s.exercise_id, MAX(s.exercise_name) AS name,
               COUNT(DISTINCT s.workout_id) AS sessions, MAX(w.perform_date) AS last_performed
        FROM lyfta_sets s JOIN lyfta_workouts w ON w.id = s.workout_id
-       WHERE w.perform_date >= ? AND s.is_completed = 1
+       WHERE w.perform_date >= ?
        GROUP BY s.exercise_id ORDER BY sessions DESC, last_performed DESC LIMIT ?`,
     )
     .all(from, opts.limit);
@@ -343,7 +348,6 @@ export function workoutDetail(db: Database, workout: WorkoutRow): Record<string,
       ...(s.duration_s !== null && { duration_s: s.duration_s }),
       ...(s.distance !== null && { distance: s.distance }),
       ...(s.set_type !== null && s.set_type !== "normal" && { set_type: s.set_type }),
-      ...(s.is_completed === 0 && { completed: false }),
       ...(s.record_type && { record: { type: s.record_type, level: s.record_level, value: s.record_value } }),
     });
   }

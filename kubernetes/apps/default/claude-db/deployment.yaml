@@ -23,7 +23,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: claude-db
-          image: rutbergphilip/claude-db:v0.3.1
+          image: rutbergphilip/claude-db:v0.3.2
           imagePullPolicy: IfNotPresent
 
           ports:

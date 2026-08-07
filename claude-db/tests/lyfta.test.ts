@@ -194,6 +194,67 @@ describe("lyfta sync", () => {
     expect(incremental.new_workouts).toBe(0);
     expect(second.calls.workouts).toBe(1);
   });
+
+  // The real API (observed 2026-08-07): endpoints ignore the requested limit
+  // (exercises come 20/page no matter what) and paging past the end throws
+  // "Requested page is too deep" instead of returning an empty page.
+  test("fixed page size + 'page is too deep' terminate loops instead of failing", async () => {
+    const db = freshDb();
+    const exercisePages = [0, 1, 2].map((p) =>
+      Array.from({ length: 20 }, (_, i) => ({
+        id: String(1000 + p * 20 + i),
+        name: `Övning ${p * 20 + i}`,
+        image_name: "x.png",
+      })),
+    );
+    let workoutCalls = 0;
+    const client: LyftaClient = {
+      workouts: (page) => {
+        workoutCalls++;
+        if (page > 1) return Promise.reject(new Error("Lyfta API error: Requested page is too deep"));
+        // total_pages omitted — termination must come from the error path
+        return Promise.resolve({ status: true, workouts: [sampleWorkout(1, "2026-08-01")] });
+      },
+      workoutsSummary: (page) =>
+        page > 1
+          ? Promise.reject(new Error("Lyfta API error: Requested page is too deep"))
+          : Promise.resolve({ status: true, workouts: [{ id: 1, workout_duration: "00:45:00" }] }),
+      exercises: (page) =>
+        page > 3
+          ? Promise.reject(new Error("Lyfta API error: Requested page is too deep"))
+          : Promise.resolve({ status: true, exercises: exercisePages[page - 1]! }),
+      searchLibrary: () => Promise.resolve({ status: true }),
+      createCollection: () => Promise.resolve({ id: 1 }),
+      createTemplate: () => Promise.resolve({ id: 1 }),
+    };
+    const result = await syncLyfta(db, client, { full: true });
+    expect(result.total_workouts).toBe(1);
+    expect(result.exercises).toBe(60);
+    expect(result.last_synced).not.toBeNull();
+    expect(getSyncState(db, "last_error")).toBeNull();
+    expect(getWorkout(db, { id: 1 })!.duration_s).toBe(2700);
+    expect(workoutCalls).toBe(2); // page 2 attempted once, error absorbed
+  });
+
+  test("a repeating page (API ignoring `page`) stops the loop", async () => {
+    const db = freshDb();
+    let calls = 0;
+    const samePage = [sampleWorkout(1, "2026-08-01"), sampleWorkout(2, "2026-08-02")];
+    const client: LyftaClient = {
+      workouts: () => {
+        calls++;
+        return Promise.resolve({ status: true, workouts: samePage }); // no total_pages, same ids forever
+      },
+      workoutsSummary: () => Promise.resolve({ status: true, workouts: [] }),
+      exercises: () => Promise.resolve({ status: true, exercises: [] }),
+      searchLibrary: () => Promise.resolve({ status: true }),
+      createCollection: () => Promise.resolve({ id: 1 }),
+      createTemplate: () => Promise.resolve({ id: 1 }),
+    };
+    const result = await syncLyfta(db, client, { full: true });
+    expect(result.total_workouts).toBe(2);
+    expect(calls).toBe(2); // page 2 detected as a repeat, loop stopped
+  });
 });
 
 describe("lyfta stats", () => {

@@ -24,7 +24,7 @@ export function findDomain(name: string): Domain | undefined {
 // A fresh McpServer per request (stateless Streamable HTTP). The Database is
 // the shared singleton — safe because bun:sqlite is synchronous.
 export function buildMcpServer(db: Database, domains: Domain[]): McpServer {
-  const server = new McpServer({ name: "claude-db", version: "0.3.0" });
+  const server = new McpServer({ name: "claude-db", version: "0.3.1" });
   for (const domain of domains) {
     domain.register(server, db);
   }

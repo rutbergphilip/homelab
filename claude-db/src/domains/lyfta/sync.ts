@@ -23,6 +23,16 @@ const PAGE_LIMIT = 100;
 const SUMMARY_LIMIT = 1000;
 const MAX_PAGES = 200; // 20k workouts — a runaway-pagination backstop, not a real cap
 
+// The real API (observed 2026-08-07) neither honors the requested limit on
+// every endpoint (exercises come 20/page whatever you ask for) nor returns an
+// empty page past the end — it errors with "Requested page is too deep".
+// So `length < limit` is NEVER a stop condition here (it would silently drop
+// everything after page 1); loops end on empty page, repeated ids,
+// total_pages, or the too-deep error.
+function isPageTooDeep(e: unknown): boolean {
+  return e instanceof Error && /page is too deep/i.test(e.message);
+}
+
 // Workouts arrive newest-first, so incremental mode can stop after the first
 // page whose ids are all already stored. That page is still upserted — recent
 // edits to a logged workout land without a full walk.
@@ -35,10 +45,21 @@ export async function syncLyfta(
   let upserted = 0;
   let created = 0;
 
+  const seenWorkoutIds = new Set<number>();
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const res = await client.workouts(page, PAGE_LIMIT);
+    let res;
+    try {
+      res = await client.workouts(page, PAGE_LIMIT);
+    } catch (e) {
+      if (isPageTooDeep(e)) break;
+      throw e;
+    }
     const workouts = res.workouts ?? [];
     if (workouts.length === 0) break;
+    // A page with only already-seen-this-run ids means the API is repeating
+    // itself (or ignoring `page`) — stop rather than loop to the backstop.
+    if (workouts.every((w) => seenWorkoutIds.has(Number(w.id)))) break;
+    for (const w of workouts) seenWorkoutIds.add(Number(w.id));
     let sawNew = false;
     for (const w of workouts) {
       const result = upsertWorkout(db, w);
@@ -57,27 +78,53 @@ export async function syncLyfta(
   }
 
   // The detail endpoint has no duration; the summary endpoint does.
+  const seenSummaryIds = new Set<number>();
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const res = await client.workoutsSummary(page, SUMMARY_LIMIT);
+    let res;
+    try {
+      res = await client.workoutsSummary(page, SUMMARY_LIMIT);
+    } catch (e) {
+      if (isPageTooDeep(e)) break;
+      throw e;
+    }
     const summaries = res.workouts ?? [];
+    if (summaries.length === 0) break;
+    let sawNew = false;
     for (const s of summaries) {
       const id = num(s.id);
+      if (id === null) continue;
+      if (!seenSummaryIds.has(id)) sawNew = true;
+      seenSummaryIds.add(id);
       const duration = parseDuration(s.workout_duration);
-      if (id !== null && duration !== null) setWorkoutDuration(db, id, duration);
+      if (duration !== null) setWorkoutDuration(db, id, duration);
     }
-    if (summaries.length < SUMMARY_LIMIT) break;
+    if (!sawNew) break;
     if (res.total_pages !== undefined && page >= res.total_pages) break;
   }
 
   let exercises = 0;
+  const seenExerciseIds = new Set<number>();
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const res = await client.exercises(page, PAGE_LIMIT);
+    let res;
+    try {
+      res = await client.exercises(page, PAGE_LIMIT);
+    } catch (e) {
+      if (isPageTooDeep(e)) break;
+      throw e;
+    }
     const list = res.exercises ?? [];
+    if (list.length === 0) break;
+    let sawNew = false;
     for (const e of list) {
+      const id = num(e.id);
+      if (id !== null && !seenExerciseIds.has(id)) {
+        sawNew = true;
+        seenExerciseIds.add(id);
+      }
       upsertExercise(db, e);
       exercises++;
     }
-    if (list.length < PAGE_LIMIT) break;
+    if (!sawNew) break;
   }
 
   const lastSynced = new Date().toISOString();

@@ -61,6 +61,13 @@ export const FRAGRANCE_MIGRATIONS: string[] = [
   );
   CREATE INDEX idx_offers_fragrance ON fragrance_offers(fragrance_id);
   `,
+  // 3: my_rating — Philip's own overall 1-10 verdict (decimals), separate from
+  // per-wear ratings and Fragrantica's community score
+  `
+  ALTER TABLE fragrances ADD COLUMN my_rating REAL
+    CHECK (my_rating IS NULL OR (my_rating >= 1 AND my_rating <= 10));
+  ALTER TABLE fragrances ADD COLUMN my_rated_at TEXT;
+  `,
 ];
 
 export interface FragranceRow {
@@ -76,6 +83,8 @@ export interface FragranceRow {
   personal_notes: string | null;
   fragrantica_json: string | null;
   fragrantica_scraped_at: string | null;
+  my_rating: number | null;
+  my_rated_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -174,6 +183,21 @@ export function updateFragrance(
   return row;
 }
 
+export function rateFragrance(db: Database, id: number, rating: number | null): FragranceRow {
+  const value = rating === null ? null : Math.round(rating * 10) / 10;
+  const row = db
+    .query<FragranceRow, SqlParams>(
+      `UPDATE fragrances
+       SET my_rating = $rating,
+           my_rated_at = CASE WHEN $rating IS NULL THEN NULL ELSE datetime('now') END,
+           updated_at = datetime('now')
+       WHERE id = $id RETURNING *`,
+    )
+    .get({ $id: id, $rating: value });
+  if (!row) throw new Error(`fragrance ${id} not found`);
+  return row;
+}
+
 export function removeFragrance(db: Database, id: number): void {
   const changes = db.run("DELETE FROM fragrances WHERE id = ?", [id]).changes;
   if (changes === 0) throw new Error(`fragrance ${id} not found`);
@@ -190,6 +214,7 @@ export function listFragrances(db: Database, status?: string): Array<Record<stri
     status: r.status,
     concentration: r.concentration,
     size_ml: r.size_ml,
+    my_rating: r.my_rating,
     has_fragrantica_data: r.fragrantica_json !== null,
   }));
 }
@@ -340,6 +365,7 @@ export function buildAcquisitionContext(db: Database, today: string): Record<str
       house: r.house,
       name: r.name,
       personal_notes: r.personal_notes,
+      my_rating: r.my_rating,
       rating: snapshot?.rating ?? null,
       accords: (snapshot?.accords ?? []).slice(0, 5).map((a) => a.name),
       seasons: snapshot?.seasons ?? null,
@@ -363,6 +389,7 @@ export function buildAcquisitionContext(db: Database, today: string): Record<str
         house: r.house,
         name: r.name,
         personal_notes: r.personal_notes,
+        my_rating: r.my_rating,
         rating: snapshot?.rating ?? null,
         accords: (snapshot?.accords ?? []).slice(0, 5).map((a) => a.name),
         offers,
@@ -476,6 +503,7 @@ export function buildContext(db: Database, today: string): Record<string, unknow
       name: r.name,
       concentration: r.concentration,
       personal_notes: r.personal_notes,
+      my_rating: r.my_rating,
       fragrantica: snapshot
         ? {
             rating: snapshot["rating"],

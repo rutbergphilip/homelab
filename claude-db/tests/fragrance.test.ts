@@ -8,6 +8,7 @@ import {
   getFragranceDetail,
   listFragrances,
   logWear,
+  rateFragrance,
   removeFragrance,
   resolveFragrance,
   saveSnapshot,
@@ -64,6 +65,44 @@ describe("fragrance crud", () => {
     expect(resolveFragrance(db, { name: "absolu" }).name).toBe("Absolu Aventus");
     expect(() => resolveFragrance(db, { name: "aventus" })).toThrow(/ambiguous/);
     expect(() => resolveFragrance(db, { name: "sauvage" })).toThrow(/no fragrance/);
+  });
+});
+
+describe("my rating", () => {
+  test("set, round to one decimal, overwrite, clear", () => {
+    const db = freshDb();
+    const f = addFragrance(db, { house: "JPG", name: "Le Male Elixir" });
+    expect(f.my_rating).toBeNull();
+
+    const rated = rateFragrance(db, f.id, 9.27);
+    expect(rated.my_rating).toBe(9.3);
+    expect(rated.my_rated_at).not.toBeNull();
+
+    expect(rateFragrance(db, f.id, 7).my_rating).toBe(7);
+
+    const cleared = rateFragrance(db, f.id, null);
+    expect(cleared.my_rating).toBeNull();
+    expect(cleared.my_rated_at).toBeNull();
+  });
+
+  test("out-of-range rejected by CHECK, unknown id throws", () => {
+    const db = freshDb();
+    const f = addFragrance(db, { house: "Dior", name: "Sauvage" });
+    expect(() => rateFragrance(db, f.id, 11)).toThrow();
+    expect(() => rateFragrance(db, f.id, 0.4)).toThrow();
+    expect(() => rateFragrance(db, 999, 8)).toThrow(/not found/);
+  });
+
+  test("surfaces in list, detail and context payloads", () => {
+    const db = freshDb();
+    const f = addFragrance(db, { house: "By Kilian", name: "Angels' Share" });
+    rateFragrance(db, f.id, 9.3);
+
+    expect(listFragrances(db)[0]!["my_rating"]).toBe(9.3);
+    const detail = getFragranceDetail(db, resolveFragrance(db, { id: f.id }));
+    expect(detail["my_rating"]).toBe(9.3);
+    const collection = buildContext(db, "2026-08-10")["collection"] as Array<Record<string, unknown>>;
+    expect(collection[0]!["my_rating"]).toBe(9.3);
   });
 });
 

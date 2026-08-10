@@ -61,7 +61,8 @@ describe("http server", () => {
 
   test("per-domain mount exposes only that domain", async () => {
     const names = await toolNames(`/mcp/${TOKEN}/fragrance`);
-    expect(names).toHaveLength(14);
+    expect(names).toHaveLength(15);
+    expect(names).toContain("fragrance_rate");
     expect(names.every((n) => n.startsWith("fragrance_"))).toBe(true);
 
     const collNames = await toolNames(`/mcp/${TOKEN}/collections`);

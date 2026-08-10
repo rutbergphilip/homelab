@@ -10,6 +10,7 @@ import {
   getFragranceDetail,
   listFragrances,
   logWear,
+  rateFragrance,
   removeFragrance,
   resolveFragrance,
   saveOffer,
@@ -106,6 +107,37 @@ export function registerFragranceTools(server: McpServer, db: Database): void {
   );
 
   server.registerTool(
+    "fragrance_rate",
+    {
+      description:
+        "Set Philip's own overall rating for a fragrance: 1-10, decimals welcome (e.g. 9.3). This is his " +
+        "personal verdict on how much he LIKES it — distinct from Fragrantica's community rating and from the " +
+        "per-day rating in fragrance_log_wear. It's the signal for 'recommend something like the ones I love', " +
+        "so ask for/record it once he has a settled impression. Re-rating overwrites; null clears.",
+      inputSchema: {
+        ...refShape,
+        rating: z
+          .number()
+          .min(1)
+          .max(10)
+          .nullable()
+          .describe("Overall liking 1-10, kept to one decimal (9.27 -> 9.3). null clears the rating"),
+      },
+    },
+    wrap(({ id, name, rating }) => {
+      const row = resolveFragrance(db, { id, name });
+      const updated = rateFragrance(db, row.id, rating);
+      return jsonResult({
+        ok: true,
+        id: updated.id,
+        fragrance: `${row.house} ${row.name}`,
+        my_rating: updated.my_rating,
+        my_rated_at: updated.my_rated_at,
+      });
+    }),
+  );
+
+  server.registerTool(
     "fragrance_remove",
     {
       description:
@@ -134,8 +166,8 @@ export function registerFragranceTools(server: McpServer, db: Database): void {
     "fragrance_get",
     {
       description:
-        "Full detail for one fragrance: metadata, complete Fragrantica snapshot (accords, notes pyramid, " +
-        "seasons, longevity, sillage, description) and the last 10 wears.",
+        "Full detail for one fragrance: metadata, Philip's overall rating (my_rating), complete Fragrantica " +
+        "snapshot (accords, notes pyramid, seasons, longevity, sillage, description) and the last 10 wears.",
       inputSchema: refShape,
     },
     wrap((ref) => jsonResult(getFragranceDetail(db, resolveFragrance(db, ref)))),
@@ -273,9 +305,10 @@ export function registerFragranceTools(server: McpServer, db: Database): void {
     {
       description:
         "THE tool for 'what should my next fragrance be?' — one call returns Philip's taste preferences, the " +
-        "owned collection profile (top accords, seasons, wear stats incl. ratings), an accord-coverage tally " +
-        "(what's overrepresented vs missing), and the wishlist with saved retail offers. Reason from: gaps in " +
-        "accord/season coverage, what he actually wears and rates highly, stated preferences and budget. " +
+        "owned collection profile (top accords, seasons, wear stats, and my_rating = his own overall 1-10 " +
+        "verdict per bottle), an accord-coverage tally (what's overrepresented vs missing), and the wishlist " +
+        "with saved retail offers. Reason from: gaps in accord/season coverage, what he actually wears and " +
+        "what he rates highly (my_rating is the strongest taste signal), stated preferences and budget. " +
         "Propose specific candidates; for each serious one: fragrance_add as wishlist, scrape its Fragrantica " +
         "page into a snapshot if you can browse, then price it via fragrance_search_retailers + your own web " +
         "search (Notino/Lyko/Parfym.se) and persist with fragrance_save_offer.",
@@ -289,8 +322,9 @@ export function registerFragranceTools(server: McpServer, db: Database): void {
     {
       description:
         "THE tool for 'what should I wear?' — one call returns the whole owned collection with Fragrantica " +
-        "essentials (rating, accords, notes, season votes, longevity, sillage), Philip's personal notes, and " +
-        "wear stats (last worn, occasions, avg rating). Combine with the occasion/weather from the " +
+        "essentials (rating, accords, notes, season votes, longevity, sillage), Philip's personal notes, his " +
+        "own overall rating (my_rating 1-10), and wear stats (last worn, occasions, avg rating). Combine with " +
+        "the occasion/weather from the " +
         "conversation to recommend; favor season fit, occasion history and rotation (avoid what was just worn). " +
         "After Philip decides, log it with fragrance_log_wear.",
       inputSchema: {},

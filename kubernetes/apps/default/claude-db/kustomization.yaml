@@ -9,6 +9,9 @@ resources:
   - ./deployment.yaml
   - ./service.yaml
   - ./ingress.yaml
+  - ./ingress-ui.yaml
+  - ./ingress-outpost.yaml
+  - ./service-outpost.yaml
   - ./networkpolicy.yaml
   - ./backup-cronjob.yaml
 

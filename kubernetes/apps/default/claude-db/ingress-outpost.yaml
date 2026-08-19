@@ -1,0 +1,27 @@
+# Serves /outpost.goauthentik.io/* on claude.rutberg.dev (login page,
+# callback, auth endpoint) by proxying to the Authentik embedded outpost. NO
+# forward-auth here — this IS the auth handshake. upstream-vhost keeps
+# Host: claude.rutberg.dev so the outpost matches the claude provider
+# (external_host https://claude.rutberg.dev).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: claude-db-outpost
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/upstream-vhost: "claude.rutberg.dev"
+spec:
+  ingressClassName: external
+  rules:
+    - host: claude.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80

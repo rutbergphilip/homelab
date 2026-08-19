@@ -4,9 +4,10 @@ import type { Domain } from "./domain";
 import { fragranceDomain } from "../domains/fragrance";
 import { collectionsDomain } from "../domains/collections";
 import { lyftaDomain } from "../domains/lyfta";
+import { jokesDomain } from "../domains/jokes";
 
 // Adding a new domain to the platform is this one line plus its folder.
-export const DOMAINS: Domain[] = [fragranceDomain, collectionsDomain, lyftaDomain];
+export const DOMAINS: Domain[] = [fragranceDomain, collectionsDomain, lyftaDomain, jokesDomain];
 
 const NAME_RE = /^[a-z][a-z0-9]*$/;
 for (const d of DOMAINS) {

@@ -47,7 +47,7 @@ describe("http server", () => {
     expect(res.status).toBe(200);
     const json = (await res.json()) as { ok: boolean; domains: string[] };
     expect(json.ok).toBe(true);
-    expect(json.domains).toEqual(["fragrance", "collections", "lyfta"]);
+    expect(json.domains).toEqual(["fragrance", "collections", "lyfta", "jokes"]);
   });
 
   test("wrong token → 404, correct token → tools", async () => {

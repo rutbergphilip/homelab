@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Skämtbanken</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎤%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --stage: #16110d;          /* warm near-black */
+    --stage-2: #1e1712;
+    --card: #241b14;
+    --card-edge: #35281d;
+    --ink: #f2e8db;            /* warm paper-white */
+    --ink-dim: #b3a28e;
+    --ink-faint: #7d6f5e;
+    --spot: #f0a63c;           /* spotlight amber */
+    --spot-deep: #c77f1d;
+    --safe: #7fc487;
+    --risky: #e8b34b;
+    --never: #e06a5a;
+    --serif: Georgia, 'Times New Roman', serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --sans: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--stage); }
+  body {
+    font-family: var(--sans);
+    background:
+      radial-gradient(ellipse 120% 60% at 50% -10%, rgba(240,166,60,.09), transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"),
+      var(--stage);
+    color: var(--ink);
+    min-height: 100dvh;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- header ---------- */
+  header { padding: 26px 0 6px; text-align: center; }
+  .marquee {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: .42em; text-indent: .42em;
+    color: var(--spot);
+    text-transform: uppercase;
+  }
+  .marquee::before, .marquee::after { content: "◆"; color: var(--spot-deep); margin: 0 10px; font-size: 8px; vertical-align: 2px; }
+  h1 {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: clamp(30px, 9vw, 40px);
+    letter-spacing: -.01em; margin-top: 2px;
+    text-shadow: 0 0 34px rgba(240,166,60,.35);
+  }
+  .subcount { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+
+  /* ---------- filters ---------- */
+  .filters { position: sticky; top: 0; z-index: 5; padding: 12px 0 10px;
+    background: linear-gradient(var(--stage) 82%, transparent); }
+  .search {
+    width: 100%; padding: 12px 14px;
+    background: var(--stage-2); border: 1px solid var(--card-edge); border-radius: 10px;
+    color: var(--ink); font-size: 16px; font-family: var(--sans);
+    outline: none;
+  }
+  .search:focus { border-color: var(--spot-deep); }
+  .search::placeholder { color: var(--ink-faint); font-style: italic; }
+  .chiprow { display: flex; gap: 8px; overflow-x: auto; padding: 10px 2px 2px; scrollbar-width: none; }
+  .chiprow::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: 0 0 auto; padding: 7px 13px; border-radius: 999px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .02em;
+    background: transparent; border: 1px solid var(--card-edge); color: var(--ink-dim);
+    cursor: pointer; transition: all .15s ease; user-select: none;
+  }
+  .chip.on { background: var(--spot); border-color: var(--spot); color: #1a1208; font-weight: 700; }
+  .chip.ghost.on { background: var(--card-edge); border-color: var(--ink-faint); color: var(--ink); }
+
+  /* ---------- cards ---------- */
+  .cards { display: flex; flex-direction: column; gap: 12px; padding-top: 6px; }
+  .card {
+    position: relative; background: var(--card);
+    border: 1px solid var(--card-edge); border-radius: 12px;
+    padding: 16px 16px 13px; cursor: pointer;
+    transition: transform .12s ease, border-color .15s ease;
+    animation: rise .35s ease backwards;
+  }
+  .card:active { transform: scale(.985); }
+  .card.trigger { border-style: dashed; border-color: #4a3517; }
+  .card.retired { opacity: .45; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .card .line {
+    font-family: var(--serif); font-style: italic; font-size: 19px; line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card .line::before { content: "“"; color: var(--spot); }
+  .card .line::after { content: "”"; color: var(--spot); }
+  .meta { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .tag {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .tag.arm { color: var(--spot); }
+  .tag.arm::before { content: "⚡"; margin-right: 3px; }
+  .fuse { display: inline-flex; gap: 3px; align-items: center; }
+  .fuse i { width: 6px; height: 6px; border-radius: 50%; background: var(--card-edge); }
+  .fuse i.lit { background: var(--never); box-shadow: 0 0 6px rgba(224,106,90,.6); }
+  .fuse.low i.lit { background: var(--safe); box-shadow: 0 0 6px rgba(127,196,135,.5); }
+  .fuse.mid i.lit { background: var(--risky); box-shadow: 0 0 6px rgba(232,179,75,.5); }
+  .verdict { font-family: var(--mono); font-size: 10.5px; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .05em; }
+  .verdict.safe  { color: var(--safe);  border: 1px solid color-mix(in srgb, var(--safe) 45%, transparent); }
+  .verdict.risky { color: var(--risky); border: 1px solid color-mix(in srgb, var(--risky) 45%, transparent); }
+  .verdict.never { color: var(--never); border: 1px solid color-mix(in srgb, var(--never) 45%, transparent); }
+  .verdict.unrated { color: var(--ink-faint); border: 1px solid var(--card-edge); }
+  .statline { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); }
+  .empty { text-align: center; color: var(--ink-faint); font-style: italic; font-family: var(--serif); padding: 60px 20px; font-size: 17px; }
+
+  /* ---------- detail ---------- */
+  .back {
+    background: none; border: none; color: var(--spot); font-family: var(--mono);
+    font-size: 13px; padding: 18px 0 4px; cursor: pointer; letter-spacing: .05em;
+  }
+  .detail .line-big {
+    font-family: var(--serif); font-style: italic; font-size: clamp(24px, 6.4vw, 32px);
+    line-height: 1.4; margin: 10px 0 6px;
+  }
+  .detail .line-big::before { content: "“"; color: var(--spot); }
+  .detail .line-big::after { content: "”"; color: var(--spot); }
+  .translation { color: var(--ink-faint); font-style: italic; font-size: 14px; margin-bottom: 14px; }
+  .sect { margin-top: 22px; }
+  .sect h3 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--spot); margin-bottom: 9px;
+  }
+  .delivery {
+    background: linear-gradient(135deg, rgba(240,166,60,.10), rgba(240,166,60,.03));
+    border-left: 3px solid var(--spot);
+    padding: 13px 15px; border-radius: 0 10px 10px 0;
+    font-size: 15.5px; line-height: 1.55;
+  }
+  .triglist { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .triglist li {
+    font-size: 14.5px; color: var(--ink-dim); padding-left: 20px; position: relative; line-height: 1.45;
+  }
+  .triglist li::before { content: "⚡"; position: absolute; left: 0; color: var(--spot-deep); font-size: 12px; }
+  .vgrid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .vgrid .cell {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: var(--stage-2); border: 1px solid var(--card-edge); border-radius: 9px;
+    font-size: 13.5px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.safe { background: var(--safe); } .dot.risky { background: var(--risky); } .dot.never { background: var(--never); }
+  .notes { color: var(--ink-dim); font-size: 14.5px; line-height: 1.55; }
+  .history { display: flex; flex-direction: column; gap: 9px; }
+  .telling {
+    display: flex; gap: 10px; align-items: baseline; font-size: 13.5px;
+    background: var(--stage-2); border: 1px solid var(--card-edge); border-radius: 9px; padding: 9px 12px;
+  }
+  .telling .d { font-family: var(--mono); color: var(--ink-faint); font-size: 11.5px; white-space: nowrap; }
+  .telling .stars { color: var(--spot); letter-spacing: 1px; white-space: nowrap; }
+  .telling .who { color: var(--ink-dim); }
+  .telling .tnote { width: 100%; color: var(--ink-faint); font-style: italic; }
+
+  .bigbtn {
+    display: block; width: 100%; margin-top: 26px; padding: 16px;
+    background: var(--spot); color: #1a1208; border: none; border-radius: 12px;
+    font-size: 17px; font-weight: 800; font-family: var(--sans); cursor: pointer;
+    box-shadow: 0 4px 24px rgba(240,166,60,.28);
+    transition: transform .12s ease;
+  }
+  .bigbtn:active { transform: scale(.98); }
+
+  /* ---------- modal ---------- */
+  .scrim {
+    position: fixed; inset: 0; background: rgba(10,7,5,.72); z-index: 20;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 21;
+    background: var(--stage-2); border-top: 1px solid var(--card-edge);
+    border-radius: 18px 18px 0 0; padding: 20px 18px calc(22px + env(safe-area-inset-bottom));
+    max-width: 640px; margin: 0 auto; max-height: 86dvh; overflow-y: auto;
+    transform: translateY(105%); transition: transform .25s cubic-bezier(.3,1,.4,1);
+  }
+  .sheet.open { transform: translateY(0); }
+  .sheet h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 22px; margin-bottom: 2px; }
+  .sheet .which { font-size: 13px; color: var(--ink-faint); font-style: italic; margin-bottom: 16px; }
+  .sheet label { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .25em; text-transform: uppercase; color: var(--spot); margin: 16px 0 8px; }
+  .rate { display: flex; gap: 8px; }
+  .rate button {
+    flex: 1; padding: 13px 0; font-size: 18px; border-radius: 10px;
+    background: var(--card); border: 1px solid var(--card-edge); color: var(--ink-dim); cursor: pointer;
+  }
+  .rate button.on { background: var(--spot); border-color: var(--spot); color: #1a1208; font-weight: 800; }
+  .audin, .notein {
+    width: 100%; padding: 11px 13px; background: var(--card); border: 1px solid var(--card-edge);
+    border-radius: 10px; color: var(--ink); font-size: 16px; font-family: var(--sans); outline: none;
+  }
+  .audin:focus, .notein:focus { border-color: var(--spot-deep); }
+  .sugg { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .sheet .send { margin-top: 22px; }
+  .sheet .send:disabled { opacity: .5; }
+  .feedback { text-align: center; font-family: var(--mono); font-size: 12px; margin-top: 10px; min-height: 16px; }
+  .feedback.ok { color: var(--safe); } .feedback.err { color: var(--never); }
+
+  /* ---------- stats ---------- */
+  .statcard { background: var(--card); border: 1px solid var(--card-edge); border-radius: 12px; padding: 15px 16px; margin-bottom: 12px; }
+  .statcard h3 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--spot); margin-bottom: 10px; }
+  .srow { display: flex; align-items: baseline; gap: 10px; padding: 6px 0; font-size: 14.5px; border-top: 1px dotted var(--card-edge); cursor: pointer; }
+  .srow:first-of-type { border-top: none; }
+  .srow .t { font-family: var(--serif); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .srow .v { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); white-space: nowrap; }
+  .srow .v b { color: var(--spot); }
+
+  /* ---------- bottom nav ---------- */
+  nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+    background: color-mix(in srgb, var(--stage) 88%, transparent);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--card-edge);
+    display: flex; max-width: 640px; margin: 0 auto;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav button {
+    flex: 1; padding: 15px 0 13px; background: none; border: none; cursor: pointer;
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-faint); border-top: 2px solid transparent; margin-top: -1px;
+  }
+  nav button.on { color: var(--spot); border-top-color: var(--spot); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="marquee">ikväll · ikväll · ikväll</div>
+    <h1>Skämtbanken</h1>
+    <div class="subcount" id="count"></div>
+  </header>
+
+  <section id="view-list">
+    <div class="filters">
+      <input class="search" id="q" type="search" placeholder="Sök i repertoaren…" autocomplete="off">
+      <div class="chiprow" id="ctxchips"></div>
+      <div class="chiprow" id="typechips"></div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section id="view-detail" class="hidden"></section>
+
+  <section id="view-stats" class="hidden"></section>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"></div>
+
+<nav>
+  <button id="nav-list" class="on">Repertoar</button>
+  <button id="nav-stats">Statistik</button>
+</nav>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+let DATA = { jokes: [], contexts: [], audience_tags: [] };
+let filter = { q: "", ctx: null, act: null, showRetired: false };
+let currentJoke = null;
+
+async function load() {
+  const res = await fetch("/api/jokes", { headers: { accept: "application/json" } });
+  if (!res.ok) { $("cards").innerHTML = '<div class="empty">Kunde inte ladda banken (' + res.status + ").</div>"; return; }
+  DATA = await res.json();
+  renderAll();
+}
+
+function renderAll() {
+  renderChips();
+  renderList();
+  renderStats();
+  const active = DATA.jokes.filter((j) => !j.retired).length;
+  $("count").textContent = active + " skämt i rotation";
+}
+
+/* ---------- filters ---------- */
+function renderChips() {
+  $("ctxchips").innerHTML = DATA.contexts.map((c) =>
+    `<button class="chip ${filter.ctx === c.name ? "on" : ""}" data-ctx="${esc(c.name)}">${esc(c.name)}</button>`
+  ).join("");
+  $("typechips").innerHTML =
+    `<button class="chip ghost ${filter.act === "active" ? "on" : ""}" data-act="active">kan berättas när som helst</button>` +
+    `<button class="chip ghost ${filter.act === "trigger" ? "on" : ""}" data-act="trigger">⚡ väntar på trigger</button>` +
+    `<button class="chip ghost ${filter.showRetired ? "on" : ""}" data-ret="1">pensionerade</button>`;
+  document.querySelectorAll("[data-ctx]").forEach((b) => b.onclick = () => { filter.ctx = filter.ctx === b.dataset.ctx ? null : b.dataset.ctx; renderChips(); renderList(); });
+  document.querySelectorAll("[data-act]").forEach((b) => b.onclick = () => { filter.act = filter.act === b.dataset.act ? null : b.dataset.act; renderChips(); renderList(); });
+  document.querySelectorAll("[data-ret]").forEach((b) => b.onclick = () => { filter.showRetired = !filter.showRetired; renderChips(); renderList(); });
+}
+
+function verdictFor(joke, ctx) {
+  if (!ctx) return null;
+  const key = Object.keys(joke.context_ratings).find((k) => k.toLowerCase() === ctx.toLowerCase());
+  return key ? joke.context_ratings[key] : "unrated";
+}
+
+function visibleJokes() {
+  const q = filter.q.trim().toLowerCase();
+  return DATA.jokes.filter((j) => {
+    if (j.retired && !filter.showRetired) return false;
+    if (filter.act && j.activation !== filter.act) return false;
+    if (filter.ctx && verdictFor(j, filter.ctx) === "never") return false;
+    if (q) {
+      const hay = [j.text, j.translation, j.type, j.delivery, ...(j.triggers || [])].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+/* ---------- list ---------- */
+function fuse(risk) {
+  const cls = risk <= 2 ? "low" : risk <= 3 ? "mid" : "";
+  let dots = "";
+  for (let i = 1; i <= 5; i++) dots += `<i class="${i <= risk ? "lit" : ""}"></i>`;
+  return `<span class="fuse ${cls}" title="risk ${risk}/5">${dots}</span>`;
+}
+
+const VERDICT_LABEL = { safe: "funkar", risky: "vågat", never: "aldrig", unrated: "obedömt" };
+
+function renderList() {
+  const jokes = visibleJokes();
+  if (!jokes.length) {
+    $("cards").innerHTML = '<div class="empty">Inget här. Antingen är banken tom — eller så filtrerar du bort allt.</div>';
+    return;
+  }
+  $("cards").innerHTML = jokes.map((j, i) => {
+    const v = verdictFor(j, filter.ctx);
+    return `<article class="card ${j.activation === "trigger" ? "trigger" : ""} ${j.retired ? "retired" : ""}"
+      data-id="${j.id}" style="animation-delay:${Math.min(i * 40, 320)}ms">
+      <div class="line">${esc(j.text)}</div>
+      <div class="meta">
+        ${j.activation === "trigger" ? '<span class="tag arm">trigger</span>' : ""}
+        ${j.type ? `<span class="tag">${esc(j.type)}</span>` : ""}
+        ${fuse(j.risk)}
+        ${v ? `<span class="verdict ${v}">${VERDICT_LABEL[v]}</span>` : ""}
+        <span class="statline">${j.stats.times_told ? j.stats.times_told + "× · " + (j.stats.avg_rating ?? "–") + "★" : "aldrig berättad"}</span>
+      </div>
+    </article>`;
+  }).join("");
+  document.querySelectorAll(".card").forEach((c) => c.onclick = () => showDetail(Number(c.dataset.id)));
+}
+
+/* ---------- detail ---------- */
+function stars(n) { return n ? "★".repeat(n) + "☆".repeat(5 - n) : "–"; }
+
+function showDetail(id) {
+  currentJoke = DATA.jokes.find((j) => j.id === id);
+  if (!currentJoke) return;
+  const j = currentJoke;
+  const vgrid = Object.entries(j.context_ratings).map(([ctx, v]) =>
+    `<div class="cell"><span class="dot ${v}"></span>${esc(ctx)} · ${VERDICT_LABEL[v]}</div>`).join("");
+  const hist = (j.tellings || []).map((t) => `<div class="telling">
+      <span class="d">${esc(t.told_on)}</span>
+      <span class="stars">${stars(t.rating)}</span>
+      <span class="who">${esc([t.context, ...(t.audience || [])].filter(Boolean).join(", "))}</span>
+      ${t.note ? `<div class="tnote">${esc(t.note)}</div>` : ""}
+    </div>`).join("");
+  $("view-detail").innerHTML = `
+    <button class="back" id="back">← repertoaren</button>
+    <div class="detail">
+      <div class="line-big">${esc(j.text)}</div>
+      ${j.translation ? `<div class="translation">${esc(j.translation)}</div>` : ""}
+      <div class="meta">
+        ${j.activation === "trigger" ? '<span class="tag arm">trigger — väntar på sitt tillfälle</span>' : '<span class="tag">kan berättas när öppningen kommer</span>'}
+        ${j.type ? `<span class="tag">${esc(j.type)}</span>` : ""}
+        ${fuse(j.risk)}
+      </div>
+      <div class="sect"><h3>Så landar du den</h3><div class="delivery">${esc(j.delivery)}</div></div>
+      ${j.triggers?.length ? `<div class="sect"><h3>Triggers</h3><ul class="triglist">${j.triggers.map((t) => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}
+      ${vgrid ? `<div class="sect"><h3>Var den funkar</h3><div class="vgrid">${vgrid}</div></div>` : ""}
+      ${j.notes ? `<div class="sect"><h3>Anteckningar</h3><div class="notes">${esc(j.notes)}</div></div>` : ""}
+      <div class="sect"><h3>Berättad ${j.stats.times_told} gånger</h3>
+        ${hist ? `<div class="history">${hist}</div>` : '<div class="notes" style="font-style:italic">Aldrig berättad ännu. Dags?</div>'}
+      </div>
+      <button class="bigbtn" id="tellbtn">Berättad! 🎤</button>
+    </div>`;
+  $("back").onclick = () => switchView("list");
+  $("tellbtn").onclick = () => openSheet(j);
+  switchView("detail");
+}
+
+/* ---------- telling sheet ---------- */
+let sheetState = { rating: null, audience: [], context: null };
+
+function openSheet(j) {
+  sheetState = { rating: null, audience: [], context: filter.ctx };
+  $("sheet").innerHTML = `
+    <h2>Berättad! 🎤</h2>
+    <div class="which">“${esc(j.text.length > 60 ? j.text.slice(0, 60) + "…" : j.text)}”</div>
+    <label>Var?</label>
+    <div class="sugg" id="sctx"></div>
+    <label>För vem?</label>
+    <input class="audin" id="audin" placeholder="namn, tryck enter" autocomplete="off">
+    <div class="sugg" id="saud"></div>
+    <label>Hur landade den?</label>
+    <div class="rate" id="rate"></div>
+    <label>Anteckning (valfritt)</label>
+    <input class="notein" id="notein" placeholder="varför den bombade/satt" autocomplete="off">
+    <button class="bigbtn send" id="send">Logga</button>
+    <div class="feedback" id="fb"></div>`;
+  renderSheetChips(j);
+  $("audin").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); addAudience(j, $("audin").value); $("audin").value = ""; }
+  });
+  $("send").onclick = () => submitTelling(j);
+  $("scrim").classList.add("open");
+  $("sheet").classList.add("open");
+  $("scrim").onclick = closeSheet;
+}
+
+function closeSheet() { $("scrim").classList.remove("open"); $("sheet").classList.remove("open"); }
+
+function addAudience(j, raw) {
+  const name = raw.trim().toLowerCase();
+  if (name && !sheetState.audience.includes(name)) sheetState.audience.push(name);
+  renderSheetChips(j);
+}
+
+function renderSheetChips(j) {
+  $("sctx").innerHTML = DATA.contexts.map((c) =>
+    `<button class="chip ${sheetState.context === c.name ? "on" : ""}" data-c="${esc(c.name)}">${esc(c.name)}</button>`).join("");
+  document.querySelectorAll("#sctx .chip").forEach((b) => b.onclick = () => { sheetState.context = sheetState.context === b.dataset.c ? null : b.dataset.c; renderSheetChips(j); });
+  const pool = [...new Set([...sheetState.audience, ...DATA.audience_tags])];
+  $("saud").innerHTML = pool.map((n) =>
+    `<button class="chip ${sheetState.audience.includes(n) ? "on" : ""}" data-a="${esc(n)}">${esc(n)}</button>`).join("");
+  document.querySelectorAll("#saud .chip").forEach((b) => b.onclick = () => {
+    const n = b.dataset.a;
+    sheetState.audience = sheetState.audience.includes(n) ? sheetState.audience.filter((x) => x !== n) : [...sheetState.audience, n];
+    renderSheetChips(j);
+  });
+  $("rate").innerHTML = [1, 2, 3, 4, 5].map((n) =>
+    `<button class="${sheetState.rating === n ? "on" : ""}" data-r="${n}">${n}</button>`).join("");
+  document.querySelectorAll("#rate button").forEach((b) => b.onclick = () => { sheetState.rating = Number(b.dataset.r); renderSheetChips(j); });
+}
+
+async function submitTelling(j) {
+  addAudience(j, $("audin").value); $("audin").value = "";
+  const fb = $("fb");
+  $("send").disabled = true;
+  fb.className = "feedback"; fb.textContent = "…";
+  try {
+    const res = await fetch(`/api/jokes/${j.id}/tellings`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        context: sheetState.context ?? undefined,
+        audience: sheetState.audience,
+        rating: sheetState.rating ?? undefined,
+        note: $("notein").value.trim() || undefined,
+      }),
+    });
+    if (!res.ok) throw new Error((await res.json()).error || res.status);
+    fb.className = "feedback ok"; fb.textContent = "Loggad. Publiken tackar.";
+    await load();
+    setTimeout(() => { closeSheet(); if (currentJoke) showDetail(j.id); }, 700);
+  } catch (e) {
+    fb.className = "feedback err"; fb.textContent = "Gick inte: " + e.message;
+  } finally {
+    $("send").disabled = false;
+  }
+}
+
+/* ---------- stats ---------- */
+function renderStats() {
+  const told = DATA.jokes.filter((j) => j.stats.times_told > 0);
+  const rated = told.filter((j) => j.stats.avg_rating !== null).sort((a, b) => b.stats.avg_rating - a.stats.avg_rating);
+  const most = [...told].sort((a, b) => b.stats.times_told - a.stats.times_told);
+  const never = DATA.jokes.filter((j) => !j.retired && j.stats.times_told === 0);
+  const heard = {};
+  for (const j of DATA.jokes) for (const t of j.tellings || []) for (const n of t.audience || []) {
+    (heard[n] ??= new Set()).add(j.id);
+  }
+  const row = (j, v) => `<div class="srow" data-id="${j.id}"><span class="t">${esc(j.text)}</span><span class="v">${v}</span></div>`;
+  $("view-stats").innerHTML = `
+    ${rated.length ? `<div class="statcard"><h3>Vad som faktiskt landar</h3>${rated.map((j) => row(j, `<b>${j.stats.avg_rating}★</b> · ${j.stats.times_told}×`)).join("")}</div>` : ""}
+    ${most.length ? `<div class="statcard"><h3>Mest berättade</h3>${most.map((j) => row(j, `<b>${j.stats.times_told}×</b> · senast ${j.stats.last_told}`)).join("")}</div>` : ""}
+    ${never.length ? `<div class="statcard"><h3>Aldrig berättade</h3>${never.map((j) => row(j, "vågar du?")).join("")}</div>` : ""}
+    ${Object.keys(heard).length ? `<div class="statcard"><h3>Vem har hört vad</h3>${Object.entries(heard).sort().map(([n, ids]) =>
+      `<div class="srow"><span class="t" style="font-style:normal;font-family:var(--mono);font-size:13px">${esc(n)}</span><span class="v"><b>${ids.size}</b> skämt</span></div>`).join("")}</div>` : ""}
+    ${!told.length && !never.length ? '<div class="empty">Ingen statistik ännu — banken är tom.</div>' : ""}`;
+  document.querySelectorAll("#view-stats .srow[data-id]").forEach((r) => r.onclick = () => showDetail(Number(r.dataset.id)));
+}
+
+/* ---------- nav ---------- */
+function switchView(v) {
+  $("view-list").classList.toggle("hidden", v !== "list");
+  $("view-detail").classList.toggle("hidden", v !== "detail");
+  $("view-stats").classList.toggle("hidden", v !== "stats");
+  $("nav-list").classList.toggle("on", v !== "stats");
+  $("nav-stats").classList.toggle("on", v === "stats");
+  window.scrollTo({ top: 0 });
+}
+$("nav-list").onclick = () => switchView("list");
+$("nav-stats").onclick = () => switchView("stats");
+$("q").addEventListener("input", () => { filter.q = $("q").value; renderList(); });
+
+load();
+</script>
+</body>
+</html>

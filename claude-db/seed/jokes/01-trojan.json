@@ -1,0 +1,15 @@
+{
+  "text": "En sån där tröja skulle du ha",
+  "translation": "That's a shirt you should have",
+  "activation": "trigger",
+  "type": "prop",
+  "risk": 2,
+  "delivery": "Peka på plagget, säg det torrt, ingen uppbyggnad. Faller platt om personen inte hunnit läsa texten — peka först, prata sen.",
+  "notes": "Det arketypiska triggerskämtet: helt dött tills världen levererar en tröja, då är det det enda värt att säga.",
+  "triggers": [
+    "någon i närheten bär ett plagg med pinsam eller ironisk text",
+    "vi går förbi ett skyltfönster fullt av roliga t-shirtar",
+    "souvenirbutik, turistområde eller second hand med konstiga plagg"
+  ],
+  "context_ratings": { "puben": "safe", "jobbfika": "risky", "familjemiddag": "safe" }
+}

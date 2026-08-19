@@ -1,0 +1,15 @@
+{
+  "text": "Jag ser ut som en Ipren bredvid dig",
+  "translation": "I look like an Ipren next to you (Ipren = the Swedish ibuprofen brand, a very opaque white tablet)",
+  "activation": "trigger",
+  "type": "one-liner",
+  "risk": 1,
+  "delivery": "Håll upp armen bredvid deras, säg det utan att le. Bäst som svar när någon annan kommenterar solbrännan först — då blir det ett erkännande i stället för komplimangfiske.",
+  "notes": "Enda skämtet i samlingen som är riktat helt mot mig själv, därför lägst på riskskalan. Kalibreringspunkt — allt annat betygsätts relativt det här.",
+  "triggers": [
+    "någon i sällskapet är nybränd eller nyss hemkommen från semester och visar upp solbrännan",
+    "armar jämförs vid pool, strand eller årets första varma dag",
+    "någon kommenterar hur blek jag är"
+  ],
+  "context_ratings": { "puben": "safe", "jobbfika": "safe", "familjemiddag": "safe" }
+}

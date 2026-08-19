@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import type { Database } from "bun:sqlite";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { DOMAINS, buildMcpServer, findDomain } from "./core/registry";
+import { handleUiRequest } from "./ui/routes";
 
 function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
@@ -63,6 +64,9 @@ export function createHttpServer(opts: { token: string; db: Database }): Server 
         await transport.handleRequest(req, res);
         return;
       }
+
+      // Authentik-gated browser surface (see ui/routes.ts for the trust model).
+      if (await handleUiRequest(req, res, opts.db, pathname)) return;
 
       // Everything else 404s, including claude.ai's /.well-known/oauth-*
       // probes — a clean 404 is how it concludes the connector is no-auth.

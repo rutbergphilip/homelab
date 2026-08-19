@@ -1,0 +1,14 @@
+{
+  "text": "Man kan inte gissa hens ålder, man får såga henne på mitten och räkna ringarna",
+  "translation": "You can't guess her age, you'd have to saw her in half and count the rings",
+  "activation": "trigger",
+  "type": "callback",
+  "risk": 3,
+  "delivery": "Funkar bara som svar mitt i en pågående gissningslek om någons ålder, aldrig som öppning. Leverera det som om det vore ett fullt rimligt förslag.",
+  "notes": "En tidigare version av samma bild hade en grupp människor som premiss — den versionen är inte med, för att byta ut gruppen generaliserar inte skämtet, det lämnar bara antagandet outtalat. Det här är ett annat skämt som råkar använda samma bild: det bygger på absurditeten i själva förslaget, vilket var den roliga delen hela tiden.",
+  "triggers": [
+    "gruppen försöker gissa åldern på någon som inte är närvarande",
+    "diskussion om att någon ser yngre ut än hen är"
+  ],
+  "context_ratings": { "puben": "safe", "jobbfika": "risky", "familjemiddag": "safe" }
+}

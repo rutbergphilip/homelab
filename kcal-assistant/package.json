@@ -16,7 +16,7 @@
     "jose": "^6.2.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "zod": "^3.25.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/bun": "^1.2.0",

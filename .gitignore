@@ -26,3 +26,6 @@ talosconfig
 Thumbs.db
 optiplex-gpu.yaml
 .superpowers/
+
+# NAS compose stacks
+nas/**/.env

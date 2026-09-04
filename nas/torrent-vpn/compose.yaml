@@ -1,0 +1,62 @@
+# nas/torrent-vpn/compose.yaml
+# Deployed as UGOS Docker "Project" torrent-vpn on the Ugreen NAS (192.168.50.254).
+# Spec: docs/superpowers/specs/2026-09-04-nas-torrent-vpn-gluetun-design.md
+name: torrent-vpn
+
+services:
+  gluetun:
+    image: qmcgaw/gluetun:v3.41.3
+    container_name: torrent-vpn-gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      - starrs
+    ports:
+      # qBittorrent WebUI. 38081 during the side-by-side test; 38080 after cutover.
+      - "38081:8080"
+    env_file:
+      - .env # WIREGUARD_PRIVATE_KEY only — pasted on the NAS, never in git
+    environment:
+      TZ: Europe/Stockholm
+      VPN_SERVICE_PROVIDER: protonvpn
+      VPN_TYPE: wireguard
+      SERVER_COUNTRIES: Sweden
+      PORT_FORWARD_ONLY: "on"
+      VPN_PORT_FORWARDING: "on"
+      # Push Proton's forwarded port into qBittorrent (needs "Bypass authentication
+      # for clients on localhost" enabled in qBittorrent WebUI options).
+      VPN_PORT_FORWARDING_UP_COMMAND: >-
+        /bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8080/api/v2/app/setPreferences'
+      VPN_PORT_FORWARDING_DOWN_COMMAND: >-
+        /bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8080/api/v2/app/setPreferences'
+      # LAN, cluster pod CIDR, docker bridge — same as the old LAN_NETWORK.
+      FIREWALL_OUTBOUND_SUBNETS: 192.168.50.0/24,10.42.0.0/16,172.18.0.0/16
+      UPDATER_PERIOD: 24h
+      HEALTH_VPN_DURATION_INITIAL: 30s
+    volumes:
+      - /volume1/nas-apps/torrent-vpn/gluetun:/gluetun
+    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:5.2.3-libtorrentv1
+    container_name: torrent-vpn-qbittorrent
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      TZ: Europe/Stockholm
+      PUID: "1000"
+      PGID: "10"
+      UMASK: "002"
+      WEBUI_PORT: "8080"
+    volumes:
+      - /volume1/nas-apps/torrent-vpn/qbittorrent:/config
+      - /volume1/homelab/streaming/torrents:/torrents
+    restart: unless-stopped
+
+networks:
+  starrs:
+    external: true

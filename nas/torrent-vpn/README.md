@@ -28,12 +28,33 @@ idle). Design: `docs/superpowers/specs/2026-09-04-nas-torrent-vpn-gluetun-design
 - gluetun log: `Wireguard setup is complete`, `healthy!`, `port forwarded is NNNNN`,
   `Public IP address is …` (a Proton address, not the home WAN IP), and the
   up-command replying `Ok`.
+- **Host header validation.** The linuxserver image ships with qBittorrent's
+  host-header validation on, and inside gluetun's namespace the container's
+  local address is the `starrs` bridge IP, so any request with
+  `Host: 192.168.50.254:…` gets `401 Unauthorized` (the binhex image had this
+  disabled in its bundled config). Fix once via the API with a `localhost` Host
+  header, using the temporary password from the log:
+
+  ```bash
+  B=http://192.168.50.254:38081
+  curl -c qb.cookie -H 'Host: localhost:8080' -H 'Origin: http://localhost:8080' \
+    --data 'username=admin&password=<temp>' $B/api/v2/auth/login
+  curl -b qb.cookie -H 'Host: localhost:8080' -H 'Origin: http://localhost:8080' \
+    --data-urlencode 'json={"web_ui_host_header_validation_enabled":false,"bypass_local_auth":true,"save_path":"/torrents"}' \
+    $B/api/v2/app/setPreferences
+  ```
+
+  (Origin must match Host including the port, or qBittorrent's CSRF check also
+  answers 401.) The setting is persisted in `/config/qBittorrent/qBittorrent.conf`.
 - First boot of qBittorrent prints `A temporary password is provided for this
-  session`. Log in, set user `admin` + the same password the old instance uses
+  session` (a **new** one on every restart until a password is saved). Log in, set user `admin` + the same password the old instance uses
   (so Sonarr/Radarr entries keep working after cutover), and tick
   **Options → Web UI → Bypass authentication for clients on localhost** — the
   port-forward hook posts to `127.0.0.1:8080` and gets 403 without it. Restart
-  gluetun once afterwards so the hook re-fires.
+  the **project** (not gluetun alone — a container in `network_mode: service:`
+  is left in the dead namespace if only gluetun restarts) so the hook re-fires.
+  The hook's wget output is logged by gluetun under `ERROR` because wget writes
+  to stderr; `URL:… -> "-" [1]` is success, `Connection refused` is not.
 - Options → Connection → listening port equals NNNNN.
 - Add a Debian netinst magnet to `/torrents/test`: it must reach seeding with
   incoming peers and a green connection icon (firewalled = forwarded port not

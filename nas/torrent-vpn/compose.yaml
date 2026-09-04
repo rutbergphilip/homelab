@@ -16,9 +16,10 @@ services:
     ports:
       # qBittorrent WebUI. 38081 during the side-by-side test; 38080 after cutover.
       - "38081:8080"
-    env_file:
-      - .env # WIREGUARD_PRIVATE_KEY only — pasted on the NAS, never in git
     environment:
+      # Replace ONLY in the UGOS project editor (the pasted copy lives on the NAS,
+      # never in git). PrivateKey from a Proton WireGuard config with NAT-PMP on.
+      WIREGUARD_PRIVATE_KEY: REPLACE_ME
       TZ: Europe/Stockholm
       VPN_SERVICE_PROVIDER: protonvpn
       VPN_TYPE: wireguard

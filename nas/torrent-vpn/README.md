@@ -16,10 +16,11 @@ idle). Design: `docs/superpowers/specs/2026-09-04-nas-torrent-vpn-gluetun-design
 ## Deploy
 
 1. UGOS → Docker → Project → Create, name `torrent-vpn`, folder `nas-apps/torrent-vpn`, paste `compose.yaml`.
-2. Create `.env` next to it from `.env.example` and paste the `PrivateKey` from a
-   Proton WireGuard config generated with **NAT-PMP (Port Forwarding)** on
-   (https://account.proton.me/u/0/vpn/WireGuard). The key is the only secret and
-   never goes in git (`nas/**/.env` is gitignored).
+2. In the UGOS editor, replace `REPLACE_ME` on the `WIREGUARD_PRIVATE_KEY` line
+   with the `PrivateKey` from a Proton WireGuard config generated with
+   **NAT-PMP (Port Forwarding)** on (https://account.proton.me/u/0/vpn/WireGuard).
+   UGOS has no separate `.env` slot, so the key lives only in the project copy on
+   the NAS; the repo copy keeps the placeholder.
 3. Start the project.
 
 ## Verify

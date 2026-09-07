@@ -32,8 +32,11 @@ services:
       # Transcode segments in RAM (31 GB box): no HDD writes while streaming,
       # instant seeks. Bounded by size + Jellyfin's segment deletion.
       - /cache/transcodes:size=6g,mode=1777
-    mem_limit: 5g
-    memswap_limit: 5g
+    # 8g, not 5g: the tmpfs transcode segments below are charged to this cgroup
+    # (a 4K session left 3.1 GB of segments → 4.8/5 GB "RAM" on 2026-09-07).
+    # NOT yet applied on the NAS — needs a Redeploy when nobody is watching.
+    mem_limit: 8g
+    memswap_limit: 8g
     restart: unless-stopped
 
 networks:

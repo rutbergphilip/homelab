@@ -26,3 +26,20 @@ Project created on UGOS after the SSD move. Seerr is pinned to **v3.4.1**, not t
 3.3/3.4 migrations (`user_settings.discordIds`, `AddIgnoreQuotaToMediaRequest`), so
 3.2.0 failed every Jellyfin sync with `no such column: User__settings.discordId`.
 Never pin Seerr below the schema level of its DB.
+
+## /data hardlink layout (2026-09-07)
+
+Sonarr and Radarr mount `/volume1/homelab/streaming` as **`/data`** (media + torrents on
+one bind mount = one filesystem), so completed-download imports are hardlinks instead of
+copies. Applied without moving a single file:
+
+- root folders `/data/media/series` and `/data/media/movies` (old `/series`, `/movies` removed);
+  every series/movie/collection repointed with `moveFiles: false`;
+- remote path mapping on the qBittorrent client: host `192.168.50.254`, `/torrents/` →
+  `/data/torrents/` (qBittorrent itself still mounts `/torrents`; nothing changed there);
+- Seerr's Sonarr/Radarr `activeDirectory` updated to the new roots (its API rejects the
+  read-only `id` field — strip it before PUT);
+- Prowlarr's dead "Lidarr" application deleted; Lidarr and Plex cluster proxies removed.
+
+The legacy `/series`, `/movies`, `/torrents` mounts are still in the compose so nothing
+can dangle; drop them after a couple of successful imports. "Use Hardlinks" was already on.

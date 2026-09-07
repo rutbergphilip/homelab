@@ -46,3 +46,13 @@ bump the tag in all three lines. To remove it, clear the field and save.
 Subtitle defaults set the same day for every user: preferred language `eng`,
 mode `Always` (Default mode honoured the "default" flag on Nordic releases, which
 is usually Danish). Switch to `Smart` if subtitles should stay off for English audio.
+
+## Later on 2026-09-07
+
+- Memory limit 12 GB, .NET heap 5 GiB (tmpfs transcode segments are charged to the cgroup).
+- Abyss: extra branding CSS forces the Dark page background so other per-device base
+  themes (Blue Radiance leaked a navy tint) render correctly; per-device "Theme" in
+  Settings → Display should still be Dark for the exact Abyss look.
+- Plugins added: TMDb Box Sets (auto collections), Playback Reporting (stats), Open
+  Subtitles (needs an opensubtitles.com login under Dashboard → Plugins → Open Subtitles
+  before it fetches anything). Trickplay generation already runs daily at 03:00.

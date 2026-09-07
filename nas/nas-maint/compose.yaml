@@ -12,6 +12,5 @@ services:
     command: ["sleep", "infinity"]
     volumes:
       - /volume2/nas-apps:/nas-apps
-      - /volume1/nas-apps-v1:/nas-apps-v1
       - /volume1/nas-apps-backup:/nas-apps-backup
     restart: "no"

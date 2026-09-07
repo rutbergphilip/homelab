@@ -1,7 +1,7 @@
 # NAS torrent client: gluetun + qBittorrent (replacing binhex/arch-qbittorrentvpn)
 
 **Date:** 2026-09-04
-**Status:** approved design, awaiting implementation plan
+**Status:** implemented; cutover completed 2026-09-07 (see `nas/torrent-vpn/README.md` → Cutover log). The old container turned out to be **compromised** (auth-bypass whitelist + `curl | sh` hooks); nothing but BT_backup was migrated.
 
 ## Problem
 
@@ -33,8 +33,11 @@ A download client on the NAS that:
    is not stopped until Philip has tested and confirmed the new one.
 
 Non-goals: moving the client into Kubernetes (NFS breaks hardlinks and the
-arr apps live on the NAS); replacing qBittorrent; the Privoxy HTTP proxy
-(nothing depends on port 38118; dropped).
+arr apps live on the NAS); replacing qBittorrent.
+
+*Correction 2026-09-07:* Privoxy **was** depended on — Prowlarr used
+`qbittorrentvpn:8118` as its outbound proxy. Replaced by gluetun's built-in
+HTTP proxy (`HTTPPROXY=on`, `torrent-vpn-gluetun:8888`, docker-network only).
 
 ## Current state (inventory, 2026-09-04)
 

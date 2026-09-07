@@ -1,0 +1,41 @@
+# nas/jellyfin/compose.yaml
+# Deployed as UGOS Docker "Project" jellyfin on the Ugreen NAS (192.168.50.254).
+# Replaces the hand-made `jellyfin` container (jellyfin/jellyfin:latest, no
+# limits). Same /config and /cache folders, so nothing is migrated.
+# Tuning notes: docs/superpowers/specs/2026-09-07-jellyfin-performance-design.md
+name: jellyfin
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:10.11.11
+    container_name: jellyfin
+    networks:
+      - starrs
+    ports:
+      - "38096:8096"      # HTTP (cluster ingress jellyfin.rutberg.dev -> here)
+      - "37359:7359/udp"  # mirrors the old container (LAN auto-discovery needs host 7359 to actually work)
+    devices:
+      - /dev/dri:/dev/dri # Intel UHD (Pentium Gold 8505) for Quick Sync
+    environment:
+      TZ: Europe/Stockholm
+      JELLYFIN_PublishedServerUrl: https://jellyfin.rutberg.dev
+      # Workstation GC + a heap ceiling: memory is returned to the OS instead of
+      # growing until the NAS swaps. jemalloc is already LD_PRELOADed by the image.
+      DOTNET_gcServer: "0"
+      DOTNET_GCHeapHardLimit: "0xC0000000"   # 3 GiB managed heap
+    volumes:
+      - /volume1/nas-apps/jellyfin/configurations:/config
+      - /volume1/nas-apps/jellyfin/cache:/cache
+      - /volume1/homelab/streaming/media/movies:/movies:ro
+      - /volume1/homelab/streaming/media/series:/series:ro
+    tmpfs:
+      # Transcode segments in RAM (31 GB box): no HDD writes while streaming,
+      # instant seeks. Bounded by size + Jellyfin's segment deletion.
+      - /cache/transcodes:size=6g,mode=1777
+    mem_limit: 5g
+    memswap_limit: 5g
+    restart: unless-stopped
+
+networks:
+  starrs:
+    external: true

@@ -31,3 +31,15 @@ behind the account password.
 
 Move the shared folder back to Volume 1 (or restore from the backup folder),
 revert the three compose files to `/volume1/nas-apps`, redeploy.
+
+## Status 2026-09-07 (autonomous run)
+
+- Step 1 **done**: backup `nas-apps-backup/nas-apps-2026-09-07-pre-ssd-move` —
+  8.3 GB, 71 850 entries on both sides (`find | wc -l`), `COPY-DONE 10:51 UTC`.
+- Step 2 **half done**: SSD Cache 1 removed; Create Storage Pool wizard (M.2,
+  Basic, ext4, 450.5 GB) reached the *Password validation* dialog for
+  `poweruser`. Not entered (credential) — **Philip enters it**, then steps 3–6.
+- Apps restarted on Volume 1 meanwhile (Jellyfin, torrent-vpn, sonarr, radarr,
+  prowlarr, seerr all answering) so nothing is down while waiting. `nas-maint`
+  is still running and must be stopped before the share move (it holds
+  `/volume1/nas-apps` open).

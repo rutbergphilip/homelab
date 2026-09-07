@@ -12,3 +12,11 @@ Compose project `jellyfin` (UGOS Docker → Project). Design + measurements:
 - Never UGOS "Restart" a project blindly; Stop → Enable or Redeploy.
 - Rollback of the Jellyfin settings: copy `config/backup-2026-09-07/*.xml` back over
   `config/` and the two library `options.xml`, then Stop → Enable.
+
+## Verified 2026-09-07 after cutover
+
+- `/cache/transcodes` = tmpfs 6 GB; cgroup `memory.max` = 5 GiB; DOTNET vars present.
+- `/dev/dri/card0` + `renderD128` visible; Jellyfin log lists hwaccel types `qsv`, `vaapi`.
+- `encoding.xml` keeps the 7 hardware decoders, low-power encoders, throttling and
+  segment deletion; startup complete in 6.6 s, no errors.
+- Old hand-made container deleted (its settings are reproduced in `compose.yaml`).

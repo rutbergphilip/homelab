@@ -24,8 +24,8 @@ services:
       DOTNET_gcServer: "0"
       DOTNET_GCHeapHardLimit: "0xC0000000"   # 3 GiB managed heap
     volumes:
-      - /volume1/nas-apps/jellyfin/configurations:/config
-      - /volume1/nas-apps/jellyfin/cache:/cache
+      - /volume2/nas-apps/jellyfin/configurations:/config
+      - /volume2/nas-apps/jellyfin/cache:/cache
       - /volume1/homelab/streaming/media/movies:/movies:ro
       - /volume1/homelab/streaming/media/series:/series:ro
     tmpfs:

@@ -41,7 +41,7 @@ services:
       UPDATER_PERIOD: 24h
       HEALTH_VPN_DURATION_INITIAL: 30s
     volumes:
-      - /volume1/nas-apps/torrent-vpn/gluetun:/gluetun
+      - /volume2/nas-apps/torrent-vpn/gluetun:/gluetun
     restart: unless-stopped
 
   qbittorrent:
@@ -58,7 +58,7 @@ services:
       UMASK: "002"
       WEBUI_PORT: "8080"
     volumes:
-      - /volume1/nas-apps/torrent-vpn/qbittorrent:/config
+      - /volume2/nas-apps/torrent-vpn/qbittorrent:/config
       - /volume1/homelab/streaming/torrents:/torrents
     restart: unless-stopped
 

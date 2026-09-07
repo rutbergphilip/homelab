@@ -16,9 +16,6 @@ spec:
         - jellyseerr.rutberg.dev
       secretName: jellyseerr-tls
     - hosts:
-        - lidarr.rutberg.dev
-      secretName: lidarr-tls
-    - hosts:
         - sonarr.rutberg.dev
       secretName: sonarr-tls
     - hosts:
@@ -39,16 +36,6 @@ spec:
                 name: ugreen-nas-jellyseerr
                 port:
                   number: 35055
-    - host: lidarr.rutberg.dev
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: ugreen-nas-lidarr
-                port:
-                  number: 38686
     - host: sonarr.rutberg.dev
       http:
         paths:

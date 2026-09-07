@@ -14,19 +14,6 @@ subsets:
 apiVersion: v1
 kind: Endpoints
 metadata:
-  name: ugreen-nas-lidarr
-  namespace: home-automation
-subsets:
-  - addresses:
-      - ip: 192.168.50.254
-    ports:
-      - port: 38686
-        name: http
-
----
-apiVersion: v1
-kind: Endpoints
-metadata:
   name: ugreen-nas-sonarr
   namespace: home-automation
 subsets:

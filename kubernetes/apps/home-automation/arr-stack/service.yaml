@@ -15,20 +15,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ugreen-nas-lidarr
-  namespace: home-automation
-spec:
-  type: ClusterIP
-  ports:
-    - port: 38686
-      targetPort: 38686
-      protocol: TCP
-      name: http
-
----
-apiVersion: v1
-kind: Service
-metadata:
   name: ugreen-nas-sonarr
   namespace: home-automation
 spec:

@@ -24,6 +24,11 @@ services:
       <<: *lsio-env
     volumes:
       - /volume2/nas-apps/sonarr/config:/config
+      # One /data root (TRaSH layout) so torrents → media imports are hardlinks,
+      # not copies. Root folder = /data/media/series; qBittorrent's /torrents is
+      # reached via a Sonarr remote path mapping to /data/torrents.
+      - /volume1/homelab/streaming:/data
+      # Legacy mounts, kept until the /data migration has been in use for a while.
       - /volume1/homelab/streaming/media/series:/series
       - /volume1/homelab/streaming/torrents:/torrents
     mem_limit: 3g
@@ -39,8 +44,9 @@ services:
       <<: *lsio-env
     volumes:
       - /volume2/nas-apps/radarr/config:/config
-      - /volume1/homelab/streaming/media/movies:/movies
-      - /volume1/homelab/streaming/torrents:/torrents
+      - /volume1/homelab/streaming:/data   # see sonarr; root folder /data/media/movies
+      - /volume1/homelab/streaming/media/movies:/movies   # legacy
+      - /volume1/homelab/streaming/torrents:/torrents     # legacy
     mem_limit: 3g
     restart: always
 

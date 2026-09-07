@@ -8,7 +8,6 @@ resources:
   - ./namespace.yaml
   - ./storage.yaml
   - ./jellyfin
-  - ./plex
   - ./qbittorrent
   - ./arr-stack
   - ./home-assistant

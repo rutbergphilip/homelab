@@ -1,0 +1,76 @@
+# nas/arr-stack/compose.yaml
+# Deployed as UGOS Docker "Project" arr-stack on the Ugreen NAS (192.168.50.254).
+# Replaces the four hand-made containers (sonarr, radarr, prowlarr, seerr) with
+# the SAME container names, ports, mounts and env — captured from their UGOS
+# exports on 2026-09-07 — but with /config on the SSD volume (/volume2/nas-apps).
+# Cluster ingresses (kubernetes/apps/home-automation/arr-stack) proxy to the
+# host ports below; qBittorrent is torrent-vpn (nas/torrent-vpn), Jellyfin is
+# nas/jellyfin. Everything shares the docker bridge network `starrs`.
+name: arr-stack
+
+x-lsio-env: &lsio-env
+  TZ: Europe/Stockholm
+  PUID: "1000"
+  PGID: "1000"   # as the old containers had it (UGOS itself suggests 10; kept for continuity)
+
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:4.0.19
+    container_name: sonarr
+    networks: [starrs]
+    ports:
+      - "38989:8989"
+    environment:
+      <<: *lsio-env
+    volumes:
+      - /volume2/nas-apps/sonarr/config:/config
+      - /volume1/homelab/streaming/media/series:/series
+      - /volume1/homelab/streaming/torrents:/torrents
+    mem_limit: 3g
+    restart: always
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:6.3.0
+    container_name: radarr
+    networks: [starrs]
+    ports:
+      - "37878:7878"
+    environment:
+      <<: *lsio-env
+    volumes:
+      - /volume2/nas-apps/radarr/config:/config
+      - /volume1/homelab/streaming/media/movies:/movies
+      - /volume1/homelab/streaming/torrents:/torrents
+    mem_limit: 3g
+    restart: always
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:2.5.2
+    container_name: prowlarr
+    networks: [starrs]
+    ports:
+      - "39696:9696"
+    environment:
+      <<: *lsio-env
+    volumes:
+      - /volume2/nas-apps/prowlarr/config:/config
+    mem_limit: 3g
+    restart: always
+
+  seerr:
+    image: ghcr.io/seerr-team/seerr:v3.2.0
+    container_name: seerr
+    networks: [starrs]
+    ports:
+      - "35055:5055"
+    environment:
+      TZ: Europe/Stockholm
+      PUID: "1000"
+      PGID: "10"
+    volumes:
+      - /volume2/nas-apps/seerr:/app/config
+    restart: always
+
+networks:
+  starrs:
+    external: true

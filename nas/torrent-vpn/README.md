@@ -8,7 +8,8 @@ idle). Design: `docs/superpowers/specs/2026-09-04-nas-torrent-vpn-gluetun-design
 | Where | UGOS Pro Docker → Project `torrent-vpn` (192.168.50.254) |
 | VPN | ProtonVPN WireGuard via gluetun, NAT-PMP port forwarding, kill switch |
 | Client | linuxserver/qbittorrent **libtorrent 1.2** build (libtorrent 2's mmap I/O is a known multi-GB RSS source; the old container sat at 5.1 GB) |
-| WebUI | `http://192.168.50.254:38081` during the side-by-side test, **38080** after cutover |
+| WebUI | `http://192.168.50.254:38080` (also `https://qbittorrent.rutberg.dev` via the cluster ingress) |
+| Proxy | gluetun HTTP proxy `torrent-vpn-gluetun:8888` on the `starrs` network — Prowlarr's outbound proxy (Settings → General → Proxy) |
 | Data | `/volume1/homelab/streaming/torrents` → `/torrents` (same as the old container; arr paths unchanged) |
 | Config | `/volume1/nas-apps/torrent-vpn/{gluetun,qbittorrent}` |
 | Old container data | `/volume1/nas-apps/qbittorrentvpn/config` (left intact for rollback) |
@@ -72,6 +73,29 @@ idle). Design: `docs/superpowers/specs/2026-09-04-nas-torrent-vpn-gluetun-design
 4. Sonarr/Radarr/Prowlarr → Settings → Download Clients → Test. Seerr: request one
    title and follow it through to Jellyfin.
 5. Watch 24 h, then decide whether to delete the old container.
+
+## Cutover log (2026-09-07)
+
+Done: old container stopped, categories (movies/music/random/secret/series →
+`/torrents/<cat>`), share limits (ratio 1.2, 3000 min, stop), temp path
+`/torrents/incomplete`, auto-TMM and 527 BT_backup files migrated; port moved to
+38080; Sonarr/Radarr/Prowlarr re-pointed (new WebUI user `rutbergphilip`);
+Prowlarr proxy → `torrent-vpn-gluetun:8888`.
+
+**The old container was compromised.** Its `qBittorrent.conf` had
+`AutoRun\program` and `OnTorrentAdded\Program` set to `curl … | sh` droppers
+(files.catbox.moe, abcdefghijklmnopqrst.net) — the 66 % CPU was a miner.
+Root cause: `WebUI\AuthSubnetWhitelist=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16`
+with `CSRFProtection=false`; the public ingress arrives from the cluster pod
+CIDR (10.42.0.0/16), so the WebUI was open to the internet without a password.
+Nothing from the old config folder was copied except `BT_backup/*.{torrent,
+fastresume}`. Keep `nas-apps/qbittorrentvpn/config` only as evidence; never
+mount it into anything writable. The new instance has no whitelist and CSRF on.
+
+**Operational rule:** never use UGOS "Restart" on the project — compose restart
+ignores start order and qBittorrent can come up in gluetun's *old* network
+namespace (symptom: port 38080 refused, gluetun hook "Connection refused"
+forever). Use **Stop → Enable** instead.
 
 ## Rollback
 

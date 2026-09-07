@@ -1,3 +1,14 @@
+# Gated by Authentik forward-auth (single-application pattern, same as homarr /
+# kcal). The auth handshake (/outpost.goauthentik.io/*) is served on this same
+# host by ingress-outpost.yaml, so the session cookie stays on
+# qbittorrent.rutberg.dev. Backend is the gluetun + qBittorrent compose project
+# on the Ugreen NAS (see nas/torrent-vpn/); Sonarr/Radarr/Prowlarr talk to it
+# directly on the LAN (192.168.50.254:38080) and never pass through here.
+#
+# History: the previous binhex container behind this ingress was compromised
+# (2026-09-07) because its WebUI trusted the cluster pod CIDR without a
+# password — the internet reached it unauthenticated via this very ingress.
+# Authentik in front is the second lock; qBittorrent's own login stays on.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,6 +18,14 @@ metadata:
     external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-production"
+    # Authentik forward authentication
+    nginx.ingress.kubernetes.io/auth-url: "http://authentik-server.security.svc.cluster.local/outpost.goauthentik.io/auth/nginx"
+    nginx.ingress.kubernetes.io/auth-signin: "https://qbittorrent.rutberg.dev/outpost.goauthentik.io/start?rd=$scheme://$host$request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "Set-Cookie,X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid"
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_set_header X-Forwarded-Host $http_host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     # qBittorrent-specific fixes for slow loading and rendering issues
     nginx.ingress.kubernetes.io/proxy-body-size: "0" # Unlimited upload size for torrents
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600" # 10min timeout for large operations

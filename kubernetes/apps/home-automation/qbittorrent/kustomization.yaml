@@ -6,4 +6,5 @@ namespace: home-automation
 resources:
   - service.yaml
   - ingress.yaml
+  - ingress-outpost.yaml
   - endpoints.yaml

@@ -58,7 +58,7 @@ services:
     restart: always
 
   seerr:
-    image: ghcr.io/seerr-team/seerr:v3.2.0
+    image: ghcr.io/seerr-team/seerr:v3.4.1  # DB schema already at 3.4 (AddIgnoreQuota… migration applied); 3.2.0 fails on user_settings.discordIds
     container_name: seerr
     networks: [starrs]
     ports:

@@ -2,7 +2,7 @@
 # Not a service: an idle Alpine box with the app-config shares mounted, used
 # through the UGOS container Terminal for backups, migrations and inspection
 # (UGOS has no SSH). Keep it STOPPED when not in use — while it runs it holds
-# /volume1/nas-apps open, which blocks moving that shared folder.
+# the mounted shared folders open (blocks renaming/moving them).
 name: nas-maint
 
 services:
@@ -11,6 +11,7 @@ services:
     container_name: nas-maint
     command: ["sleep", "infinity"]
     volumes:
-      - /volume1/nas-apps:/nas-apps
+      - /volume2/nas-apps:/nas-apps
+      - /volume1/nas-apps-v1:/nas-apps-v1
       - /volume1/nas-apps-backup:/nas-apps-backup
     restart: "no"

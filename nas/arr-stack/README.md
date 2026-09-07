@@ -18,3 +18,11 @@ for all three arr apps: `192.168.50.254:38080` (nas/torrent-vpn).
 Known debt (see spec 2026-09-04): Sonarr/Radarr mount `/series|/movies` and
 `/torrents` separately → hardlinks across them fail (EXDEV) and imports copy.
 Fix = one `/data` mount (TRaSH layout) + "Use Hardlinks" — not done yet.
+
+## Deployed 2026-09-07
+
+Project created on UGOS after the SSD move. Seerr is pinned to **v3.4.1**, not the
+3.2.0 the old container's image label claimed: its SQLite DB already carried the
+3.3/3.4 migrations (`user_settings.discordIds`, `AddIgnoreQuotaToMediaRequest`), so
+3.2.0 failed every Jellyfin sync with `no such column: User__settings.discordId`.
+Never pin Seerr below the schema level of its DB.

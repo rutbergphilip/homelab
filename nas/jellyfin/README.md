@@ -52,7 +52,23 @@ is usually Danish). Switch to `Smart` if subtitles should stay off for English a
 - Memory limit 12 GB, .NET heap 5 GiB (tmpfs transcode segments are charged to the cgroup).
 - Abyss: extra branding CSS forces the Dark page background so other per-device base
   themes (Blue Radiance leaked a navy tint) render correctly; per-device "Theme" in
-  Settings → Display should still be Dark for the exact Abyss look.
+  Settings → Display should still be Dark for the exact Abyss look. The full block
+  currently in Branding is:
+
+  ```css
+  html:not(.transparentDocument) { background-color: #101010 !important; }
+  .backgroundContainer:not(.withBackdrop):not(.backgroundContainer-transparent) { background: #101010 !important; }
+  .backgroundContainer.withBackdrop { background-image: none !important; }
+  .skinHeader-withBackground, .detailRibbon { background-image: none !important; }
+  ```
+
+  **Gotcha (fixed 2026-09-10):** the first version lacked the two `:not(...)` guards and
+  broke video playback in the web client (audio only, black picture). During playback
+  Jellyfin adds `transparentDocument` to `<html>` and `backgroundContainer-transparent`
+  to `.backgroundContainer`, which is stacked *above* the `<video>` element, and its own
+  `background: transparent !important` lost to our later rule of equal specificity.
+  Any future `!important` background on those elements must keep the guards (webOS TVs
+  render video natively behind the page, so the `html` guard matters there too).
 - Plugins added: TMDb Box Sets (auto collections), Playback Reporting (stats), Open
   Subtitles (needs an opensubtitles.com login under Dashboard → Plugins → Open Subtitles
   before it fetches anything). Trickplay generation already runs daily at 03:00.

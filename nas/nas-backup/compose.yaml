@@ -1,0 +1,36 @@
+# nas/nas-backup/compose.yaml
+# Deployed as UGOS Docker "Project" nas-backup on the Ugreen NAS (192.168.50.254).
+# Nightly hardlinked snapshots of /volume2/nas-apps (single M.2, no redundancy) to
+# /volume1/nas-apps-backup/daily/<date> (RAID 5). Script: backup.sh (mirrored in git,
+# live copy at /volume2/nas-apps/nas-backup/backup.sh). Runs at 04:00, after the
+# 02:30 Jellyfin application backup that HA triggers. Retention 7 days.
+name: nas-backup
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  backup:
+    image: alpine:3.22
+    container_name: nas-backup
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache rsync >/dev/null \
+        && echo '0 4 * * * /backup.sh' > /etc/crontabs/root \
+        && echo 'nas-backup: crond armed (04:00 daily)' \
+        && exec crond -f -l 2
+    environment:
+      TZ: Europe/Stockholm
+    volumes:
+      - /volume2/nas-apps:/src:ro
+      - /volume1/nas-apps-backup:/dst
+      - /volume2/nas-apps/jellyfin/configurations/data/backups:/jellyfin-backups
+      - /volume2/nas-apps/nas-backup/backup.sh:/backup.sh:ro
+    mem_limit: 256m
+    logging: *logging
+    restart: unless-stopped

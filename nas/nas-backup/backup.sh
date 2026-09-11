@@ -25,6 +25,7 @@ LINK=""
 echo "[$(date '+%F %T')] snapshot $TODAY (link-dest: ${PREV:-none})"
 set +e
 rsync -a --delete --numeric-ids $LINK \
+  --exclude='/#recycle/' \
   --exclude='/jellyfin/cache/' \
   --exclude='/jellyfin/configurations/cache/' \
   --exclude='/jellyfin/configurations/log/' \

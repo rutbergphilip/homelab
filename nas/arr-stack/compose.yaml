@@ -85,6 +85,25 @@ services:
     logging: *logging
     restart: always
 
+  # TRaSH guide sync (quality definitions, WEB-1080p / HD Bluray+WEB profiles, custom
+  # formats) into Sonarr + Radarr, daily 05:00. Config: recyclarr/recyclarr.yml (git
+  # copy has placeholders; the live file on the NAS carries the arr API keys and is
+  # generated from their config.xml in the nas-maint shell). Additive only — see the
+  # policy note in the config file. Added 2026-09-11.
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr:7.5.2
+    container_name: recyclarr
+    networks: [starrs]
+    user: "1000:1000"
+    environment:
+      TZ: Europe/Stockholm
+      CRON_SCHEDULE: "0 5 * * *"
+    volumes:
+      - /volume2/nas-apps/recyclarr:/config
+    mem_limit: 256m
+    logging: *logging
+    restart: unless-stopped
+
 networks:
   starrs:
     external: true

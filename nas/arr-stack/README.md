@@ -15,9 +15,8 @@ names, ports, mounts and env are identical — only `/config` moved to the SSD v
 Cluster ingresses: `kubernetes/apps/home-automation/arr-stack/`. Download client
 for all three arr apps: `192.168.50.254:38080` (nas/torrent-vpn).
 
-Known debt (see spec 2026-09-04): Sonarr/Radarr mount `/series|/movies` and
-`/torrents` separately → hardlinks across them fail (EXDEV) and imports copy.
-Fix = one `/data` mount (TRaSH layout) + "Use Hardlinks" — not done yet.
+Hardlink imports: Sonarr/Radarr mount one `/data` root (TRaSH layout), see below.
+The legacy `/series`, `/movies`, `/torrents` binds were removed on 2026-09-11.
 
 ## Deployed 2026-09-07
 
@@ -41,5 +40,25 @@ copies. Applied without moving a single file:
   read-only `id` field — strip it before PUT);
 - Prowlarr's dead "Lidarr" application deleted; Lidarr and Plex cluster proxies removed.
 
-The legacy `/series`, `/movies`, `/torrents` mounts are still in the compose so nothing
-can dangle; drop them after a couple of successful imports. "Use Hardlinks" was already on.
+The legacy `/series`, `/movies`, `/torrents` mounts were dropped on 2026-09-11 after
+Radarr's three imports since 09-07 all landed under `/data/media/movies` (Sonarr had no
+imports in that window; its root folder and path mapping are identical). "Use Hardlinks"
+was already on.
+
+## Recyclarr (2026-09-11)
+
+`recyclarr` (in this compose) syncs the TRaSH guides into Sonarr and Radarr daily at
+05:00: quality definitions, the `WEB-1080p` (Sonarr) and `HD Bluray + WEB` (Radarr)
+quality profiles and their custom formats with scores. First run was **additive**: no
+existing profile touched, no custom format deleted, nothing re-assigned. Moving series
+and movies onto the new profiles is a manual choice in each arr UI (Series → Mass Edit).
+Config: `recyclarr/recyclarr.yml` (git = placeholders; the live file at
+`/volume2/nas-apps/recyclarr/recyclarr.yml` carries the API keys). Run by hand:
+Container → recyclarr → Terminal → `recyclarr sync`.
+
+## Notifications (2026-09-11)
+
+Sonarr and Radarr post health issues / restored, imports and manual-interaction events
+to a Home Assistant webhook, which forwards them to Philip's iPhone
+(`.claude/ha-alerts.yaml` mirrors the HA side). Seerr does the same for request
+available / failed / pending-approval.

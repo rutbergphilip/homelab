@@ -1,0 +1,34 @@
+# nas/arr-stack/recyclarr/recyclarr.yml — TRaSH guide sync for Sonarr + Radarr.
+# Live copy: /volume2/nas-apps/recyclarr/recyclarr.yml (API keys filled in there from
+# the arr config.xml files by the nas-maint shell; this git copy keeps placeholders).
+# Runs daily 05:00 (CRON_SCHEDULE in compose) and can be run by hand:
+#   UGOS → Container → recyclarr → Terminal → `recyclarr sync`
+#
+# First-run policy (2026-09-11): ADDITIVE. Creates the TRaSH quality definitions,
+# one quality profile per app and its custom formats with scores. It does NOT
+# touch existing profiles, does NOT delete custom formats it did not create, and
+# no series/movie is re-assigned — switching titles to the new profiles is a
+# manual decision in the arr UI.
+# Templates: https://github.com/recyclarr/config-templates
+
+sonarr:
+  main:
+    base_url: http://sonarr:8989
+    api_key: SONARR_API_KEY_PLACEHOLDER
+    delete_old_custom_formats: false
+    replace_existing_custom_formats: false
+    include:
+      - template: sonarr-quality-definition-series
+      - template: sonarr-v4-quality-profile-web-1080p
+      - template: sonarr-v4-custom-formats-web-1080p
+
+radarr:
+  main:
+    base_url: http://radarr:7878
+    api_key: RADARR_API_KEY_PLACEHOLDER
+    delete_old_custom_formats: false
+    replace_existing_custom_formats: false
+    include:
+      - template: radarr-quality-definition-movie
+      - template: radarr-quality-profile-hd-bluray-web
+      - template: radarr-custom-formats-hd-bluray-web

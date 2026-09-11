@@ -91,7 +91,7 @@ services:
   # generated from their config.xml in the nas-maint shell). Additive only — see the
   # policy note in the config file. Added 2026-09-11.
   recyclarr:
-    image: ghcr.io/recyclarr/recyclarr:7.5.2
+    image: ghcr.io/recyclarr/recyclarr:8.7.2
     container_name: recyclarr
     networks: [starrs]
     # root, not 1000: UGOS enforces shared-folder permissions in the kernel per uid —

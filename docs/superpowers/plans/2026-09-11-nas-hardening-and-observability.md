@@ -29,18 +29,18 @@
 
 Renovate's built-in `docker-compose` manager already matches `compose.yaml`, but the repo-wide rule auto-merges minor/patch on branch. NAS deploys are manual, so a merged bump would make git lie about what runs.
 
-- [ ] Add a packageRule: `matchFileNames: ["nas/**"]` → `automerge: false`, `addLabels: ["nas/manual-deploy"]`, `semanticCommitScope: "nas"`, `commitMessageSuffix: "(manual UGOS redeploy)"`.
-- [ ] Add label `nas/manual-deploy` to `.github/labels.yaml`.
-- [ ] Commit: `chore(renovate): track nas/ compose images, never automerge`.
+- [x] Add a packageRule: `matchFileNames: ["nas/**"]` → `automerge: false`, `addLabels: ["nas/manual-deploy"]`, `semanticCommitScope: "nas"`, `commitMessageSuffix: "(manual UGOS redeploy)"`.
+- [x] Add label `nas/manual-deploy` to `.github/labels.yaml`.
+- [x] Commit: `chore(renovate): track nas/ compose images, never automerge`.
 
 ### Task 2: Jellyfin built-in backup task (server side)
 
 Jellyfin 10.11 ships a Backup/Restore API (`POST /Backup/Create`, `GET /Backup`) but no schedule of its own; only Task 4's nightly rsync copies the SQLite files live. A consistent app-level backup on top is cheap.
 
-- [ ] Via ApiClient in Chrome: `GET /Backup` to confirm the feature; `POST /Backup/Create` with `{Metadata:true, Trickplay:false, Subtitles:false, Database:true}` → file lands in `/config/backups/`.
-- [ ] Confirm the archive exists and has a plausible size (via `GET /Backup`). Note the path so Task 4's rsync picks it up (it lives inside `/volume2/nas-apps/jellyfin/configurations/backups`).
-- [ ] Schedule: HA automation `jellyfin_nightly_backup` (02:30) does `rest_command` → `POST https://jellyfin.rutberg.dev/Backup/Create` with an API key created in Dashboard → API Keys (`ha-backup`). Backups stored in `/config/backups/`, pruned to 7 by a `find -mtime +7 -delete` line in Task 4's script.
-- [ ] Document in `nas/jellyfin/README.md`.
+- [x] Via ApiClient in Chrome: `GET /Backup` to confirm the feature; `POST /Backup/Create` with `{Metadata:true, Trickplay:false, Subtitles:false, Database:true}` → file lands in `/config/backups/`.
+- [x] Confirm the archive exists (via `GET /Backup`). Real path: `/config/data/backups/` = `/volume2/nas-apps/jellyfin/configurations/data/backups` — Task 4's prune must use that path.
+- [x] Schedule: HA automation `jellyfin_nightly_backup` (02:30) → `rest_command.jellyfin_backup` → `POST http://192.168.50.254:38096/Backup/Create`; API key `ha-backup` stored in `input_text.jellyfin_backup_api_key` (moved browser → HA webhook → helper, never through chat). Verified: two archives created. Backups stored in `/config/backups/`, pruned to 7 by a `find -mtime +7 -delete` line in Task 4's script.
+- [x] Document in `nas/jellyfin/README.md`.
 
 ### Task 3: Docker log rotation on all NAS projects (+ drop arr legacy mounts)
 
@@ -137,3 +137,4 @@ Seerr (`jellyseerr.rutberg.dev`) is **not** gated: it is the user-facing request
 ## Progress log
 
 - 2026-09-11: plan written. Execution order 1 → 2 → 3 → 4 → 7 → 6 → 5 → 8 → 9 → 10 → 11.
+- 2026-09-11 evening: Task 1 + 2 done. Side find: HA `automations.yaml`/`scripts.yaml`/`scenes.yaml`/`secrets.yaml` + 2 theme files were mode 0000 on the NFS PVC — HA could not edit or reload automations (Errno 13); fixed with chmod 644 (mirror: `.claude/ha-jellyfin-backup.yaml`).

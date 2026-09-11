@@ -72,3 +72,18 @@ is usually Danish). Switch to `Smart` if subtitles should stay off for English a
 - Plugins added: TMDb Box Sets (auto collections), Playback Reporting (stats), Open
   Subtitles (needs an opensubtitles.com login under Dashboard → Plugins → Open Subtitles
   before it fetches anything). Trickplay generation already runs daily at 03:00.
+
+## Backups (2026-09-11)
+
+Two layers, both off the single M.2 that holds `/volume2/nas-apps`:
+
+1. **Jellyfin application backup** — Jellyfin 10.11's own Backup/Restore
+   (`POST /Backup/Create`, DB + metadata, no trickplay/subtitles) runs nightly at 02:30,
+   triggered by the Home Assistant automation `jellyfin_nightly_backup` →
+   `rest_command.jellyfin_backup` (HA → `192.168.50.254:38096`, LAN, not the tunnel).
+   The API key `ha-backup` lives in HA helper `input_text.jellyfin_backup_api_key`.
+   Archives land in `/config/data/backups/jellyfin-backup-<stamp>.zip`
+   (= `/volume2/nas-apps/jellyfin/configurations/data/backups`). Restore via
+   Dashboard → Backup, or `POST /Backup/Restore`.
+2. **nas-backup snapshot** (`nas/nas-backup/`) copies the whole `nas-apps` share,
+   including those zips, to the RAID volume at 04:00 and prunes zips older than 7 days.

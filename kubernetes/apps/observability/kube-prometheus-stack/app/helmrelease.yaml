@@ -1,3 +1,7 @@
+# Re-enabled 2026-09-11 (was commented out since 2025-05-05) to monitor the NAS
+# (nas/nas-metrics: node-exporter + cAdvisor, see nas-targets.yaml) and the cluster,
+# with alerts going to Philip's iPhone through a Home Assistant webhook
+# (alertmanager-config.yaml). Kept frugal: 7-day retention, 1 GiB Prometheus limit.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -12,25 +16,93 @@ spec:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
   values:
+    crds:
+      enabled: true
     grafana:
-      enabled: false
+      enabled: false          # separate chart in ../grafana (own ingress + Authentik OAuth)
+      forceDeployDashboards: true   # ship the stack's dashboards as ConfigMaps for the sidecar
     alertmanager:
-      enabled: false
+      enabled: true
+      alertmanagerSpec:
+        replicas: 1
+        retention: 120h
+        resources:
+          requests: { cpu: 10m, memory: 64Mi }
+          limits: { memory: 128Mi }
+        # Routes/receivers come from the AlertmanagerConfig CR in alertmanager-config.yaml.
+        # None: its routes are global (no auto-added namespace matcher).
+        alertmanagerConfigMatcherStrategy:
+          type: None
+        alertmanagerConfigSelector:
+          matchLabels:
+            alertmanagerConfig: homelab
+      config:
+        global:
+          resolve_timeout: 5m
+        route:
+          receiver: "null"
+          group_by: ["alertname"]
+        receivers:
+          - name: "null"
     prometheus:
       prometheusSpec:
+        retention: 7d
+        retentionSize: 8GB
+        resources:
+          requests: { cpu: 100m, memory: 512Mi }
+          limits: { memory: 1Gi }
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path-provisioner
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 10Gi
+        # Pick up every ServiceMonitor / PodMonitor / PrometheusRule / ScrapeConfig in
+        # the cluster, not only the ones carrying this release's label.
         serviceMonitorSelectorNilUsesHelmValues: false
         serviceMonitorSelector: {}
+        podMonitorSelectorNilUsesHelmValues: false
+        podMonitorSelector: {}
+        ruleSelectorNilUsesHelmValues: false
+        ruleSelector: {}
+        scrapeConfigSelectorNilUsesHelmValues: false
+        scrapeConfigSelector: {}
+        probeSelectorNilUsesHelmValues: false
+        probeSelector: {}
     kubeStateMetrics:
       enabled: true
     nodeExporter:
       enabled: true
-    # persistence:
-    #   enabled: true
-    #   storage:
-    #     volumeClaimTemplate:
-    #       spec:
-    #         accessModes: ["ReadWriteOnce"]
-    #         resources:
-    #           requests:
-    #             storage: 10Gi
+    # Talos control plane: these components are not scrapable the way the chart
+    # expects; leaving them on only produces dead targets and permanent alerts.
+    kubeEtcd:
+      enabled: false
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false            # Cilium replaces kube-proxy
+    defaultRules:
+      create: true
+      disabled:
+        # Noise the household does not need on a phone.
+        KubeMemoryOvercommit: true
+        KubeCPUOvercommit: true
+      rules:
+        etcd: false
+        kubeControllerManager: false
+        kubeSchedulerAlerting: false
+        kubeSchedulerRecording: false
+        kubeProxy: false

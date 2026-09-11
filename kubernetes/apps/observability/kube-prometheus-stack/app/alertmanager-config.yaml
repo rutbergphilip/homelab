@@ -1,0 +1,31 @@
+# Every firing/resolved alert goes to one place: a Home Assistant webhook, whose
+# automation (alertmanager_to_phone, mirrored in .claude/ha-alerts.yaml) pushes it to
+# notify.mobile_app_philip_s_iphone. The webhook URL is the only credential and lives
+# in alertmanager-ha-webhook.sops.yaml. Watchdog/InfoInhibitor are swallowed.
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: homelab
+  labels:
+    alertmanagerConfig: homelab
+spec:
+  route:
+    receiver: ha-webhook
+    groupBy: ["alertname"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    routes:
+      - receiver: "null"
+        matchers:
+          - name: alertname
+            matchType: "=~"
+            value: "Watchdog|InfoInhibitor"
+  receivers:
+    - name: "null"
+    - name: ha-webhook
+      webhookConfigs:
+        - sendResolved: true
+          urlSecret:
+            name: alertmanager-ha-webhook
+            key: url

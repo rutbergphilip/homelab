@@ -1,0 +1,82 @@
+# Alerts for the Ugreen NAS. Delivered by Alertmanager → Home Assistant webhook →
+# notify.mobile_app_philip_s_iphone (alertmanager-config.yaml, .claude/ha-alerts.yaml).
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nas-alerts
+spec:
+  groups:
+    - name: nas.rules
+      rules:
+        - alert: NasNodeExporterDown
+          expr: up{job="nas-node-exporter"} == 0
+          for: 5m
+          labels: { severity: warning }
+          annotations:
+            summary: "NAS node-exporter unreachable"
+            description: "Prometheus cannot scrape 192.168.50.254:39100 — the NAS or the nas-metrics project is down."
+        - alert: NasCadvisorDown
+          expr: up{job="nas-cadvisor"} == 0
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "NAS cAdvisor unreachable"
+            description: "Prometheus cannot scrape 192.168.50.254:39080 (nas-metrics/cadvisor)."
+        - alert: NasVolumeAlmostFull
+          expr: |
+            (1 - node_filesystem_avail_bytes{job="nas-node-exporter",mountpoint=~"/volume[0-9]+"}
+                 / node_filesystem_size_bytes{job="nas-node-exporter",mountpoint=~"/volume[0-9]+"}) > 0.85
+          for: 15m
+          labels: { severity: warning }
+          annotations:
+            summary: "NAS {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full"
+            description: "Volume {{ $labels.mountpoint }} on the NAS is above 85 %."
+        - alert: NasVolumeCritical
+          expr: |
+            (1 - node_filesystem_avail_bytes{job="nas-node-exporter",mountpoint=~"/volume[0-9]+"}
+                 / node_filesystem_size_bytes{job="nas-node-exporter",mountpoint=~"/volume[0-9]+"}) > 0.95
+          for: 5m
+          labels: { severity: critical }
+          annotations:
+            summary: "NAS {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full"
+            description: "Volume {{ $labels.mountpoint }} on the NAS is above 95 % — downloads and Jellyfin metadata will start failing."
+        - alert: NasBackupStale
+          expr: |
+            (time() - nas_backup_last_ok_timestamp_seconds{job="nas-node-exporter"}) > 36 * 3600
+              or absent(nas_backup_last_ok_timestamp_seconds{job="nas-node-exporter"})
+          for: 1h
+          labels: { severity: warning }
+          annotations:
+            summary: "nas-apps snapshot is stale"
+            description: "No successful nas-backup run in 36 h (nas/nas-backup, 04:00 job). Check the nas-backup container log."
+        - alert: NasContainerNearMemoryLimit
+          expr: |
+            container_memory_working_set_bytes{job="nas-cadvisor",name!=""}
+              / (container_spec_memory_limit_bytes{job="nas-cadvisor",name!=""} > 0 < 1e15) > 0.9
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "{{ $labels.name }} at {{ $value | humanizePercentage }} of its memory limit"
+            description: "Container {{ $labels.name }} on the NAS has been above 90 % of its mem_limit for 10 min (OOM-kill risk)."
+        - alert: NasContainerMissing
+          expr: |
+            absent(container_last_seen{job="nas-cadvisor",name="jellyfin"})
+              or absent(container_last_seen{job="nas-cadvisor",name="sonarr"})
+              or absent(container_last_seen{job="nas-cadvisor",name="radarr"})
+              or absent(container_last_seen{job="nas-cadvisor",name="prowlarr"})
+              or absent(container_last_seen{job="nas-cadvisor",name="seerr"})
+              or absent(container_last_seen{job="nas-cadvisor",name="torrent-vpn-gluetun"})
+              or absent(container_last_seen{job="nas-cadvisor",name="torrent-vpn-qbittorrent"})
+              or absent(container_last_seen{job="nas-cadvisor",name="nas-backup"})
+          for: 10m
+          labels: { severity: warning }
+          annotations:
+            summary: "A NAS service container is gone"
+            description: "One of jellyfin/sonarr/radarr/prowlarr/seerr/torrent-vpn/nas-backup has not been seen by cAdvisor for 10 min."
+        - alert: NasHighLoad
+          expr: node_load15{job="nas-node-exporter"} > 8
+          for: 30m
+          labels: { severity: warning }
+          annotations:
+            summary: "NAS load15 is {{ $value | printf \"%.1f\" }}"
+            description: "Sustained load above 8 on a 6-thread Pentium Gold — look for runaway transcodes or a scan storm."

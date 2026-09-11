@@ -1,0 +1,106 @@
+# Scrape targets on the Ugreen NAS (192.168.50.254): the nas-metrics compose project
+# (nas/nas-metrics) publishes node-exporter on :39100 and cAdvisor on :39080.
+# Service-without-selector + Endpoints is the same trick the home-automation
+# ingresses use to point at the NAS; the ServiceMonitors pick them up by label.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nas-node-exporter
+  labels:
+    app.kubernetes.io/name: nas-node-exporter
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: metrics
+      port: 39100
+      targetPort: 39100
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: nas-node-exporter
+  labels:
+    app.kubernetes.io/name: nas-node-exporter
+subsets:
+  - addresses:
+      - ip: 192.168.50.254
+    ports:
+      - name: metrics
+        port: 39100
+        protocol: TCP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nas-node-exporter
+spec:
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nas-node-exporter
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        - targetLabel: instance
+          replacement: ugreen-nas
+        - targetLabel: nodename
+          replacement: ugreen-nas
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nas-cadvisor
+  labels:
+    app.kubernetes.io/name: nas-cadvisor
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: metrics
+      port: 39080
+      targetPort: 39080
+      protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: nas-cadvisor
+  labels:
+    app.kubernetes.io/name: nas-cadvisor
+subsets:
+  - addresses:
+      - ip: 192.168.50.254
+    ports:
+      - name: metrics
+        port: 39080
+        protocol: TCP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nas-cadvisor
+spec:
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nas-cadvisor
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 15s
+      relabelings:
+        - targetLabel: instance
+          replacement: ugreen-nas
+      metricRelabelings:
+        # Only named docker containers; drop the cgroup-root and per-interface noise.
+        - sourceLabels: [name]
+          regex: ""
+          action: drop
+        - sourceLabels: [__name__]
+          regex: container_(network_tcp_usage_total|network_udp_usage_total|tasks_state|memory_failures_total|blkio_device_usage_total)
+          action: drop

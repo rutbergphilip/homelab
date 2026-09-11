@@ -3,3 +3,7 @@ kind: Kustomization
 
 resources:
   - helmrelease.yaml
+  - nas-targets.yaml
+  - nas-alerts.yaml
+  - alertmanager-config.yaml
+  - alertmanager-ha-webhook.sops.yaml

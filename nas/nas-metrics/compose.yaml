@@ -1,0 +1,56 @@
+# nas/nas-metrics/compose.yaml
+# Deployed as UGOS Docker "Project" nas-metrics on the Ugreen NAS (192.168.50.254).
+# Host + container metrics for the cluster's Prometheus (kube-prometheus-stack):
+#   node-exporter  :39100  host CPU/RAM/disks/filesystems + textfile collector
+#                          (nas-backup writes nas_backup.prom into /volume1/nas-apps-backup/daily)
+#   cAdvisor       :39080  per-container CPU/RAM/limits (jellyfin, arrs, gluetun, …)
+# Scraped via kubernetes/apps/observability/kube-prometheus-stack/app/nas-targets.yaml.
+# Both ports are LAN-only (no cluster ingress). Added 2026-09-11.
+name: nas-metrics
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:v1.9.1
+    container_name: nas-node-exporter
+    command:
+      - --path.rootfs=/host
+      - --collector.textfile.directory=/textfile
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run|var/lib/docker/.+|host/(dev|proc|sys|run|var/lib/docker/.+))($$|/)
+      - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|tmpfs)$$
+    pid: host
+    ports:
+      - "39100:9100"
+    volumes:
+      - /:/host:ro,rslave
+      - /volume1/nas-apps-backup/daily:/textfile:ro
+    mem_limit: 128m
+    logging: *logging
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: nas-cadvisor
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=30s
+      - --store_container_labels=false
+      - --disable_metrics=advtcp,cpu_topology,cpuset,hugetlb,memory_numa,percpu,process,referenced_memory,resctrl,sched,tcp,udp
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    ports:
+      - "39080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    mem_limit: 256m
+    logging: *logging
+    restart: unless-stopped

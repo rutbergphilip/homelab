@@ -6,4 +6,6 @@ resources:
   - ./authentik.yaml
   - ./democratic-csi.yaml
   - ./external-dns.yaml
+  - ./grafana.yaml
   - ./ingress-nginx.yaml
+  - ./prometheus-community.yaml

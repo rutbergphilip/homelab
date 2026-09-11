@@ -5,6 +5,13 @@
 # the mounted shared folders open (blocks renaming/moving them).
 name: nas-maint
 
+# Bounded container logs (docker default is unlimited json-file on the SSD volume).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   shell:
     image: alpine:3.22
@@ -13,4 +20,5 @@ services:
     volumes:
       - /volume2/nas-apps:/nas-apps
       - /volume1/nas-apps-backup:/nas-apps-backup
+    logging: *logging
     restart: "no"

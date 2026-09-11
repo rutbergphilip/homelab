@@ -5,6 +5,13 @@
 # Tuning notes: docs/superpowers/specs/2026-09-07-jellyfin-performance-design.md
 name: jellyfin
 
+# Bounded container logs (docker default is unlimited json-file on the SSD volume).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   jellyfin:
     image: jellyfin/jellyfin:10.11.11
@@ -37,6 +44,7 @@ services:
     # RAM consumer by design (31 GB box). Applied 2026-09-07.
     mem_limit: 12g
     memswap_limit: 12g
+    logging: *logging
     restart: unless-stopped
 
 networks:

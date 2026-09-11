@@ -8,6 +8,13 @@
 # nas/jellyfin. Everything shares the docker bridge network `starrs`.
 name: arr-stack
 
+# Bounded container logs (docker default is unlimited json-file on the SSD volume).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 x-lsio-env: &lsio-env
   TZ: Europe/Stockholm
   PUID: "1000"
@@ -26,12 +33,12 @@ services:
       - /volume2/nas-apps/sonarr/config:/config
       # One /data root (TRaSH layout) so torrents → media imports are hardlinks,
       # not copies. Root folder = /data/media/series; qBittorrent's /torrents is
-      # reached via a Sonarr remote path mapping to /data/torrents.
+      # reached via a Sonarr remote path mapping to /data/torrents. The legacy
+      # /series, /movies, /torrents binds were dropped 2026-09-11 after Radarr's
+      # imports since 09-07 all landed under /data/media (hardlinks confirmed).
       - /volume1/homelab/streaming:/data
-      # Legacy mounts, kept until the /data migration has been in use for a while.
-      - /volume1/homelab/streaming/media/series:/series
-      - /volume1/homelab/streaming/torrents:/torrents
     mem_limit: 3g
+    logging: *logging
     restart: always
 
   radarr:
@@ -45,9 +52,8 @@ services:
     volumes:
       - /volume2/nas-apps/radarr/config:/config
       - /volume1/homelab/streaming:/data   # see sonarr; root folder /data/media/movies
-      - /volume1/homelab/streaming/media/movies:/movies   # legacy
-      - /volume1/homelab/streaming/torrents:/torrents     # legacy
     mem_limit: 3g
+    logging: *logging
     restart: always
 
   prowlarr:
@@ -61,6 +67,7 @@ services:
     volumes:
       - /volume2/nas-apps/prowlarr/config:/config
     mem_limit: 3g
+    logging: *logging
     restart: always
 
   seerr:
@@ -75,6 +82,7 @@ services:
       PGID: "10"
     volumes:
       - /volume2/nas-apps/seerr:/app/config
+    logging: *logging
     restart: always
 
 networks:

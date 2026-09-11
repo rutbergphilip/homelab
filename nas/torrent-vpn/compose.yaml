@@ -3,6 +3,13 @@
 # Spec: docs/superpowers/specs/2026-09-04-nas-torrent-vpn-gluetun-design.md
 name: torrent-vpn
 
+# Bounded container logs (docker default is unlimited json-file on the SSD volume).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   gluetun:
     image: qmcgaw/gluetun:v3.41.3
@@ -42,6 +49,7 @@ services:
       HEALTH_VPN_DURATION_INITIAL: 30s
     volumes:
       - /volume2/nas-apps/torrent-vpn/gluetun:/gluetun
+    logging: *logging
     restart: unless-stopped
 
   qbittorrent:
@@ -60,6 +68,7 @@ services:
     volumes:
       - /volume2/nas-apps/torrent-vpn/qbittorrent:/config
       - /volume1/homelab/streaming/torrents:/torrents
+    logging: *logging
     restart: unless-stopped
 
 networks:

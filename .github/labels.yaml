@@ -29,6 +29,9 @@
   color: "027fa0"
 - name: renovate/helm
   color: "027fa0"
+# NAS
+- name: nas/manual-deploy
+  color: "5319e7"
 # Semantic Types
 - name: type/digest
   color: "ffeC19"

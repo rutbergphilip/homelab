@@ -142,6 +142,17 @@
       automergeType: "branch",
       minimumReleaseAge: "3 days",
     },
+    {
+      // NAS compose projects (nas/<project>/compose.yaml) are deployed by hand
+      // through the UGOS Project editor. A merged bump would make git claim a
+      // version the NAS does not run, so these PRs are never auto-merged.
+      description: "NAS compose images: PR only, manual UGOS redeploy",
+      matchFileNames: ["nas/**"],
+      automerge: false,
+      addLabels: ["nas/manual-deploy"],
+      semanticCommitScope: "nas",
+      commitMessageSuffix: "(manual UGOS redeploy)",
+    },
   ],
   customManagers: [
     {

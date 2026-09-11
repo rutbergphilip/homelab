@@ -101,3 +101,21 @@ forever). Use **Stop → Enable** instead.
 
 Stop project `torrent-vpn`, start `qbittorrentvpn`. Its config folder is never
 modified (BT_backup is copied, not moved).
+
+## Seeding policy (2026-09-11)
+
+Philip's rule: **seed forever**. Global share limits are off (`max_ratio_enabled`,
+`max_seeding_time_enabled`, `max_inactive_seeding_time_enabled` all false — they were
+1.2 / 3000 min before, which had stopped 260 of 267 torrents), every torrent's own limit
+is reset to "use global" (`setShareLimits` with `-2`), and the 260 stopped torrents were
+started again. Done through the WebUI API on `127.0.0.1:8080` from the qBittorrent
+container Terminal (localhost auth bypass), so no password was needed. New torrents
+inherit the global setting. Torrents only leave qBittorrent through the media-janitor
+(see below) or by hand.
+
+## media-janitor (2026-09-11)
+
+Third service in this compose, `network_mode: service:gluetun` (so `127.0.0.1:8080` is
+qBittorrent with the localhost bypass) and `FIREWALL_INPUT_PORTS=9797` on gluetun so the
+arrs can reach it as `torrent-vpn-gluetun:9797`. What it does and how to use it:
+`nas/media-janitor/README.md`.

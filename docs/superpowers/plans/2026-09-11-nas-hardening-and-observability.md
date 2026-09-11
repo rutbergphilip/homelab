@@ -136,10 +136,10 @@ Seerr (`jellyseerr.rutberg.dev`) is **not** gated: it is the user-facing request
 
 ### Task 12: qBittorrent seeds forever (Philip, 2026-09-11)
 
-- [ ] From the `torrent-vpn-qbittorrent` container Terminal (localhost auth bypass, no password needed): `curl -s -X POST http://127.0.0.1:8080/api/v2/app/setPreferences --data-urlencode 'json={"max_ratio_enabled":false,"max_seeding_time_enabled":false,"max_inactive_seeding_time_enabled":false,"max_ratio_act":0}'`.
-- [ ] Per-torrent overrides back to "use global": `curl -s -X POST http://127.0.0.1:8080/api/v2/torrents/setShareLimits -d 'hashes=all&ratioLimit=-2&seedingTimeLimit=-2&inactiveSeedingTimeLimit=-2'`; resume anything paused/stopped by a hit limit: `torrents/start?hashes=all` (5.x) — only torrents in state `stoppedUP`.
-- [ ] Verify: `app/preferences` shows the three flags false; `torrents/info?filter=stopped` shows none that stopped because of ratio (state `stoppedUP`).
-- [ ] Document in `nas/torrent-vpn/README.md`.
+- [x] From the `torrent-vpn-qbittorrent` container Terminal (localhost auth bypass, no password needed): `curl -s -X POST http://127.0.0.1:8080/api/v2/app/setPreferences --data-urlencode 'json={"max_ratio_enabled":false,"max_seeding_time_enabled":false,"max_inactive_seeding_time_enabled":false,"max_ratio_act":0}'`.
+- [x] Per-torrent overrides back to "use global": `curl -s -X POST http://127.0.0.1:8080/api/v2/torrents/setShareLimits -d 'hashes=all&ratioLimit=-2&seedingTimeLimit=-2&inactiveSeedingTimeLimit=-2'`; resume anything paused/stopped by a hit limit: `torrents/start?hashes=all` (5.x) — only torrents in state `stoppedUP`.
+- [x] Verify: `app/preferences` shows the three flags false; `torrents/info?filter=stopped` shows none that stopped because of ratio (state `stoppedUP`).
+- [x] Document in `nas/torrent-vpn/README.md`.
 
 ### Task 13: single-point media removal (Philip, 2026-09-11)
 
@@ -158,9 +158,9 @@ point (a file deleted there would just be re-downloaded by the arr).
 `nas/torrent-vpn/compose.yaml` (new service `media-janitor`, `network_mode: service:gluetun`,
 gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
 
-- [ ] `janitor.py` (python:3.12-alpine, stdlib only): HTTP server :9797, `POST /arr` handles eventTypes `MovieDelete`, `SeriesDelete`, `EpisodeFileDelete` (reason manual only), `Test`; `GET /healthz`. Reads API keys at runtime from ro mounts of `radarr/config/config.xml`, `sonarr/config/config.xml`, `seerr/settings.json`. Idempotent; logs one line per action.
-- [ ] Torrent matching: `torrents/info` → candidates where `name == sceneName` OR any file in `torrents/files` has `size == movieFile.size` and basename matches `relativePath`/`originalFilePath` basename. Delete via `torrents/delete?deleteFiles=true`. Season packs: one match removes the pack (documented).
-- [ ] Seerr: `GET /api/v1/media?take=100&filter=all` pages → match `tmdbId` (movies) / `tvdbId` (series) → `DELETE /api/v1/media/{id}`.
+- [x] `janitor.py` (python:3.12-alpine, stdlib only): HTTP server :9797, `POST /arr` handles eventTypes `MovieDelete`, `SeriesDelete`, `EpisodeFileDelete` (reason manual only), `Test`; `GET /healthz`. Reads API keys at runtime from ro mounts of `radarr/config/config.xml`, `sonarr/config/config.xml`, `seerr/settings.json`. Idempotent; logs one line per action.
+- [x] Torrent matching: `torrents/info` → candidates where `name == sceneName` OR any file in `torrents/files` has `size == movieFile.size` and basename matches `relativePath`/`originalFilePath` basename. Delete via `torrents/delete?deleteFiles=true`. Season packs: one match removes the pack (documented).
+- [x] Seerr: `GET /api/v1/media?take=100&filter=all` pages → match `tmdbId` (movies) / `tvdbId` (series) → `DELETE /api/v1/media/{id}`.
 - [ ] Register webhooks: Radarr + Sonarr `POST /api/v3/notification` implementation `Webhook`, url `http://torrent-vpn-gluetun:9797/arr`, events `onMovieDelete`/`onSeriesDelete`/`onEpisodeFileDelete`; test with the "Test" button (eventType Test → 200).
 - [ ] End-to-end test on a throwaway title (a small movie added + downloaded once, then removed via Seerr Manage → Remove): torrent gone from qBittorrent, Seerr media gone, Jellyfin entry gone within a minute.
 - [ ] Docs + commit.
@@ -170,3 +170,4 @@ gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
 - 2026-09-11: plan written. Execution order 1 → 2 → 3 → 4 → 7 → 6 → 5 → 8 → 9 → 10 → 11.
 - 2026-09-11 evening: Task 1 + 2 done.
 - 2026-09-11 later: Tasks 3, 4 (first snapshot 629 s / 15 GB), 5 (gating verified 302 → outpost, Sonarr loads after Authentik), 7 done. Task 6: recyclarr container deployed, first `recyclarr sync` still to run. Task 8: stack live, NAS targets discovered (down until nas-metrics is created on UGOS), test alert reached the phone. Task 9 done (Seerr webhook set from the NAS shell, test reached HA at 17:23:53Z). Task 8 done: nas-metrics deployed (node-exporter as root for the ACL'd textfile dir), both NAS targets up, backup metric visible in Prometheus. Task 13: code written + stub-tested; NAS deploy pending (torrent-vpn compose edit). Side find: HA `automations.yaml`/`scripts.yaml`/`scenes.yaml`/`secrets.yaml` + 2 theme files were mode 0000 on the NFS PVC — HA could not edit or reload automations (Errno 13); fixed with chmod 644 (mirror: `.claude/ha-jellyfin-backup.yaml`).
+- 2026-09-11 evening (2): Task 12 done (global limits off, 267 torrents on global, 260 stopped torrents resumed → 264 stalledUP + 3 forcedUP). Task 13: media-janitor deployed inside gluetun's netns (healthz OK), torrent-vpn compose merged in the UGOS editor via the Monaco instance (key preserved, comments-only drift found); arr webhooks for the janitor still to register (Sonarr forms-login session expired in Chrome → use the NAS shell with the API keys).

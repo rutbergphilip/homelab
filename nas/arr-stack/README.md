@@ -49,12 +49,13 @@ was already on.
 
 `recyclarr` (in this compose) syncs the TRaSH guides into Sonarr and Radarr daily at
 05:00: quality definitions, the `WEB-1080p` (Sonarr) and `HD Bluray + WEB` (Radarr)
-quality profiles and their custom formats with scores. First run was **additive**: no
-existing profile touched, no custom format deleted, nothing re-assigned. Moving series
+quality profiles and their custom formats with scores. First run (2026-09-11 19:57) was
+**additive**: Radarr +40 custom formats + "HD Bluray + WEB", Sonarr +37 + "WEB-1080p", 14
+quality-definition sizes each; no existing profile touched, nothing re-assigned. Moving series
 and movies onto the new profiles is a manual choice in each arr UI (Series → Mass Edit).
-Config: `recyclarr/recyclarr.yml` (git = placeholders; the live file at
-`/volume2/nas-apps/recyclarr/recyclarr.yml` carries the API keys). Run by hand:
-Container → recyclarr → Terminal → `recyclarr sync`.
+Config: generated template configs on the NAS, see `recyclarr/README.md`. Run by hand:
+Container → recyclarr → Terminal → `recyclarr sync`. The container runs as root because
+UGOS denies uid 1000 on the `nas-apps` share (kernel-level share permissions).
 
 ## Notifications (2026-09-11)
 

@@ -122,9 +122,9 @@ Seerr (`jellyseerr.rutberg.dev`) is **not** gated: it is the user-facing request
 
 ### Task 10: Remote streaming path — investigate and recommend
 
-- [ ] Confirm `jellyfin.rutberg.dev` public path = Cloudflare tunnel (dnsendpoint targets cfargotunnel.com). Check Cloudflare cache behaviour on `/Videos/*/stream*` (response headers `cf-cache-status`) from a non-LAN vantage (use the Mac on Tailscale? still LAN DNS). Use `curl --resolve jellyfin.rutberg.dev:443:<cf edge ip>`.
-- [ ] Check whether Tailscale exists anywhere (NAS app, cluster subnet router): `tailscale status` on the Mac lists peers.
-- [ ] Report: keep tunnel for the web UI/metadata; recommend the phone/TV clients outside the LAN use a Tailscale route to `192.168.50.254:38096` (or the LAN ingress via Tailscale subnet router + split DNS) if a NAS Tailscale node exists; otherwise present the two options for Philip. **No change applied autonomously.**
+- [x] Confirm `jellyfin.rutberg.dev` public path = Cloudflare tunnel (dnsendpoint targets cfargotunnel.com). Check Cloudflare cache behaviour on `/Videos/*/stream*` (response headers `cf-cache-status`) from a non-LAN vantage (use the Mac on Tailscale? still LAN DNS). Use `curl --resolve jellyfin.rutberg.dev:443:<cf edge ip>`.
+- [x] Check whether Tailscale exists anywhere (NAS app, cluster subnet router): `tailscale status` on the Mac lists peers.
+- [x] Report: keep tunnel for the web UI/metadata; recommend the phone/TV clients outside the LAN use a Tailscale route to `192.168.50.254:38096` (or the LAN ingress via Tailscale subnet router + split DNS) if a NAS Tailscale node exists; otherwise present the two options for Philip. **No change applied autonomously.**
 
 ### Task 11: Items that need Philip at the keyboard (do last, one browser tab each)
 
@@ -161,8 +161,9 @@ gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
 - [x] `janitor.py` (python:3.12-alpine, stdlib only): HTTP server :9797, `POST /arr` handles eventTypes `MovieDelete`, `SeriesDelete`, `EpisodeFileDelete` (reason manual only), `Test`; `GET /healthz`. Reads API keys at runtime from ro mounts of `radarr/config/config.xml`, `sonarr/config/config.xml`, `seerr/settings.json`. Idempotent; logs one line per action.
 - [x] Torrent matching: `torrents/info` → candidates where `name == sceneName` OR any file in `torrents/files` has `size == movieFile.size` and basename matches `relativePath`/`originalFilePath` basename. Delete via `torrents/delete?deleteFiles=true`. Season packs: one match removes the pack (documented).
 - [x] Seerr: `GET /api/v1/media?take=100&filter=all` pages → match `tmdbId` (movies) / `tvdbId` (series) → `DELETE /api/v1/media/{id}`.
-- [ ] Register webhooks: Radarr + Sonarr `POST /api/v3/notification` implementation `Webhook`, url `http://torrent-vpn-gluetun:9797/arr`, events `onMovieDelete`/`onSeriesDelete`/`onEpisodeFileDelete`; test with the "Test" button (eventType Test → 200).
-- [ ] End-to-end test on a throwaway title (a small movie added + downloaded once, then removed via Seerr Manage → Remove): torrent gone from qBittorrent, Seerr media gone, Jellyfin entry gone within a minute.
+- [x] Register webhooks: Radarr + Sonarr `POST /api/v3/notification` implementation `Webhook`, url `http://torrent-vpn-gluetun:9797/arr`, events `onMovieDelete`/`onSeriesDelete`/`onEpisodeFileDelete`; test with the "Test" button (eventType Test → 200).
+- [~] End-to-end test: synthetic events from inside the container (MovieFileDelete size=1 → walked all 267 torrents, no match; MovieDelete tmdb 1 → Seerr queried, no record; upgrade → ignored). NOT yet exercised on a real title — first real removal should be watched in the media-janitor Log.
+- [ ] (was) End-to-end test on a throwaway title (a small movie added + downloaded once, then removed via Seerr Manage → Remove): torrent gone from qBittorrent, Seerr media gone, Jellyfin entry gone within a minute.
 - [ ] Docs + commit.
 
 ## Progress log
@@ -171,3 +172,4 @@ gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
 - 2026-09-11 evening: Task 1 + 2 done.
 - 2026-09-11 later: Tasks 3, 4 (first snapshot 629 s / 15 GB), 5 (gating verified 302 → outpost, Sonarr loads after Authentik), 7 done. Task 6: recyclarr container deployed, first `recyclarr sync` still to run. Task 8: stack live, NAS targets discovered (down until nas-metrics is created on UGOS), test alert reached the phone. Task 9 done (Seerr webhook set from the NAS shell, test reached HA at 17:23:53Z). Task 8 done: nas-metrics deployed (node-exporter as root for the ACL'd textfile dir), both NAS targets up, backup metric visible in Prometheus. Task 13: code written + stub-tested; NAS deploy pending (torrent-vpn compose edit). Side find: HA `automations.yaml`/`scripts.yaml`/`scenes.yaml`/`secrets.yaml` + 2 theme files were mode 0000 on the NFS PVC — HA could not edit or reload automations (Errno 13); fixed with chmod 644 (mirror: `.claude/ha-jellyfin-backup.yaml`).
 - 2026-09-11 evening (2): Task 12 done (global limits off, 267 torrents on global, 260 stopped torrents resumed → 264 stalledUP + 3 forcedUP). Task 13: media-janitor deployed inside gluetun's netns (healthz OK), torrent-vpn compose merged in the UGOS editor via the Monaco instance (key preserved, comments-only drift found); arr webhooks for the janitor still to register (Sonarr forms-login session expired in Chrome → use the NAS shell with the API keys).
+- 2026-09-11 late: Task 13 wired end-to-end (Sonarr/Radarr → janitor webhooks registered from the NAS shell, Test events received, synthetic events OK). Task 10 investigated: public jellyfin.rutberg.dev = Cloudflare edge (cf-cache-status DYNAMIC, no caching), Tailscale tailnet has only the Mac + an offline iPhone + two servers — no NAS/cluster node, so no change applied; recommendation in the final report.

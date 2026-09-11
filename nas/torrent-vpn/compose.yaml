@@ -45,6 +45,9 @@ services:
       # starrs network only — deliberately not published to the LAN). Replaces
       # the old container's Privoxy on :8118.
       HTTPPROXY: "on"
+      # media-janitor (below) listens on :9797 inside this network namespace; the
+      # arrs reach it as torrent-vpn-gluetun:9797 on the starrs network. Not published.
+      FIREWALL_INPUT_PORTS: "9797"
       UPDATER_PERIOD: 24h
       HEALTH_VPN_DURATION_INITIAL: 30s
     volumes:
@@ -68,6 +71,33 @@ services:
     volumes:
       - /volume2/nas-apps/torrent-vpn/qbittorrent:/config
       - /volume1/homelab/streaming/torrents:/torrents
+    logging: *logging
+    restart: unless-stopped
+
+  # Single-point media removal (nas/media-janitor/README.md). Shares gluetun's
+  # network namespace so it can talk to qBittorrent on 127.0.0.1 with the
+  # "bypass authentication for localhost" rule — no password anywhere. Radarr and
+  # Sonarr post their delete webhooks to http://torrent-vpn-gluetun:9797/arr.
+  media-janitor:
+    image: python:3.12-alpine
+    container_name: media-janitor
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    command: ["python3", "-u", "/janitor.py"]
+    environment:
+      TZ: Europe/Stockholm
+      QBT_URL: http://127.0.0.1:8080
+      SEERR_URL: http://192.168.50.254:35055
+      JANITOR_ON_UPGRADE: "false"   # replaced-by-upgrade torrents keep seeding
+      JANITOR_DRY_RUN: "false"
+    volumes:
+      - /volume2/nas-apps/media-janitor/janitor.py:/janitor.py:ro
+      - /volume2/nas-apps/radarr/config/config.xml:/keys/radarr.xml:ro
+      - /volume2/nas-apps/sonarr/config/config.xml:/keys/sonarr.xml:ro
+      - /volume2/nas-apps/seerr/settings.json:/keys/seerr.json:ro
+    mem_limit: 128m
     logging: *logging
     restart: unless-stopped
 

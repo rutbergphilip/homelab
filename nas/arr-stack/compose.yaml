@@ -94,7 +94,10 @@ services:
     image: ghcr.io/recyclarr/recyclarr:7.5.2
     container_name: recyclarr
     networks: [starrs]
-    user: "1000:1000"
+    # root, not 1000: UGOS enforces shared-folder permissions in the kernel per uid —
+    # on this NAS uid 1000 and 65534 are denied on /volume2/nas-apps even with mode
+    # 777 (root, 10, 1001 pass). Same reason nas-metrics' node-exporter runs as root.
+    user: "0:0"
     environment:
       TZ: Europe/Stockholm
       CRON_SCHEDULE: "0 5 * * *"

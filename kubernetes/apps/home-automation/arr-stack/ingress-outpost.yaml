@@ -1,0 +1,103 @@
+# Authentik outpost handshake Ingresses for the gated arr hosts (see ingress-admin.yaml).
+---
+# /outpost.goauthentik.io/* on sonarr.rutberg.dev → Authentik embedded outpost
+# (login redirect, callback, auth endpoint). No forward-auth here — this IS the
+# handshake. upstream-vhost must be the literal host so the outpost matches the
+# sonarr provider; the annotation takes no variables, hence one Ingress per host.
+# Backend: authentik-embedded-outpost ExternalName Service from
+# ../kcal-assistant/service-outpost.yaml (namespace-wide).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sonarr-outpost
+  namespace: home-automation
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/upstream-vhost: "sonarr.rutberg.dev"
+spec:
+  ingressClassName: external
+  tls:
+    - hosts:
+        - sonarr.rutberg.dev
+      secretName: sonarr-tls
+  rules:
+    - host: sonarr.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80
+---
+# /outpost.goauthentik.io/* on radarr.rutberg.dev → Authentik embedded outpost
+# (login redirect, callback, auth endpoint). No forward-auth here — this IS the
+# handshake. upstream-vhost must be the literal host so the outpost matches the
+# radarr provider; the annotation takes no variables, hence one Ingress per host.
+# Backend: authentik-embedded-outpost ExternalName Service from
+# ../kcal-assistant/service-outpost.yaml (namespace-wide).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: radarr-outpost
+  namespace: home-automation
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/upstream-vhost: "radarr.rutberg.dev"
+spec:
+  ingressClassName: external
+  tls:
+    - hosts:
+        - radarr.rutberg.dev
+      secretName: radarr-tls
+  rules:
+    - host: radarr.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80
+---
+# /outpost.goauthentik.io/* on prowlarr.rutberg.dev → Authentik embedded outpost
+# (login redirect, callback, auth endpoint). No forward-auth here — this IS the
+# handshake. upstream-vhost must be the literal host so the outpost matches the
+# prowlarr provider; the annotation takes no variables, hence one Ingress per host.
+# Backend: authentik-embedded-outpost ExternalName Service from
+# ../kcal-assistant/service-outpost.yaml (namespace-wide).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prowlarr-outpost
+  namespace: home-automation
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/upstream-vhost: "prowlarr.rutberg.dev"
+spec:
+  ingressClassName: external
+  tls:
+    - hosts:
+        - prowlarr.rutberg.dev
+      secretName: prowlarr-tls
+  rules:
+    - host: prowlarr.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80

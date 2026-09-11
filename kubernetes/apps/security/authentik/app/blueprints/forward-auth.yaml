@@ -184,6 +184,105 @@ entries:
       provider: !KeyOf qbittorrent-provider
       policy_engine_mode: any
 
+  # ------------------------------------------------------ sonarr ----
+  # Admin-only arr UI on the NAS (nas/arr-stack). Gated 2026-09-11; Seerr and Prowlarr reach Sonarr over the docker network, never via this host.
+  - model: authentik_providers_proxy.proxyprovider
+    state: present
+    id: sonarr-provider
+    identifiers:
+      name: sonarr
+    attrs:
+      mode: forward_single
+      external_host: https://sonarr.rutberg.dev
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      access_token_validity: days=7
+      refresh_token_validity: days=30
+      intercept_header_auth: true
+      internal_host_ssl_validation: true
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-email]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-entitlements]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/proxy/scope-proxy]]
+
+  - model: authentik_core.application
+    state: present
+    id: sonarr-app
+    identifiers:
+      slug: sonarr
+    attrs:
+      name: Sonarr
+      provider: !KeyOf sonarr-provider
+      policy_engine_mode: any
+
+  # ------------------------------------------------------ radarr ----
+  # Admin-only arr UI on the NAS (nas/arr-stack). Gated 2026-09-11.
+  - model: authentik_providers_proxy.proxyprovider
+    state: present
+    id: radarr-provider
+    identifiers:
+      name: radarr
+    attrs:
+      mode: forward_single
+      external_host: https://radarr.rutberg.dev
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      access_token_validity: days=7
+      refresh_token_validity: days=30
+      intercept_header_auth: true
+      internal_host_ssl_validation: true
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-email]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-entitlements]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/proxy/scope-proxy]]
+
+  - model: authentik_core.application
+    state: present
+    id: radarr-app
+    identifiers:
+      slug: radarr
+    attrs:
+      name: Radarr
+      provider: !KeyOf radarr-provider
+      policy_engine_mode: any
+
+  # ---------------------------------------------------- prowlarr ----
+  # Indexer manager on the NAS (nas/arr-stack). Gated 2026-09-11; the arrs talk to it over the docker network.
+  - model: authentik_providers_proxy.proxyprovider
+    state: present
+    id: prowlarr-provider
+    identifiers:
+      name: prowlarr
+    attrs:
+      mode: forward_single
+      external_host: https://prowlarr.rutberg.dev
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      access_token_validity: days=7
+      refresh_token_validity: days=30
+      intercept_header_auth: true
+      internal_host_ssl_validation: true
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-email]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-entitlements]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/proxy/scope-proxy]]
+
+  - model: authentik_core.application
+    state: present
+    id: prowlarr-app
+    identifiers:
+      slug: prowlarr
+    attrs:
+      name: Prowlarr
+      provider: !KeyOf prowlarr-provider
+      policy_engine_mode: any
+
   # --------------------------------------------------- embedded outpost ----
   # CAUTION: `providers` and `config` are FULL REPLACEMENTS on every apply.
   # Every provider that must stay assigned HAS to be listed, and the config
@@ -200,6 +299,9 @@ entries:
         - !KeyOf pihole-provider
         - !KeyOf claude-provider
         - !KeyOf qbittorrent-provider
+        - !KeyOf sonarr-provider
+        - !KeyOf radarr-provider
+        - !KeyOf prowlarr-provider
       config:
         log_level: info
         docker_labels: null

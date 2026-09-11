@@ -134,6 +134,37 @@ Seerr (`jellyseerr.rutberg.dev`) is **not** gated: it is the user-facing request
 - [ ] Open Subtitles login: Philip only (credentials).
 - [ ] Jellyfin OSD back button in Zen: ask Philip to re-test after the CSS fix.
 
+### Task 12: qBittorrent seeds forever (Philip, 2026-09-11)
+
+- [ ] From the `torrent-vpn-qbittorrent` container Terminal (localhost auth bypass, no password needed): `curl -s -X POST http://127.0.0.1:8080/api/v2/app/setPreferences --data-urlencode 'json={"max_ratio_enabled":false,"max_seeding_time_enabled":false,"max_inactive_seeding_time_enabled":false,"max_ratio_act":0}'`.
+- [ ] Per-torrent overrides back to "use global": `curl -s -X POST http://127.0.0.1:8080/api/v2/torrents/setShareLimits -d 'hashes=all&ratioLimit=-2&seedingTimeLimit=-2&inactiveSeedingTimeLimit=-2'`; resume anything paused/stopped by a hit limit: `torrents/start?hashes=all` (5.x) — only torrents in state `stoppedUP`.
+- [ ] Verify: `app/preferences` shows the three flags false; `torrents/info?filter=stopped` shows none that stopped because of ratio (state `stoppedUP`).
+- [ ] Document in `nas/torrent-vpn/README.md`.
+
+### Task 13: single-point media removal (Philip, 2026-09-11)
+
+Design: the arrs are the pivot. Deleting a movie/series in **Radarr/Sonarr** (or in Seerr's
+Manage → "Remove from Radarr/Sonarr", which calls the same arr delete) fires a `MovieDelete` /
+`SeriesDelete` / `EpisodeFileDelete` webhook. A tiny service `media-janitor` on the NAS,
+running inside gluetun's network namespace (so it can use qBittorrent's localhost auth
+bypass — no password anywhere), receives the webhook and: removes the matching torrent(s)
+**with files** from qBittorrent (match by release/scene name and file size), deletes the
+media record + requests in Seerr (`DELETE /api/v1/media/{id}` by tmdb/tvdb id), and lets
+Jellyfin's real-time library monitoring drop the item (files are gone). Radarr/Sonarr add
+an import exclusion so the title is not re-grabbed. Jellyfin is explicitly NOT a deletion
+point (a file deleted there would just be re-downloaded by the arr).
+
+**Files:** Create `nas/media-janitor/janitor.py`, `nas/media-janitor/README.md`; modify
+`nas/torrent-vpn/compose.yaml` (new service `media-janitor`, `network_mode: service:gluetun`,
+gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
+
+- [ ] `janitor.py` (python:3.12-alpine, stdlib only): HTTP server :9797, `POST /arr` handles eventTypes `MovieDelete`, `SeriesDelete`, `EpisodeFileDelete` (reason manual only), `Test`; `GET /healthz`. Reads API keys at runtime from ro mounts of `radarr/config/config.xml`, `sonarr/config/config.xml`, `seerr/settings.json`. Idempotent; logs one line per action.
+- [ ] Torrent matching: `torrents/info` → candidates where `name == sceneName` OR any file in `torrents/files` has `size == movieFile.size` and basename matches `relativePath`/`originalFilePath` basename. Delete via `torrents/delete?deleteFiles=true`. Season packs: one match removes the pack (documented).
+- [ ] Seerr: `GET /api/v1/media?take=100&filter=all` pages → match `tmdbId` (movies) / `tvdbId` (series) → `DELETE /api/v1/media/{id}`.
+- [ ] Register webhooks: Radarr + Sonarr `POST /api/v3/notification` implementation `Webhook`, url `http://torrent-vpn-gluetun:9797/arr`, events `onMovieDelete`/`onSeriesDelete`/`onEpisodeFileDelete`; test with the "Test" button (eventType Test → 200).
+- [ ] End-to-end test on a throwaway title (a small movie added + downloaded once, then removed via Seerr Manage → Remove): torrent gone from qBittorrent, Seerr media gone, Jellyfin entry gone within a minute.
+- [ ] Docs + commit.
+
 ## Progress log
 
 - 2026-09-11: plan written. Execution order 1 → 2 → 3 → 4 → 7 → 6 → 5 → 8 → 9 → 10 → 11.

@@ -5,5 +5,7 @@ resources:
   - helmrelease.yaml
   - nas-targets.yaml
   - nas-alerts.yaml
+  - homelab-status.yaml
+  - flux-podmonitor.yaml
   - alertmanager-config.yaml
   - alertmanager-ha-webhook.sops.yaml

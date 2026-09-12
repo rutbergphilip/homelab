@@ -1,0 +1,78 @@
+# Recording rules behind the "Homelab Overview" Grafana dashboard and the Home Assistant
+# System page (docs/superpowers/specs/2026-09-12-homelab-status-dashboard-design.md).
+# Every consumer reads the same homelab:* series, and HA fetches them all with ONE query
+# ({__name__=~"homelab:.*"}). Keep the names stable — they are entity ids in HA.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab-status
+spec:
+  groups:
+    - name: homelab.status
+      interval: 30s
+      rules:
+        # ── Cluster ──────────────────────────────────────────────────────────────
+        - record: homelab:cluster_nodes_ready
+          expr: sum(kube_node_status_condition{condition="Ready",status="true"})
+        - record: homelab:cluster_nodes_total
+          expr: count(kube_node_info)
+        - record: homelab:cluster_cpu_pct
+          expr: 100 * (1 - avg(rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[5m])))
+        - record: homelab:cluster_mem_pct
+          expr: 100 * (1 - sum(node_memory_MemAvailable_bytes{job="node-exporter"}) / sum(node_memory_MemTotal_bytes{job="node-exporter"}))
+        - record: homelab:cluster_pods_running
+          expr: sum(kube_pod_status_phase{phase="Running"})
+        - record: homelab:cluster_pods_unhealthy
+          expr: |
+            (sum(kube_pod_status_phase{phase=~"Pending|Failed|Unknown"}) or vector(0))
+            + (sum(kube_pod_container_status_waiting_reason{reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError"}) or vector(0))
+        - record: homelab:cluster_restarts_1h
+          expr: sum(increase(kube_pod_container_status_restarts_total[1h])) or vector(0)
+        - record: homelab:cluster_temp_max_celsius
+          expr: max(node_hwmon_temp_celsius{job="node-exporter",chip="platform_coretemp_0"})
+        - record: homelab:cluster_flux_failing
+          expr: count(gotk_reconcile_condition{type="Ready",status="False"} == 1) or vector(0)
+        - record: homelab:cluster_certs_min_days
+          expr: min((certmanager_certificate_expiration_timestamp_seconds - time()) / 86400)
+        - record: homelab:cluster_uptime_min_hours
+          expr: min((time() - node_boot_time_seconds{job="node-exporter"}) / 3600)
+        - record: homelab:alerts_firing
+          expr: count(ALERTS{alertstate="firing",alertname!~"Watchdog|InfoInhibitor",severity!="info"}) or vector(0)
+        # ── NAS (nas/nas-metrics: node-exporter + cAdvisor) ─────────────────────
+        - record: homelab:nas_cpu_pct
+          expr: 100 * (1 - avg(rate(node_cpu_seconds_total{job="nas-node-exporter",mode="idle"}[5m])))
+        - record: homelab:nas_mem_pct
+          expr: 100 * (1 - node_memory_MemAvailable_bytes{job="nas-node-exporter"} / node_memory_MemTotal_bytes{job="nas-node-exporter"})
+        - record: homelab:nas_cpu_temp_celsius
+          expr: max(node_hwmon_temp_celsius{job="nas-node-exporter",chip="platform_coretemp_0"})
+        - record: homelab:nas_nvme_temp_max_celsius
+          expr: max(node_hwmon_temp_celsius{job="nas-node-exporter",chip=~"nvme.*"})
+        - record: homelab:nas_volume1_free_bytes
+          expr: node_filesystem_avail_bytes{job="nas-node-exporter",mountpoint="/volume1"}
+        - record: homelab:nas_volume1_used_pct
+          expr: 100 * (1 - node_filesystem_avail_bytes{job="nas-node-exporter",mountpoint="/volume1"} / node_filesystem_size_bytes{job="nas-node-exporter",mountpoint="/volume1"})
+        - record: homelab:nas_volume2_free_bytes
+          expr: node_filesystem_avail_bytes{job="nas-node-exporter",mountpoint="/volume2"}
+        - record: homelab:nas_volume2_used_pct
+          expr: 100 * (1 - node_filesystem_avail_bytes{job="nas-node-exporter",mountpoint="/volume2"} / node_filesystem_size_bytes{job="nas-node-exporter",mountpoint="/volume2"})
+        - record: homelab:nas_net_rx_bps
+          expr: rate(node_network_receive_bytes_total{job="nas-node-exporter",device="eth0"}[5m])
+        - record: homelab:nas_net_tx_bps
+          expr: rate(node_network_transmit_bytes_total{job="nas-node-exporter",device="eth0"}[5m])
+        - record: homelab:nas_containers_running
+          expr: count(container_last_seen{job="nas-cadvisor",name!=""})
+        - record: homelab:nas_uptime_hours
+          expr: (time() - node_boot_time_seconds{job="nas-node-exporter"}) / 3600
+        - record: homelab:nas_backup_age_hours
+          expr: (time() - nas_backup_last_ok_timestamp_seconds) / 3600
+        - record: homelab:nas_backup_size_bytes
+          expr: nas_backup_last_size_bytes
+        # ── Media ────────────────────────────────────────────────────────────────
+        - record: homelab:torrent_tx_bps
+          expr: sum(rate(container_network_transmit_bytes_total{job="nas-cadvisor",name="torrent-vpn-gluetun"}[5m]))
+        - record: homelab:torrent_rx_bps
+          expr: sum(rate(container_network_receive_bytes_total{job="nas-cadvisor",name="torrent-vpn-gluetun"}[5m]))
+        - record: homelab:jellyfin_cpu_cores
+          expr: rate(container_cpu_usage_seconds_total{job="nas-cadvisor",name="jellyfin"}[5m])
+        - record: homelab:jellyfin_rss_bytes
+          expr: container_memory_rss{job="nas-cadvisor",name="jellyfin"}

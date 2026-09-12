@@ -7,3 +7,19 @@ resources:
   - ./helmrelease.yaml
   - ./grafana-pvc.yaml
   - ./auth-oauth.secret.sops.yaml
+
+# Git-provisioned dashboards, picked up by Grafana's sidecar (label grafana_dashboard,
+# folder from the grafana_folder annotation). Regenerate the JSON with
+# dashboards/gen-homelab-overview.py; do not hand-edit it.
+configMapGenerator:
+  - name: grafana-dashboard-homelab-overview
+    files:
+      - dashboards/homelab-overview.json
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: Homelab
+generatorOptions:
+  disableNameSuffixHash: true

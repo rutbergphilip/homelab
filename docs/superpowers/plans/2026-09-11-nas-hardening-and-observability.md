@@ -128,7 +128,7 @@ Seerr (`jellyseerr.rutberg.dev`) is **not** gated: it is the user-facing request
 
 ### Task 11: Items that need Philip at the keyboard (do last, one browser tab each)
 
-- [ ] ASUS router 192.168.50.1 → LAN → DHCP Server → DNS Server 1 = 192.168.50.24, DNS Server 2 empty; Apply. (Ask Philip to log in, then drive.)
+- [x] ASUS router 192.168.50.1 → LAN → DHCP Server → DNS Server 1 = 192.168.50.24, DNS Server 2 empty; Apply. (Ask Philip to log in, then drive.)
 - [ ] Cloudflare dashboard → rutberg.dev → SSL/TLS → Edge Certificates → Encrypted ClientHello → Off. (Ask Philip to log in.)
 - [ ] UGOS Files → Recycle Bin of `nas-apps-backup` and `nas-apps-v1` → Empty; then delete the empty `nas-apps-v1` share (Control Panel → Shared Folder). Permanent — confirm in chat before clicking.
 - [ ] Open Subtitles login: Philip only (credentials).
@@ -176,3 +176,4 @@ gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
 - 2026-09-11 ~20:00: Task 6 done — Recyclarr 8.7.2 (7.5.2 could not parse the current templates; include names gone upstream) synced Radarr (40 CFs, 14 quality sizes, profile "HD Bluray + WEB") and Sonarr (37 CFs, 14 sizes, profile "WEB-1080p"); nothing re-assigned. UGOS share ACL finding: uid 1000/65534 denied on nas-apps → recyclarr + node-exporter run as root.
 - 2026-09-12 morning: **alert spam fixed.** Root cause: the cAdvisor metricRelabeling used `regex: ""`, which Prometheus reads as the default `(.*)` → every container series was dropped → `NasContainerMissing` fired once per container (8 pushes) and repeated every 12 h. Fixed with `regex: "^$"`, the rule is now guarded by `count(container_last_seen) > 0`, repeat interval 24 h, and the HA automation sends one push per alert group instead of one per alert. `KubePodNotReady` was a reloader pod stuck in Error since a node shutdown in Dec 2025 — deleted, replica already healthy. Only Watchdog remains active.
 - 2026-09-12: Cloudflare ECH is API-only on the Free plan (no UI toggle). Reading works via the dashboard session (value `on`), but the PATCH to `off` was blocked by the Claude Code permission classifier → left for Philip (one curl with a Zone Settings token, or approve explicitly). UGOS and router sessions had expired → Recycle Bins, `nas-apps-v1` share and DHCP DNS still need his login.
+- 2026-09-12 (Philip signed in): router DHCP DNS 2 cleared → Mac lease shows Pi-hole only. UGOS Recycle Bins of nas-apps-backup (62 495 files) and nas-apps-v1 (39 350 files) emptying in the Task Center; nas-apps-v1 share deletion follows.

@@ -183,3 +183,14 @@ gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
 - 2026-09-12 ~14:10: dedup applied — 1666 files relinked, 4.58 TB freed, 0 mismatches, no stray `.dedup-tmp`; /volume1 free 4.70 → 9.28 TB; Jellyfin (LAN + public), Sonarr, Radarr, qBittorrent healthy afterwards. Next: stop nas-maint, UGOS update 1.12 → 1.17 (reboot).
 - 2026-09-12 ~13:30: UGOS updated 1.12.0.0095 → 1.17.0.0095 (Control Panel → Update → Update now; nas-maint stopped first). Install ~8 min, reboot down 13:26:20 → up 13:27:51. Verified after: Jellyfin (LAN + public), Sonarr, Radarr, Prowlarr, Seerr, qBittorrent WebUI, node-exporter, cAdvisor all 200; Prometheus `up{job=~"nas.*"}` = 1 for both targets. UGOS web session expired on reboot (re-login is Philip's).
 - 2026-09-12 ~15:40: Philip re-logged into UGOS. Unpackerr added to arr-stack (keys via env_file on the NAS) — first pass queued all 7 rar'd Sonarr items + 1 Radarr; Trazan stale row removed; 3 Radarr title-mismatch items manual-imported (Swedish releases vs English library titles); 2 orphan rows (Vacation 2015, The Killer 2023 — movies no longer in Radarr) removed from the queue only. Macken: real episodes extracted from the rars (bsdtar), imported + renamed as S01E01–06, Extras → `extras/`. 64 redundant rar sets (~45 GB) + Macken junk moved to `streaming/_trash-2026-09-12` and that folder sent to the homelab Recycle Bin via Files. HA: `arr_to_phone` + `seerr_to_phone` turned OFF on Philip's request ("sick of the media server notifications"); alertmanager pushes stay.
+
+## How to remove a title everywhere (Task 13 in practice)
+
+Delete it in **Radarr** (movie → delete → "Delete files" + "Add exclusion") or **Sonarr**
+(series → delete → same two ticks), or from **Seerr** (title → Manage → "Remove from
+Radarr/Sonarr", which calls the same arr delete). That is the single point. The
+media-janitor webhook then removes the torrent **with data** from qBittorrent and the
+media record + requests from Seerr; Jellyfin drops the entry when the files vanish.
+Never start from Jellyfin (the arr would re-download) and never remove the torrent by
+hand in qBittorrent (the library copy stays). Upgrades keep the old torrent seeding on
+purpose. Details: `nas/media-janitor/README.md`.

@@ -1,0 +1,14 @@
+# Lets /outpost.goauthentik.io be served ON grafana.rutberg.dev by proxying to the
+# Authentik embedded outpost (authentik-server, security ns). ExternalName is a DNS
+# alias, so it can cross namespaces where an Ingress backend cannot — same pattern
+# as home-automation/kcal-assistant/service-outpost.yaml.
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentik-embedded-outpost
+spec:
+  type: ExternalName
+  externalName: authentik-server.security.svc.cluster.local
+  ports:
+    - name: http
+      port: 80

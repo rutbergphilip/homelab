@@ -7,6 +7,8 @@ resources:
   - ./helmrelease.yaml
   - ./grafana-pvc.yaml
   - ./auth-oauth.secret.sops.yaml
+  - ./service-outpost.yaml
+  - ./ingress-outpost.yaml
 
 # Git-provisioned dashboards, picked up by Grafana's sidecar (label grafana_dashboard,
 # folder from the grafana_folder annotation). Regenerate the JSON with

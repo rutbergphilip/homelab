@@ -1,0 +1,31 @@
+# /outpost.goauthentik.io/* on grafana.rutberg.dev → Authentik embedded outpost
+# (login redirect, callback, auth endpoint). No forward-auth here — this IS the
+# handshake. upstream-vhost must be the literal host so the outpost matches the
+# grafana provider. The Grafana chart's own Ingress (helmrelease.yaml) carries the
+# forward-auth annotations for everything else on this host.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-outpost
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "external.rutberg.dev"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/upstream-vhost: "grafana.rutberg.dev"
+spec:
+  ingressClassName: external
+  tls:
+    - hosts:
+        - grafana.rutberg.dev
+      secretName: grafana-tls
+  rules:
+    - host: grafana.rutberg.dev
+      http:
+        paths:
+          - path: /outpost.goauthentik.io
+            pathType: Prefix
+            backend:
+              service:
+                name: authentik-embedded-outpost
+                port:
+                  number: 80

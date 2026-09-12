@@ -20,5 +20,7 @@ services:
     volumes:
       - /volume2/nas-apps:/nas-apps
       - /volume1/nas-apps-backup:/nas-apps-backup
+      # Media + torrents on one filesystem, for the hardlink dedup (dedup-media.py).
+      - /volume1/homelab/streaming:/streaming
     logging: *logging
     restart: "no"

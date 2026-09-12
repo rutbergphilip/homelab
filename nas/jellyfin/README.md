@@ -87,3 +87,39 @@ Two layers, both off the single M.2 that holds `/volume2/nas-apps`:
    Dashboard → Backup, or `POST /Backup/Restore`.
 2. **nas-backup snapshot** (`nas/nas-backup/`) copies the whole `nas-apps` share,
    including those zips, to the RAID volume at 04:00 and prunes zips older than 7 days.
+
+## Browsing like a streaming service (2026-09-12)
+
+Philip: the stock library grid is clunky; Netflix-style themed rows and franchise groups
+wanted, mainly for the web client and the Apple TV / smart TV.
+
+**What is live**
+
+- **SmartLists 12.0.1** (repo `https://raw.githubusercontent.com/jyourstone/jellyfin-plugin-manifest/main/manifest.json`)
+  with 12 rule-based **collections** that refresh themselves on library changes
+  (names carry a `[Smart]` suffix, the plugin adds it): Svenskt (audio `swe` or made in
+  Sweden), Nordiskt (dan/nor/nob/fin/isl or NO/DK/FI/IS), Komedi, Drama, Action &
+  äventyr, Sci-fi & fantasy, Thriller & kriminal, Familj & barn, Skräck, Toppbetyg
+  (community rating ≥ 7.5), 80- och 90-tal, Klassiker (före 1980). Created through
+  `POST /Plugins/SmartLists` (needs `UserId`/`CreatedByUserId` when using an API key);
+  refresh one with `POST /Plugins/SmartLists/{id}/refresh` (the global `/refresh` only
+  touches playlists). Manage them under hamburger menu → SmartLists.
+- **TMDb Box Sets** (already installed) keeps grouping franchises (Star Wars, Indiana
+  Jones, Emil, Pippi …). Together with the smart ones the Collections library is the
+  "browse by theme" entry point; Media Bar keeps the hero banner.
+
+**What was tried and rolled back**
+
+`Home Screen Sections` 3.0.0 + `Collection Sections` 2.3.10 + `Plugin Pages` 3.0.0
+(iamparadox repo) would have turned the home page into themed rows. On this server the
+`/HomeScreen/Sections` aggregator never completes — it spin-waits forever even with only
+the three stock rows and lazy loading, pins CPU, and the web client shows a spinner or
+"Ingenting här". Uninstalled the same day; `useModularHome` reset to false for both users.
+Do not reinstall without testing on a copy first. Notes: the plugin's per-user settings
+live in `/config/plugins/configurations/Jellyfin.Plugin.HomeScreenSections/ModularHomeSettings.json`,
+the client-side switch is `CustomPrefs.useModularHome` in the user's display
+preferences, and a section that throws poisons the user's page cache until a restart.
+
+**Apple TV / smart TV:** the official Swiftfin app renders collections as folders and
+has no themed rows; Infuse (paid) presents the same Jellyfin library with genre and
+collection rows and is the closest thing to the Netflix layout on tvOS.

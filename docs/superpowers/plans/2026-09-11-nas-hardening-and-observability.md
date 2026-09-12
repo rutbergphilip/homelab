@@ -194,3 +194,4 @@ media record + requests from Seerr; Jellyfin drops the entry when the files vani
 Never start from Jellyfin (the arr would re-download) and never remove the torrent by
 hand in qBittorrent (the library copy stays). Upgrades keep the old torrent seeding on
 purpose. Details: `nas/media-janitor/README.md`.
+- 2026-09-12 ~15:50: Jellyfin showed 10.8/12 GB RAM + 24 % CPU with nobody streaming. cAdvisor: rss 0.37 GB, page cache 12.4 GB, failcnt 0, CPU 1–2.3 cores from 15:15 = Intro Skipper analysing the ~50 episodes Unpackerr/Sonarr had just imported (BoJack S05, Gustafsson S01+S02, Family Guy, Macken). UGOS's RAM bar counts file cache; no limit change needed (NAS has 33 GB, 26 GB available).

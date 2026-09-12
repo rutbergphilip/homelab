@@ -57,3 +57,36 @@ grep ^OK /tmp/rarplan | sed 's/^OK //' | while IFS= read -r d; do find "$d" -max
 `Macken`: either extract the rars over the small files (`apk add unrar` is not in Alpine;
 use a desktop unrar via SMB) or delete `Del.1–6` + `Extras` (18 GB) if the loose files
 are good enough.
+
+## Rar-packed releases: Unpackerr (2026-09-12)
+
+The root cause of both the media-library rar junk and the "manual import required"
+phone spam was that nothing extracted rar releases: Sonarr/Radarr only saw the sample
+`.mkv` inside such torrents and parked them in the queue forever (re-alerting on every
+arr restart, e.g. after the UGOS update). `unpackerr` now runs in `nas/arr-stack`; API
+keys live in `/volume2/nas-apps/unpackerr/unpackerr.env` (mode 600, env_file). The
+first run queued seven Sonarr items (Gustafsson 3 tr S01+S02, BoJack S05, four Family
+Guy singles) and a Radarr one (Sommaren med Göran).
+
+Cleared by hand the same day, from this shell with the arr APIs (`curl` + `jq`, keys
+read out of each `config.xml`, never echoed):
+
+- Trazan Apansson S01 — the eight `.mp4` were already in the library and in Sonarr;
+  the queue row was stale → `DELETE /api/v3/queue/bulk?removeFromClient=false&blocklist=false`.
+- Radarr "Movie title mismatch" ×3 — Swedish releases for movies Radarr lists under
+  their English titles (Sommaren med Göran = *A Midsummer of Love*, Hur många lingon… =
+  *The Importance of Tying Your Own Shoes*, Hur många kramar… = *It's All About Friends*)
+  → `POST /api/v3/command {"name":"ManualImport","importMode":"auto",files:[…movieId…]}`
+  with the items from `GET /api/v3/manualimport?downloadId=…`. Note: Radarr's queue
+  hides unmapped rows unless `includeUnknownMovieItems=true`.
+- Vacation (2015) and The Killer (2023) are not in Radarr any more (orphaned torrents)
+  → removed from the queue only; the torrents keep seeding in `/torrents/movies`.
+- Macken (Sonarr series 9): the six loose `Del N.mkv` were the *sample clips*; the real
+  episodes sat in `Del.N/*.rar`. Extracted with `bsdtar -xf` (libarchive-tools handles
+  the multi-volume RAR3; its "Truncated RAR file data" warning is harmless — sizes
+  verified against `bsdtar -tvf`), imported via `manualimport` with explicit
+  `episodeIds` (Sonarr parsed "Del.N" as nothing), quality fixed with
+  `PUT /api/v3/episodefile/editor` (Bluray-1080p), then `RenameFiles` moved them to
+  `Season 1/Macken - S01E0N - <title> Bluray-1080p.mkv`. Extras rar → `Macken/extras/`.
+  Samples + rar folders moved to `/volume1/homelab/streaming/_trash-2026-09-12/`
+  (bulk `rm` is classifier-blocked for Claude; delete that folder in Files).

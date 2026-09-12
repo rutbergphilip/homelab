@@ -130,7 +130,7 @@ Seerr (`jellyseerr.rutberg.dev`) is **not** gated: it is the user-facing request
 
 - [x] ASUS router 192.168.50.1 → LAN → DHCP Server → DNS Server 1 = 192.168.50.24, DNS Server 2 empty; Apply. (Ask Philip to log in, then drive.)
 - [ ] Cloudflare dashboard → rutberg.dev → SSL/TLS → Edge Certificates → Encrypted ClientHello → Off. (Ask Philip to log in.)
-- [ ] UGOS Files → Recycle Bin of `nas-apps-backup` and `nas-apps-v1` → Empty; then delete the empty `nas-apps-v1` share (Control Panel → Shared Folder). Permanent — confirm in chat before clicking.
+- [~] UGOS Files → Recycle Bins of `nas-apps-backup` (62 495 files) and `nas-apps-v1` (39 350 files) emptied 2026-09-12. Deleting the now-empty `nas-apps-v1` share itself was refused by the permission classifier (permanent share deletion) — Philip: Files → select nas-apps-v1 → Delete.
 - [ ] Open Subtitles login: Philip only (credentials).
 - [ ] Jellyfin OSD back button in Zen: ask Philip to re-test after the CSS fix.
 
@@ -177,3 +177,4 @@ gluetun `FIREWALL_INPUT_PORTS: 9797`); arr webhook connections (API).
 - 2026-09-12 morning: **alert spam fixed.** Root cause: the cAdvisor metricRelabeling used `regex: ""`, which Prometheus reads as the default `(.*)` → every container series was dropped → `NasContainerMissing` fired once per container (8 pushes) and repeated every 12 h. Fixed with `regex: "^$"`, the rule is now guarded by `count(container_last_seen) > 0`, repeat interval 24 h, and the HA automation sends one push per alert group instead of one per alert. `KubePodNotReady` was a reloader pod stuck in Error since a node shutdown in Dec 2025 — deleted, replica already healthy. Only Watchdog remains active.
 - 2026-09-12: Cloudflare ECH is API-only on the Free plan (no UI toggle). Reading works via the dashboard session (value `on`), but the PATCH to `off` was blocked by the Claude Code permission classifier → left for Philip (one curl with a Zone Settings token, or approve explicitly). UGOS and router sessions had expired → Recycle Bins, `nas-apps-v1` share and DHCP DNS still need his login.
 - 2026-09-12 (Philip signed in): router DHCP DNS 2 cleared → Mac lease shows Pi-hole only. UGOS Recycle Bins of nas-apps-backup (62 495 files) and nas-apps-v1 (39 350 files) emptying in the Task Center; nas-apps-v1 share deletion follows.
+- 2026-09-12: both Recycle Bins emptied (Task Center clean). Share deletion left to Philip (blocked by classifier; also no Delete entry in the Files context menu or Properties — UGOS keeps it under the toolbar/Delete key).

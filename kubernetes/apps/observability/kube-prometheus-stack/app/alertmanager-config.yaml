@@ -12,9 +12,9 @@ spec:
   route:
     receiver: ha-webhook
     groupBy: ["alertname"]
-    groupWait: 30s
-    groupInterval: 5m
-    repeatInterval: 12h
+    groupWait: 1m
+    groupInterval: 10m
+    repeatInterval: 24h
     routes:
       - receiver: "null"
         matchers:

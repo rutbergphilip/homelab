@@ -101,8 +101,10 @@ spec:
           replacement: ugreen-nas
       metricRelabelings:
         # Only named docker containers; drop the cgroup-root and per-interface noise.
+        # An empty regex means "default (.*)" to Prometheus and dropped EVERYTHING
+        # (2026-09-11 evening: no container metrics for 12 h, NasContainerMissing spam).
         - sourceLabels: [name]
-          regex: ""
+          regex: "^$"
           action: drop
         - sourceLabels: [__name__]
           regex: container_(network_tcp_usage_total|network_udp_usage_total|tasks_state|memory_failures_total|blkio_device_usage_total)

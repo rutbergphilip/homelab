@@ -20,7 +20,9 @@ import './pages/hub-media-page.js';
 import './pages/hub-kcal-page.js';
 import './pages/hub-planner-page.js';
 import './pages/hub-health-page.js';
+import './pages/hub-system-page.js';
 import type { HealthSection } from './widgets/hub-health-popup.js';
+import type { SystemSection } from './widgets/hub-system-popup.js';
 import './widgets/hub-room-popup.js';
 import './widgets/hub-light-popup.js';
 import './widgets/hub-transit-popup.js';
@@ -31,9 +33,10 @@ import './widgets/hub-car-popup.js';
 import './widgets/hub-todo-popup.js';
 import './widgets/hub-calendar-popup.js';
 import './widgets/hub-health-popup.js';
+import './widgets/hub-system-popup.js';
 import './widgets/hub-nav-bar.js';
 
-const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka', 'halsa'];
+const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka', 'halsa', 'system'];
 
 const PAGE_TITLES: Record<string, string> = {
   hem: 'Hem',
@@ -43,6 +46,7 @@ const PAGE_TITLES: Record<string, string> = {
   kcal: 'Kcal',
   vecka: 'Vecka',
   halsa: 'Hälsa',
+  system: 'System',
 };
 
 function pageTitle(id: string): string {
@@ -77,6 +81,7 @@ export class GlassHub extends GlassBaseElement {
   @state() private _openTodo = false;
   @state() private _openCalendar = false;
   @state() private _openHealth: HealthSection | null = null;
+  @state() private _openSystem: SystemSection | null = null;
   @state() private _weatherBgOn = getWeatherBgEnabled();
 
   private _override: ThemeOverride = getStoredOverride();
@@ -216,6 +221,7 @@ export class GlassHub extends GlassBaseElement {
     this.addEventListener('hub-todo-open', this._onTodoOpen);
     this.addEventListener('hub-calendar-open', this._onCalendarOpen);
     this.addEventListener('hub-health-open', this._onHealthOpen as EventListener);
+    this.addEventListener('hub-system-open', this._onSystemOpen as EventListener);
     this.addEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -239,6 +245,7 @@ export class GlassHub extends GlassBaseElement {
     this.removeEventListener('hub-todo-open', this._onTodoOpen);
     this.removeEventListener('hub-calendar-open', this._onCalendarOpen);
     this.removeEventListener('hub-health-open', this._onHealthOpen as EventListener);
+    this.removeEventListener('hub-system-open', this._onSystemOpen as EventListener);
     this.removeEventListener('hub-weather-bg-toggle', this._onWeatherBgToggle as EventListener);
   }
 
@@ -268,6 +275,10 @@ export class GlassHub extends GlassBaseElement {
 
   private _onHealthOpen = (e: CustomEvent<{ section: HealthSection }>): void => {
     this._openHealth = e.detail?.section ?? null;
+  };
+
+  private _onSystemOpen = (e: CustomEvent<{ section: SystemSection }>): void => {
+    this._openSystem = e.detail?.section ?? null;
   };
 
   private _onVacuumOpen = (): void => {
@@ -306,6 +317,7 @@ export class GlassHub extends GlassBaseElement {
     this._openTodo = false;
     this._openCalendar = false;
     this._openHealth = null;
+    this._openSystem = null;
   };
 
   willUpdate(changed: PropertyValues): void {
@@ -550,7 +562,12 @@ export class GlassHub extends GlassBaseElement {
                                 .hass=${this.hass}
                                 .config=${this._cfg}
                               ></hub-health-page>`
-                            : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
+                            : id === 'system'
+                              ? html`<hub-system-page
+                                  .hass=${this.hass}
+                                  .config=${this._cfg}
+                                ></hub-system-page>`
+                              : html`<h1 class="page-placeholder">${pageTitle(id)}</h1>`}
             </section>
           `,
         )}
@@ -621,6 +638,13 @@ export class GlassHub extends GlassBaseElement {
             .config=${this._cfg}
             .section=${this._openHealth}
           ></hub-health-popup>`
+        : nothing}
+      ${this._openSystem
+        ? html`<hub-system-popup
+            .hass=${this.hass}
+            .config=${this._cfg}
+            .section=${this._openSystem}
+          ></hub-system-popup>`
         : nothing}
     `;
   }

@@ -51,6 +51,12 @@ export const icons: Record<string, TemplateResult> = {
   pulse: wrap(svg`
     <path d="M2.5 12h3.2l2-5 3.4 10 2.6-6.4 1.7 3.4h5.6"></path>
   `),
+  // Infrastructure: two stacked units with a status dot — a rack, not a "cloud".
+  server: wrap(svg`
+    <rect x="4" y="4" width="16" height="6.5" rx="1.6"></rect>
+    <rect x="4" y="13.5" width="16" height="6.5" rx="1.6"></rect>
+    <path d="M7.5 7.3h.01M7.5 16.8h.01"></path>
+  `),
   sun: wrap(svg`
     <circle cx="12" cy="12" r="4"></circle>
     <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path>

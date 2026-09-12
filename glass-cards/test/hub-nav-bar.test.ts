@@ -8,6 +8,8 @@ describe('navItem', () => {
     expect(navItem('media')).toEqual({ id: 'media', label: 'Media', icon: 'note', tone: 'teal' });
     expect(navItem('energi')).toEqual({ id: 'energi', label: 'Energi', icon: 'bolt', tone: 'green' });
     expect(navItem('kcal')).toEqual({ id: 'kcal', label: 'Kcal', icon: 'ring', tone: 'lavender' });
+    expect(navItem('halsa')).toEqual({ id: 'halsa', label: 'Hälsa', icon: 'pulse', tone: 'lavender' });
+    expect(navItem('system')).toEqual({ id: 'system', label: 'System', icon: 'server', tone: 'neutral' });
   });
 
   it('falls back to a neutral, icon-less item titled from the id', () => {

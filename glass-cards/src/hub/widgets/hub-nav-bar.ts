@@ -23,6 +23,9 @@ const NAV_MAP: Record<string, Omit<NavItem, 'id'>> = {
   kcal: { label: 'Kcal', icon: 'ring', tone: 'lavender' },
   vecka: { label: 'Vecka', icon: 'calendar', tone: 'lavender' },
   halsa: { label: 'Hälsa', icon: 'pulse', tone: 'lavender' },
+  // System has no domain colour on purpose — infrastructure is not a mood; the
+  // status pills inside the page carry the only semantic colour.
+  system: { label: 'System', icon: 'server', tone: 'neutral' },
 };
 
 /** Page id → tab bar item (label, icon, domain tone). Unknown ids fall back to

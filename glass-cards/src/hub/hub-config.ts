@@ -95,6 +95,51 @@ export interface HubHealthConfig {
   };
 }
 
+export interface HubSystemConfig {
+  // sensor.homelab_* REST sensors (Prometheus homelab:* recording rules), see
+  // .claude/ha-homelab-status.yaml. Every field optional: a missing entity
+  // renders as "–", never as 0.
+  cluster?: {
+    nodes_ready_entity?: string;
+    nodes_total_entity?: string;
+    cpu_entity?: string;
+    mem_entity?: string;
+    pods_running_entity?: string;
+    pods_unhealthy_entity?: string;
+    restarts_entity?: string;
+    temp_entity?: string;
+    flux_failing_entity?: string;
+    certs_days_entity?: string;
+    uptime_entity?: string;
+  };
+  nas?: {
+    cpu_entity?: string;
+    mem_entity?: string;
+    cpu_temp_entity?: string;
+    nvme_temp_entity?: string;
+    volume1_free_entity?: string;   // TB
+    volume1_used_entity?: string;   // %
+    volume2_free_entity?: string;   // GB
+    volume2_used_entity?: string;   // %
+    containers_entity?: string;
+    uptime_entity?: string;
+    backup_age_entity?: string;     // hours
+    backup_size_entity?: string;    // GB
+  };
+  media?: {
+    jellyfin_streams_entity?: string;
+    jellyfin_cpu_entity?: string;   // cores
+    jellyfin_mem_entity?: string;   // GB rss
+    torrent_up_entity?: string;     // MB/s
+    torrent_down_entity?: string;   // MB/s
+  };
+  alerts?: {
+    count_entity?: string;
+    names_entity?: string;          // state = alert names or "OK"
+  };
+  grafana_url?: string;             // shown in the Drift popup as where to dig deeper
+}
+
 export interface HubConfig extends LovelaceCardConfig {
   pages?: string[];
   weather_entity: string;
@@ -118,6 +163,7 @@ export interface HubConfig extends LovelaceCardConfig {
   media_players: { entity: string; name: string }[];
   kcal?: { today_entity: string; forecast_entity: string; planner_entity?: string };
   health?: HubHealthConfig;
+  system?: HubSystemConfig;         // System page — cluster + NAS status
   todo_entity?: string;             // todo.att_gora — shared to-do list
   calendar?: HubCalendarConfig;
   scenes?: { entity: string; name: string; icon: string }[];

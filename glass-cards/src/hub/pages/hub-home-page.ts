@@ -4,6 +4,7 @@ import { GlassBaseElement } from '../../glass-base-element.js';
 import { hubTokens } from '../../styles/tokens.js';
 import type { HubChipTone } from '../widgets/hub-status-chip.js';
 import { numericState, scoreTone, formatSleepDuration } from '../health-model.js';
+import { overallStatus } from '../system-model.js';
 import type { HubConfig } from '../hub-config.js';
 import '../widgets/hub-weather-bg.js';
 import type { HubTheme } from '../theme-controller.js';
@@ -246,6 +247,38 @@ export class HubHomePage extends GlassBaseElement {
         active: true,
         goto: 'halsa',
       });
+    }
+
+    // Drift — the one chip that may go coral. Green "OK" is deliberately quiet;
+    // the label only says something when the System page has something to say.
+    // Hidden when the sensors are absent rather than showing a dash.
+    if (cfg.system) {
+      const sys = cfg.system;
+      const num = (e: string | undefined): number | null => (e ? numericState(this.getState(e)) : null);
+      const status = overallStatus({
+        nodesReady: num(sys.cluster?.nodes_ready_entity),
+        nodesTotal: num(sys.cluster?.nodes_total_entity),
+        alerts: num(sys.alerts?.count_entity),
+        fluxFailing: num(sys.cluster?.flux_failing_entity),
+        podsUnhealthy: num(sys.cluster?.pods_unhealthy_entity),
+        restarts1h: num(sys.cluster?.restarts_entity),
+        clusterTemp: num(sys.cluster?.temp_entity),
+        nasCpuTemp: num(sys.nas?.cpu_temp_entity),
+        nasNvmeTemp: num(sys.nas?.nvme_temp_entity),
+        volume1UsedPct: num(sys.nas?.volume1_used_entity),
+        volume2UsedPct: num(sys.nas?.volume2_used_entity),
+        backupAgeHours: num(sys.nas?.backup_age_entity),
+        certDays: num(sys.cluster?.certs_days_entity),
+      });
+      if (status.tone !== 'neutral') {
+        chips.push({
+          icon: 'server',
+          label: status.tone === 'green' ? 'System OK' : status.label,
+          tone: status.tone,
+          active: status.tone !== 'green',
+          goto: 'system',
+        });
+      }
     }
 
     // (The meal plan lives in the bottom band's hub-meal-card, not a chip.)

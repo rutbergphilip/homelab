@@ -28,7 +28,9 @@ nohup python3 /nas-apps/nas-backup/dedup-media.py --apply > /nas-apps/nas-backup
 
 Result 2026-09-12: dry run 1666 files / 4.58 TB linkable, 1307 no-match (torrent
 gone), 685 ambiguous (all `.rNN`/`.rar`/`.sfv` parts — see below), 0 mismatches, 28 min
-(head/tail reads on the RAID). `--apply` run the same afternoon.
+(head/tail reads on the RAID). `--apply` the same afternoon: 1666 linked, 4.58 TB freed, 0 errors, 22 min; /volume1 free
+4.70 → 9.28 TB (Prometheus `node_filesystem_avail_bytes`), Jellyfin/Sonarr/Radarr/qBittorrent
+all healthy afterwards.
 
 ### RAR release junk inside the media library
 

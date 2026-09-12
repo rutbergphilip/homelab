@@ -29,3 +29,7 @@ optiplex-gpu.yaml
 
 # NAS compose stacks
 nas/**/.env
+
+# Python bytecode from local stub tests (nas/nas-maint, nas/media-janitor)
+__pycache__/
+*.pyc

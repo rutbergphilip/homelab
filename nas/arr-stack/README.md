@@ -7,8 +7,8 @@ names, ports, mounts and env are identical — only `/config` moved to the SSD v
 
 | App | Host port | Config | Notes |
 |---|---|---|---|
-| sonarr | 38989 | `/volume2/nas-apps/sonarr/config` | `/series`, `/torrents` |
-| radarr | 37878 | `/volume2/nas-apps/radarr/config` | `/movies`, `/torrents` |
+| sonarr | 38989 | `/volume2/nas-apps/sonarr/config` | `/data` (TRaSH layout) |
+| radarr | 37878 | `/volume2/nas-apps/radarr/config` | `/data` (TRaSH layout) |
 | prowlarr | 39696 | `/volume2/nas-apps/prowlarr/config` | outbound proxy = `torrent-vpn-gluetun:8888` |
 | seerr | 35055 | `/volume2/nas-apps/seerr` → `/app/config` | talks to `jellyfin:8096` |
 
@@ -63,3 +63,20 @@ Sonarr and Radarr post health issues / restored, imports and manual-interaction 
 to a Home Assistant webhook, which forwards them to Philip's iPhone
 (`.claude/ha-alerts.yaml` mirrors the HA side). Seerr does the same for request
 available / failed / pending-approval.
+
+## arr-autoimport (2026-09-13)
+
+`arr-autoimport` (in this compose, image `rutbergphilip/arr-autoimport`) polls the
+Sonarr/Radarr queues every 2 min and finishes imports the arrs refuse on their own:
+downloads in `importBlocked` with "release was matched to series by ID. Automatic
+import is not possible" (Radarr: "Movie title mismatch"). That is every Swedish show
+kept under an English TVDB title — "Noll stjärnor med Erik och Lotta" is
+`Zero Stars Sweden` (tvdb 461570, no aliases); the grab works because Superbits tags
+releases with IMDb ids, the import then stalls, and Seerr/Jellyfin never see it. The
+service runs the arr's own manual-import preview and imports only files that map to
+the expected title with no rejections; everything else is logged and left. Keys come
+from read-only `config.xml` mounts. Details: `nas/arr-autoimport/README.md`.
+
+Per-show upstream fix (needs a TheTVDB login): add the Swedish title as an alias on
+thetvdb.com; Sonarr picks aliases up on its next series refresh. `Taskmaster (SE)`
+already carries the `Bast I Test` mapping, which is why it searches fine today.

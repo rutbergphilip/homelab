@@ -147,6 +147,31 @@ services:
     logging: *logging
     restart: unless-stopped
 
+  # arr-autoimport (added 2026-09-13): Sonarr/Radarr refuse to auto-import a finished
+  # download whose release title does not parse to the series/movie even though the
+  # grab was matched by IMDb id ("release was matched to series by ID. Automatic import
+  # is not possible") — every Swedish show under an English TVDB title (Noll stjärnor ↔
+  # "Zero Stars Sweden"). This poller runs the arr's own manual-import preview for such
+  # queue items and imports the files that map cleanly (no rejections), i.e. what a
+  # human does in the "Manual Import" modal. Keys from read-only config.xml mounts, like
+  # media-janitor. See nas/arr-autoimport/README.md.
+  arr-autoimport:
+    image: rutbergphilip/arr-autoimport:0.1.1
+    container_name: arr-autoimport
+    networks: [starrs]
+    depends_on: [sonarr, radarr]
+    environment:
+      TZ: Europe/Stockholm
+      AI_INTERVAL: "120"
+      AI_RETRY_AFTER: "1800"
+      AI_DRY_RUN: "false"
+    volumes:
+      - /volume2/nas-apps/sonarr/config/config.xml:/keys/sonarr.xml:ro
+      - /volume2/nas-apps/radarr/config/config.xml:/keys/radarr.xml:ro
+    mem_limit: 64m
+    logging: *logging
+    restart: unless-stopped
+
 networks:
   starrs:
     external: true

@@ -88,9 +88,15 @@ export class HubNavBar extends LitElement {
         padding: 4px;
         min-width: 0;
       }
+      /* Grid, not flex: the slots must size the capsule. With flex items sized
+         by flex-basis, Chromium counts the basis toward the container's
+         intrinsic width but Firefox and WebKit count only the label text — the
+         capsule collapsed to ~240px and five items spilled out of it (Zen,
+         Safari). Explicit grid tracks are sized identically everywhere. */
       .items {
         position: relative;
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(var(--n), var(--hub-nav-slot, 72px));
         align-items: stretch;
         min-width: 0;
         flex: 1 1 auto;
@@ -139,7 +145,6 @@ export class HubNavBar extends LitElement {
 
       .item {
         position: relative;
-        flex: 0 0 72px;
         min-width: 0;
         display: flex;
         flex-direction: column;
@@ -229,8 +234,8 @@ export class HubNavBar extends LitElement {
         nav {
           flex: 1 1 auto;
         }
-        .item {
-          flex: 1 1 0;
+        .items {
+          --hub-nav-slot: minmax(0, 1fr);
         }
         .label {
           font-size: 10px;

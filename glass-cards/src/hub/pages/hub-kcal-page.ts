@@ -92,7 +92,7 @@ export class HubKcalPage extends GlassBaseElement {
 
       /* ── Header ────────────────────────────────────────────── */
       .header {
-        padding-right: 56px; /* clear the corner theme toggle */
+        padding-right: var(--hub-corner-clear, 56px); /* clear the corner theme toggle */
         margin-bottom: clamp(14px, 2vh, 22px);
         display: flex;
         align-items: baseline;
@@ -119,14 +119,17 @@ export class HubKcalPage extends GlassBaseElement {
         flex: 1;
         min-height: 0;
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        /* minmax(0, …): a bare 1fr track never shrinks below its content's
+           min-content width, and the nowrap meal names made the single phone
+           column ~120px wider than the screen. */
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: var(--hub-gap);
       }
       /* Stack only on genuinely narrow / portrait panels; landscape walls keep
          both columns side by side and fit without vertical scroll. */
       @media (max-width: 760px) {
         .grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
       }
       .card {

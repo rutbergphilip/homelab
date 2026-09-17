@@ -47,7 +47,7 @@ export class HubPlannerPage extends GlassBaseElement {
       }
 
       .header {
-        padding-right: 56px;
+        padding-right: var(--hub-corner-clear, 56px);
         margin-bottom: clamp(14px, 2vh, 22px);
         display: flex;
         align-items: baseline;

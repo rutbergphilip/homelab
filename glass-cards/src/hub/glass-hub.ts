@@ -35,6 +35,7 @@ import './widgets/hub-calendar-popup.js';
 import './widgets/hub-health-popup.js';
 import './widgets/hub-system-popup.js';
 import './widgets/hub-nav-bar.js';
+import { nextKioskSearch, PHONE_MAX_WIDTH } from './kiosk-url.js';
 
 const DEFAULT_PAGES = ['hem', 'ljus', 'media', 'energi', 'kcal', 'vecka', 'halsa', 'system'];
 
@@ -111,10 +112,55 @@ export class GlassHub extends GlassBaseElement {
         transition: background var(--hub-fade) ease;
         -webkit-tap-highlight-color: transparent;
       }
-      /* Outside kiosk mode HA still shows its own header on top of us; inset
-         the whole hub so the top row clears it. HA exposes --header-height. */
+      /* Notch / status bar: in the companion app the viewport runs under it.
+         HA mirrors env(safe-area-inset-*) into --safe-area-inset-* (and the app
+         can override them), so prefer its variables. */
+      :host {
+        --hub-safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+        --hub-page-safe-top: 0px;
+        padding-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+        padding-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+      }
+      /* HA's header showing: inset the whole hub so the top row clears it. That
+         header is --header-height PLUS the top safe-area inset — reserving only
+         the toolbar height left the first ~60px of every page under the header
+         on an iPhone. */
       :host(:not([kiosk])) {
-        padding-top: var(--header-height, 56px);
+        padding-top: calc(var(--header-height, 56px) + var(--hub-safe-top));
+      }
+      /* Fullscreen: nothing above us, so the pages themselves run to the top
+         edge (the Hem sky continues under the status bar) and only their
+         content is pushed below the notch. */
+      :host([kiosk]) {
+        --hub-page-safe-top: var(--hub-safe-top);
+      }
+      /* Scrolling content passes under the status bar in fullscreen — blur it
+         there so the clock and battery stay readable. Zero-height (invisible)
+         wherever there is no inset. */
+      .status-scrim {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--hub-safe-top);
+        z-index: 20;
+        pointer-events: none;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        -webkit-mask-image: linear-gradient(#000 55%, transparent);
+        mask-image: linear-gradient(#000 55%, transparent);
+      }
+      :host([kiosk]) .status-scrim {
+        display: block;
+      }
+      /* Page headers keep a 56px right gutter from when the theme toggle sat in
+         the top corner. A phone cannot spare it (it pushed header actions to
+         mid-row), and nothing lives in that corner any more. */
+      @media (max-width: 600px) {
+        :host {
+          --hub-corner-clear: 0px;
+        }
       }
 
       .strip {
@@ -128,6 +174,7 @@ export class GlassHub extends GlassBaseElement {
         flex: 0 0 calc(100% / var(--page-count));
         height: 100%;
         box-sizing: border-box;
+        padding-top: var(--hub-page-safe-top);
         padding-bottom: var(--hub-nav-h);
         overflow-y: auto;
         overflow-x: hidden;
@@ -160,9 +207,10 @@ export class GlassHub extends GlassBaseElement {
 
       /* Quiet control cluster — slotted into the nav bar's right edge. */
       .theme-toggle,
+      .menu-toggle,
       .kiosk-toggle {
-        width: 48px;
-        height: 48px;
+        width: 42px;
+        height: 42px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -176,9 +224,22 @@ export class GlassHub extends GlassBaseElement {
         transition: color 150ms ease;
       }
       .theme-toggle svg,
+      .menu-toggle svg,
       .kiosk-toggle svg {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
+      }
+      /* HA's sidebar has no button once its header is hidden; on a phone the
+         controls popover offers one. Wide screens in fullscreen are the wall
+         panel, where the sidebar is deliberately out of reach. */
+      /* (after the shared button rule above, so this display wins) */
+      .menu-toggle {
+        display: none;
+      }
+      @media (max-width: 600px) {
+        :host([kiosk]) .menu-toggle {
+          display: flex;
+        }
       }
       .theme-toggle .glyph-auto {
         font-family: var(--hub-font-display);
@@ -207,6 +268,7 @@ export class GlassHub extends GlassBaseElement {
     this._page = lastActivePage;   // survive a re-mount without snapping to Hem
     this._resetIdle();
     this._startKioskDrawerShim();
+    this._startHeaderWatch();
     installForceHook();
     this.addEventListener('pointerdown', this._onAnyInteraction);
     this.addEventListener('hub-room-open', this._onRoomOpen as EventListener);
@@ -228,6 +290,7 @@ export class GlassHub extends GlassBaseElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._clearIdle();
+    this._stopHeaderWatch();
     if (this._kioskTimer !== undefined) {
       clearInterval(this._kioskTimer);
       this._kioskTimer = undefined;
@@ -348,18 +411,59 @@ export class GlassHub extends GlassBaseElement {
   }
 
   // ── Kiosk toggle ─────────────────────────────────────────
-  // The kiosk-mode plugin and the drawer shim both read the ?kiosk param at
-  // load, so flipping it means rewriting the URL and reloading. Any other
-  // query params are preserved (none are expected in normal use).
+  // The kiosk-mode plugin reads the URL once at load, so flipping fullscreen
+  // means rewriting the query string and reloading — see kiosk-url.ts for why
+  // that is more than toggling ?kiosk on a phone.
   private _toggleKiosk(): void {
-    const params = new URLSearchParams(location.search);
-    if (params.has('kiosk')) {
-      params.delete('kiosk');
-    } else {
-      params.set('kiosk', 'true');
-    }
-    const qs = params.toString();
+    const narrow = window.innerWidth <= PHONE_MAX_WIDTH;
+    const qs = nextKioskSearch(location.search, this.kiosk, narrow);
     location.assign(location.pathname + (qs ? `?${qs}` : ''));
+  }
+
+  private _openHaMenu(): void {
+    this.dispatchEvent(new CustomEvent('hass-toggle-menu', { bubbles: true, composed: true }));
+  }
+
+  // ── Header detection ─────────────────────────────────────
+  // `kiosk` starts from the URL, but the header can also be hidden with no
+  // param at all (kiosk_mode.mobile_settings on a phone) or stay visible
+  // despite one. The top inset must follow the header that is actually there,
+  // so measure it: walk up to hui-root and look at its .header. The plugin
+  // applies its styles a beat after load, hence the short polling window.
+  private _headerTimer?: number;
+
+  private _haHeaderHidden(): boolean | undefined {
+    let node: Node | null = this;
+    while (node) {
+      if (node instanceof HTMLElement && node.localName === 'hui-root') {
+        const header = node.shadowRoot?.querySelector('.header') as HTMLElement | null;
+        if (!header) return undefined;
+        return getComputedStyle(header).display === 'none';
+      }
+      node = node.parentNode ?? (node as ShadowRoot).host ?? null;
+    }
+    return undefined;
+  }
+
+  private _syncKioskFromHeader = (): void => {
+    const hidden = this._haHeaderHidden();
+    if (hidden !== undefined && hidden !== this.kiosk) this.kiosk = hidden;
+  };
+
+  private _startHeaderWatch(): void {
+    const start = Date.now();
+    this._syncKioskFromHeader();
+    this._headerTimer = window.setInterval(() => {
+      this._syncKioskFromHeader();
+      if (Date.now() - start > 8000) this._stopHeaderWatch();
+    }, 250);
+  }
+
+  private _stopHeaderWatch(): void {
+    if (this._headerTimer !== undefined) {
+      clearInterval(this._headerTimer);
+      this._headerTimer = undefined;
+    }
   }
 
   // ── Idle return ──────────────────────────────────────────
@@ -573,7 +677,16 @@ export class GlassHub extends GlassBaseElement {
         )}
       </div>
 
+      <div class="status-scrim"></div>
       <hub-nav-bar .pages=${pages} .active=${this._page}>
+        <button
+          slot="controls"
+          class="menu-toggle"
+          aria-label="Home Assistant-meny"
+          @click=${this._openHaMenu}
+        >
+          ${icons.menu}
+        </button>
         <button
           slot="controls"
           class="kiosk-toggle"

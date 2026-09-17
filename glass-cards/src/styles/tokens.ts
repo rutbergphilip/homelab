@@ -37,8 +37,10 @@ export const hubTokens = css`
     --hub-track: #1E2B31;
     --hub-shadow: none;
     --hub-scrim: rgba(0, 0, 0, 0.4);
-    --hub-navbar-bg: rgba(19, 19, 22, 0.72);
-    --hub-navbar-border: rgba(255, 255, 255, 0.06);
+    --hub-navbar-bg: rgba(26, 26, 31, 0.62);
+    --hub-navbar-border: rgba(255, 255, 255, 0.09);
+    --hub-navbar-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    --hub-navbar-lens-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
   :host([data-theme='dag']) {
     --hub-surface: #F3F0E9;
@@ -62,8 +64,11 @@ export const hubTokens = css`
     --hub-track: #EDE9DE;
     --hub-shadow: 0 1px 6px rgba(60,50,30,.05);
     --hub-scrim: rgba(40, 35, 25, 0.25);
-    --hub-navbar-bg: rgba(250, 248, 243, 0.72);
-    --hub-navbar-border: rgba(60, 50, 30, 0.08);
+    --hub-navbar-bg: rgba(252, 250, 245, 0.6);
+    --hub-navbar-border: rgba(255, 255, 255, 0.75);
+    --hub-navbar-shadow: 0 10px 30px rgba(60, 50, 30, 0.16), 0 1px 3px rgba(60, 50, 30, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    --hub-navbar-lens-shadow: 0 1px 4px rgba(60, 50, 30, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   }
   :host {
     /* Ink for text sitting directly on weather footage — always light with a
@@ -79,7 +84,14 @@ export const hubTokens = css`
     --hub-radius-pill: 99px;
     --hub-gap: 12px;
     --hub-page-pad: clamp(20px, 3vw, 40px);
-    --hub-nav-h: calc(64px + env(safe-area-inset-bottom, 0px));
+    /* Floating nav dock. --hub-nav-h is the space a page reserves at its bottom
+       so its last row can scroll clear of the dock: capsule + gap below + a
+       4px breath above = the same 64px the old full-width bar took, so the
+       1280×800 no-scroll fit is unchanged. On phones the dock rides just above
+       the home indicator instead of sitting on the full safe-area inset. */
+    --hub-nav-capsule-h: 54px;
+    --hub-nav-bottom: max(6px, calc(env(safe-area-inset-bottom, 0px) - 12px));
+    --hub-nav-h: calc(var(--hub-nav-capsule-h) + var(--hub-nav-bottom) + 4px);
     --hub-fade: 600ms;
   }
 `;

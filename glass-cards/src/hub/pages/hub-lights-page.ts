@@ -94,7 +94,7 @@ export class HubLightsPage extends GlassBaseElement {
         justify-content: space-between;
         gap: 16px;
         /* keep the whole-home actions clear of the theme toggle in the corner */
-        padding-right: 56px;
+        padding-right: var(--hub-corner-clear, 56px);
         margin-bottom: 20px;
       }
       .heading {
@@ -179,9 +179,23 @@ export class HubLightsPage extends GlassBaseElement {
           columns: 2;
         }
       }
+      /* Phone: multi-column layout inside a height-limited box does not scroll
+         — it spills extra columns off to the RIGHT (every room after the first
+         landed outside the viewport). Drop the columns and the fixed height and
+         let the hub's page container do the vertical scrolling. */
       @media (max-width: 600px) {
+        :host {
+          height: auto;
+        }
+        .page {
+          height: auto;
+          min-height: 100%;
+        }
         .body {
-          columns: 1;
+          columns: auto;
+          flex: none;
+          overflow: visible;
+          padding-bottom: 0;
         }
       }
 

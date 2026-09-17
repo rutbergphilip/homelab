@@ -46,7 +46,7 @@ export class HubEnergyPage extends GlassBaseElement {
 
       /* ── Header: the current price, oversized ─────────────── */
       .header {
-        padding-right: 56px; /* clear the corner theme toggle */
+        padding-right: var(--hub-corner-clear, 56px); /* clear the corner theme toggle */
         margin-bottom: 8px;
       }
       .view-toggle {

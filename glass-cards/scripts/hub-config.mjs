@@ -4,6 +4,15 @@ export const hubDashboard = {
   icon: 'mdi:view-dashboard',
   config: {
     title: 'Hub',
+    // kiosk-mode plugin (/local/kiosk-mode.js): on a phone the hub IS the app,
+    // so HA's header goes away without needing ?kiosk=true (the companion app
+    // always opens the plain URL). The hub measures the header, so its top
+    // inset follows automatically; the dock's "…" popover has a menu button
+    // for HA's sidebar and a fullscreen toggle that adds ?disable_km.
+    // custom_width must match PHONE_MAX_WIDTH in src/hub/kiosk-url.ts.
+    kiosk_mode: {
+      mobile_settings: { hide_header: true, custom_width: 600 },
+    },
     views: [{
       title: 'Hub', type: 'panel', path: 'main',
       cards: [{

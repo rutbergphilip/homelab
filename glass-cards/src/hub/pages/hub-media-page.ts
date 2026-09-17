@@ -79,7 +79,7 @@ export class HubMediaPage extends GlassBaseElement {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        padding-right: 56px; /* clear the corner theme toggle */
+        padding-right: var(--hub-corner-clear, 56px); /* clear the corner theme toggle */
         margin-bottom: 20px;
       }
       .tab {
@@ -251,12 +251,6 @@ export class HubMediaPage extends GlassBaseElement {
         margin-top: auto;
       }
 
-      @media (max-width: 600px) {
-        .hero {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-      }
     `,
   ];
 

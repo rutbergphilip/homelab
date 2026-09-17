@@ -55,7 +55,7 @@ export class HubSystemPage extends GlassBaseElement {
         padding-bottom: clamp(48px, 6vh, 66px);
       }
       .header {
-        padding-right: 56px; /* clear the corner theme toggle */
+        padding-right: var(--hub-corner-clear, 56px); /* clear the corner theme toggle */
         margin-bottom: clamp(14px, 2vh, 22px);
         display: flex;
         align-items: baseline;
@@ -105,6 +105,14 @@ export class HubSystemPage extends GlassBaseElement {
         margin-left: auto;
         font: 500 12.5px var(--hub-font-body);
         color: var(--hub-text-dim);
+      }
+      /* Phone: the hint cannot share the title row — give it its own, flush left
+         instead of a right-aligned orphan. */
+      @media (max-width: 600px) {
+        .hint {
+          margin-left: 0;
+          flex-basis: 100%;
+        }
       }
       .grid {
         flex: 1;

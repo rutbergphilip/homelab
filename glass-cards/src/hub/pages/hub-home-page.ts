@@ -56,6 +56,11 @@ export class HubHomePage extends GlassBaseElement {
         min-height: 100%;
         position: relative;
       }
+      /* Fullscreen on a phone: the page is pushed below the status bar, but the
+         sky should run all the way up behind it. */
+      hub-weather-bg {
+        top: calc(-1 * var(--hub-page-safe-top, 0px));
+      }
       .page {
         flex: 1;
         box-sizing: border-box;
@@ -79,7 +84,7 @@ export class HubHomePage extends GlassBaseElement {
         justify-content: flex-end;
         gap: 8px;
         max-width: 56%;
-        padding-right: 56px; /* clear the corner theme toggle */
+        padding-right: var(--hub-corner-clear, 56px); /* clear the corner theme toggle */
       }
       /* The grid grows into spare height but its flex-basis is the true content
          size and it never shrinks below min-content — so a shrunk band can never

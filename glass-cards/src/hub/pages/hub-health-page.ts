@@ -45,7 +45,7 @@ export class HubHealthPage extends GlassBaseElement {
       }
 
       .header {
-        padding-right: 56px; /* clear the corner theme toggle */
+        padding-right: var(--hub-corner-clear, 56px); /* clear the corner theme toggle */
         margin-bottom: clamp(14px, 2vh, 22px);
         display: flex;
         align-items: baseline;

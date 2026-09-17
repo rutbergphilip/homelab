@@ -50,14 +50,28 @@ spec:
             summary: "nas-apps snapshot is stale"
             description: "No successful nas-backup run in 36 h (nas/nas-backup, 04:00 job). Check the nas-backup container log."
         - alert: NasContainerNearMemoryLimit
+          # Memory the kernel can NOT give back: working set minus ACTIVE file cache.
+          # cAdvisor's working set only subtracts inactive file pages, so a container
+          # that reads a lot of media keeps gigabytes of hot page cache in it — Jellyfin
+          # sat at 92 % "used" with 0.3 GiB rss, 11.5 GiB cache, failcnt 0 and no OOM
+          # events, and this alert flapped five times in three days (2026-09-15..17,
+          # Intro Skipper / trickplay after imports), two phone pushes each. tmpfs
+          # (/cache/transcodes) is shmem on the anon LRU, so it still counts here —
+          # that is the part that can really run Jellyfin into its limit.
           expr: |
-            container_memory_working_set_bytes{job="nas-cadvisor",name!=""}
+            (
+                container_memory_working_set_bytes{job="nas-cadvisor",name!=""}
+              - container_memory_total_active_file_bytes{job="nas-cadvisor",name!=""}
+            )
               / (container_spec_memory_limit_bytes{job="nas-cadvisor",name!=""} > 0 < 1e15) > 0.9
-          for: 10m
+          for: 15m
+          # Hold the alert briefly after the value drops so a borderline container
+          # produces one firing + one resolved push, not a pair per oscillation.
+          keep_firing_for: 15m
           labels: { severity: warning }
           annotations:
             summary: "{{ $labels.name }} at {{ $value | humanizePercentage }} of its memory limit"
-            description: "Container {{ $labels.name }} on the NAS has been above 90 % of its mem_limit for 10 min (OOM-kill risk)."
+            description: "Container {{ $labels.name }} on the NAS has held more than 90 % of its mem_limit in non-reclaimable memory (rss + tmpfs, page cache excluded) for 15 min — OOM-kill risk."
         - alert: NasContainerMissing
           # One series per missing container, but only while cAdvisor is actually
           # delivering container metrics — otherwise NasCadvisorDown covers it and this

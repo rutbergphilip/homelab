@@ -80,3 +80,21 @@ from read-only `config.xml` mounts. Details: `nas/arr-autoimport/README.md`.
 Per-show upstream fix (needs a TheTVDB login): add the Swedish title as an alias on
 thetvdb.com; Sonarr picks aliases up on its next series refresh. `Taskmaster (SE)`
 already carries the `Bast I Test` mapping, which is why it searches fine today.
+
+## Quality profiles + Unpackerr size cap (2026-09-17)
+
+Seerr's default profile in both arrs is **Highest Possible** (id 7). After a Fallout request
+came back with 1 of 8 episodes, it was rebuilt (in the arr UIs, not in git):
+
+- **Sonarr:** one quality group per resolution (720p / 1080p / 2160p), upgrades off. Inside a
+  group custom formats rank releases: `Season Pack` +1000, `Source: Remux` +300, `Bluray` +200,
+  `WEB-DL` +100, `WEBRip` +50, Repack/Proper +5..7. Media Management → Propers and Repacks =
+  *Do not prefer*. Reason: Sonarr sorts by quality, then revision, then format score — with
+  Blu-ray ranked above WEB, a single stray Blu-ray episode was grabbed first and every season
+  pack was then skipped as overlapping.
+- **Radarr:** ladder unchanged (already highest-first); BR-DISK, Raw-HD, CAM, TELESYNC,
+  TELECINE, WORKPRINT, DVDSCR, REGIONAL and Unknown are disabled — disc images cannot be
+  imported, and with upgrades off a cinema rip would be final.
+- **Unpackerr** 0.16 rejects archives whose extracted size passes a per-app cap (Sonarr 20GB,
+  Radarr 75GB): `extraction failed: extracted size exceeds maximum bytes`. 4K Blu-ray
+  episodes are 25–30GB. `UN_*_MAX_BYTES: 150GB` in the compose file.

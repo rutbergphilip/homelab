@@ -136,11 +136,17 @@ services:
       UN_SONARR_0_PROTOCOLS: torrent
       UN_SONARR_0_DELETE_DELAY: 10m
       UN_SONARR_0_DELETE_ORIG: "false"
+      # Unpackerr 0.16 caps the extracted size per archive (defaults: Sonarr 20GB,
+      # Radarr 75GB) and fails with "extracted size exceeds maximum bytes". A 4K
+      # Blu-ray episode is 25-30GB, so three Fallout S02 episodes sat unimported for
+      # 10 h (2026-09-17). Keep a cap as zip-bomb protection, just a realistic one.
+      UN_SONARR_0_MAX_BYTES: 150GB
       UN_RADARR_0_URL: http://radarr:7878
       UN_RADARR_0_PATHS_0: /data/torrents
       UN_RADARR_0_PROTOCOLS: torrent
       UN_RADARR_0_DELETE_DELAY: 10m
       UN_RADARR_0_DELETE_ORIG: "false"
+      UN_RADARR_0_MAX_BYTES: 150GB   # 4K remux movies pass the 75GB default
     volumes:
       - /volume1/homelab/streaming:/data
     mem_limit: 512m

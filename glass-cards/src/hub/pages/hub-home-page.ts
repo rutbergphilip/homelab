@@ -56,10 +56,13 @@ export class HubHomePage extends GlassBaseElement {
         min-height: 100%;
         position: relative;
       }
-      /* Fullscreen on a phone: the page is pushed below the status bar, but the
-         sky should run all the way up behind it. */
+      /* The hub pads each page at the top (status bar, fullscreen on a phone)
+         and at the bottom (room for the floating dock). Content respects that
+         padding; the sky must not — it runs up behind the status bar and down
+         behind the dock, otherwise the dock floats over a flat band. */
       hub-weather-bg {
         top: calc(-1 * var(--hub-page-safe-top, 0px));
+        bottom: calc(-1 * var(--hub-nav-h, 0px));
       }
       .page {
         flex: 1;

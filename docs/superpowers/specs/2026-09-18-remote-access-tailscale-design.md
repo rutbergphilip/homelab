@@ -57,10 +57,11 @@ rejected:
    (192.168.50.23) through the tunnel, exactly as at home; Pi-hole forwards
    the zone to k8s-gateway as it already does. Public names keep working
    (Pi-hole recurses upstream).
-5. **NAS shell**: UGOS's own SSH service (Control Panel → Terminal), reachable
-   only on the LAN and thus only through the tailnet from outside. UGOS SSH
-   authenticates with the UGOS user password; add a key with `ssh-copy-id`
-   from the laptop once.
+5. **NAS shell**: UGOS's own SSH service (Control Panel → Terminal, port 22,
+   auto-shutdown "Never"), reachable only on the LAN and thus only through the
+   tailnet from outside. User `poweruser`, key auth (`~/.ssh/1password.pub`
+   installed with `ssh-copy-id` 2026-09-18). `docker` on the NAS still needs
+   `sudo` with a password, so container inspection stays a UGOS-UI job.
 
 Both routers advertise the same prefix; Tailscale marks one primary and fails
 over within seconds when it disappears. That is the point of having two: when
@@ -72,9 +73,9 @@ and vice versa.
 - **MacBook**: Tailscale app already installed and logged in; accepts routes
   and MagicDNS by default (`tailscale debug prefs`: RouteAll + CorpDNS true).
   Nothing to change. `kubeconfig`/`talosconfig` unchanged.
-- **iPhone**: node `iphone172` has been offline 241 days → reinstall the
-  Tailscale app and sign in with Google. Subnet routes are accepted by default
-  on iOS.
+- **iPhone**: re-enrolled 2026-09-18 as node `iphone` (the old `iphone172` had
+  been offline 241 days). Subnet routes are accepted by default on iOS; Philip
+  confirmed UGOS + HA load on mobile data.
 - **Claude Code**: runs on the MacBook, so it inherits all of the above; the
   Chrome extension too.
 
@@ -85,10 +86,11 @@ and vice versa.
   Consequence: HA's `trusted_networks` passwordless login applies to tailnet
   clients as well. Acceptable on a single-user tailnet where every device is
   Philip's; revisit if a second user is ever added (posture/tag the LAN grant).
-- The tailnet also contains two cloud VMs (`supabase`, `pathfolio-prod`).
-  `autogroup:member` includes them, so they *could* reach the LAN through the
-  routers. Recommended follow-up for Philip: remove `pathfolio-prod` (offline
-  203 days) and tag `supabase` (tagged nodes are excluded from the grant).
+- The tailnet also contained two cloud VMs (`supabase`, `pathfolio-prod`).
+  `autogroup:member` would have let them reach the LAN through the routers.
+  Closed the same day: `pathfolio-prod` (offline 203 days) deleted, `supabase`
+  tagged `tag:cloud` (owner `autogroup:admin`; tagged nodes are not members, so
+  no LAN access; the policy tests pin this).
 - The API access token used for setup lives in `.claude/tailscale-api-token`
   (gitignored), expires 2026-12-17, can be revoked at Settings → Keys.
 - The reusable k8s auth key is only ever stored SOPS-encrypted. The NAS key is

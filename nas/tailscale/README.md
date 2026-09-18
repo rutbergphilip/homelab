@@ -17,8 +17,9 @@ half is the `homelab-k8s` pod in `kubernetes/apps/network/tailscale/`.
 
 1. Generate a **single-use**, **pre-authorized** auth key tagged
    `tag:subnet-router` (Tailscale admin console → Settings → Keys, or
-   `POST /api/v2/tailnet/-/keys` with the API token in `.claude/tailscale-api-token`).
-   One day of validity is plenty — the key is consumed at first start.
+   `POST /api/v2/tailnet/-/keys` with a token from `scripts/tailscale-api-token.sh`).
+   One day of validity is plenty — the key is consumed at first start; the node
+   identity then lives in the state volume and never needs a key again.
 2. Create the folder `nas-apps/tailscale/state` in Files first — UGOS refuses to
    deploy a project whose bind-mount source does not exist yet
    (`Volumes parameter configuration error: NAS path not found`).

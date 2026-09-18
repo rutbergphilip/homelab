@@ -38,9 +38,12 @@ rejected:
    (`kubernetes/apps/network/tailscale/`, app-template HelmRelease, Flux).
    Userspace networking (no NET_ADMIN, no tun, runs as `nobody`, read-only
    rootfs). Node state in the Secret `tailscale-state` (RBAC in `rbac.yaml`)
-   so the pod can move between nodes without changing identity. Auth key in
-   `secret.sops.yaml` (`tailscale-auth`, key `TS_AUTHKEY`; reusable, tagged,
-   90-day). Health via containerboot's `/healthz` on :9002.
+   so the pod can move between nodes without changing identity. Credential in
+   `secret.sops.yaml` (`tailscale-auth`, key `TS_AUTHKEY`): since the evening of
+   2026-09-18 an **OAuth client secret** (`tskey-client-…?ephemeral=false`,
+   scope auth_keys for `tag:subnet-router`) rather than a 90-day auth key —
+   containerboot mints a fresh tagged key on every start, so nothing expires.
+   Health via containerboot's `/healthz` on :9002.
 2. **`homelab-nas`** — UGOS Docker project (`nas/tailscale/compose.yaml`).
    Kernel mode (host network, NET_ADMIN, `/dev/net/tun` — the same profile
    gluetun already runs with). State on `/volume2/nas-apps/tailscale/state`.
@@ -91,10 +94,14 @@ and vice versa.
   Closed the same day: `pathfolio-prod` (offline 203 days) deleted, `supabase`
   tagged `tag:cloud` (owner `autogroup:admin`; tagged nodes are not members, so
   no LAN access; the policy tests pin this).
-- The API access token used for setup lives in `.claude/tailscale-api-token`
-  (gitignored), expires 2026-12-17, can be revoked at Settings → Keys.
-- The reusable k8s auth key is only ever stored SOPS-encrypted. The NAS key is
-  single-use and expires after one day.
+- No long-lived API token any more. `scripts/tailscale-api-token.sh` mints a
+  one-hour token from the OAuth client in `.claude/tailscale-oauth.env`
+  (gitignored; scopes devices:core write, auth_keys write, dns read, policy read
+  — policy/DNS writes stay human-only). The setup-time 90-day token and the
+  reusable auth key were revoked the same evening.
+- Two OAuth clients exist (Settings → Trust credentials): `homelab-k8s-router`
+  (auth_keys only) and `claudecodeautomation`. Client secrets never expire; revoke
+  there if either leaks. The NAS key was single-use and is spent.
 
 ### Verification
 

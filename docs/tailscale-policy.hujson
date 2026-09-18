@@ -1,7 +1,8 @@
 // Tailnet policy for the homelab remote-access setup (applied 2026-09-18, tag:cloud added the same day).
 // Mirror of what is live in the Tailscale admin console; apply with
-//   curl -u "$(cat .claude/tailscale-api-token):" -H 'Content-Type: application/hujson' \
+//   curl -u "<api token>:" -H 'Content-Type: application/hujson' \
 //     --data-binary @docs/tailscale-policy.hujson https://api.tailscale.com/api/v2/tailnet/-/acl
+// (Claude's OAuth client is read-only for the policy on purpose; a human applies this.)
 // Design: docs/superpowers/specs/2026-09-18-remote-access-tailscale-design.md
 {
 	// One tag for both subnet routers (homelab-k8s pod, homelab-nas container).

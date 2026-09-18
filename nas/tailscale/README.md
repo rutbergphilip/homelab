@@ -42,7 +42,7 @@ From a device on the tailnet that is *not* on the home Wi-Fi (phone on 4G):
 tailscale status            # homelab-nas and homelab-k8s listed, one of them "primary" for 192.168.50.0/24
 ping 192.168.50.254         # NAS
 curl -sk https://192.168.50.254:9443/ -o /dev/null -w '%{http_code}\n'   # UGOS UI → 200/30x
-ssh rutbergphilip@192.168.50.254   # UGOS SSH (Control Panel → Terminal)
+ssh poweruser@192.168.50.254   # UGOS SSH (Control Panel → Terminal); key via ssh-copy-id -i ~/.ssh/1password.pub
 kubectl get nodes           # kubeconfig unchanged: 192.168.50.20:6443 rides the tunnel
 ```
 

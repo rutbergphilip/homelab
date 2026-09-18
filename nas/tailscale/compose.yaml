@@ -1,0 +1,46 @@
+# nas/tailscale/compose.yaml
+# Deployed as UGOS Docker "Project" tailscale on the Ugreen NAS (192.168.50.254).
+# Second Tailscale subnet router for the home LAN ("homelab-nas"); the first is
+# the homelab-k8s pod (kubernetes/apps/network/tailscale/). Both advertise
+# 192.168.50.0/24 and Tailscale fails over between them, so the NAS and the
+# cluster stay reachable from abroad even when one of the two is down.
+# Kernel mode (host network + NET_ADMIN + /dev/net/tun), same capability set
+# gluetun already uses on this box. ip_forward is already 1 on the host because
+# Docker sets it; containerboot only warns if it cannot write the sysctl.
+# TS_ACCEPT_DNS=false is deliberate: UGOS keeps its resolver in /etc/resolv.conf
+# and Tailscale rewriting it breaks NAS-side DNS (known UGOS issue).
+# Design: docs/superpowers/specs/2026-09-18-remote-access-tailscale-design.md
+name: tailscale
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  tailscale:
+    image: tailscale/tailscale:v1.102.4
+    container_name: tailscale
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      # Single-use, short-lived, tagged auth key from the Tailscale admin console
+      # (or the API). Only the NAS copy carries the real key; the repo copy keeps
+      # the placeholder. Once the node has logged in, its identity lives in the
+      # state volume and the key is no longer needed.
+      TS_AUTHKEY: REPLACE_ME
+      TS_HOSTNAME: homelab-nas
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TS_ROUTES: 192.168.50.0/24
+      TS_EXTRA_ARGS: --advertise-tags=tag:subnet-router
+      TS_ACCEPT_DNS: "false"
+    volumes:
+      - /volume2/nas-apps/tailscale/state:/var/lib/tailscale
+    mem_limit: 256m
+    logging: *logging
+    restart: unless-stopped

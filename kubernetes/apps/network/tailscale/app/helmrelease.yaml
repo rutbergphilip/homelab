@@ -1,0 +1,113 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+# Tailscale subnet router "homelab-k8s": advertises the home LAN (192.168.50.0/24)
+# to Philip's tailnet so kubectl/talosctl/NAS/HA work from abroad at their LAN
+# addresses. A second router ("homelab-nas", nas/tailscale/) advertises the same
+# route from the NAS; Tailscale fails over between the two, so the cluster stays
+# reachable for repairs even when this pod is down.
+#
+# Userspace networking on purpose: no NET_ADMIN, no /dev/net/tun, no ip_forward
+# sysctl, runs as nobody. Throughput is lower than kernel mode but far above what
+# a remote link needs; bulk transfers ride the NAS router (kernel mode).
+# Design: docs/superpowers/specs/2026-09-18-remote-access-tailscale-design.md
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tailscale
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      tailscale:
+        # One node identity lives in the state Secret; two pods would fight over it.
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/tailscale/tailscale
+              tag: v1.102.4
+            env:
+              TS_HOSTNAME: homelab-k8s
+              TS_USERSPACE: "true"
+              TS_KUBE_SECRET: tailscale-state
+              TS_ROUTES: 192.168.50.0/24
+              TS_EXTRA_ARGS: --advertise-tags=tag:subnet-router
+              TS_ACCEPT_DNS: "false"
+              TS_ENABLE_HEALTH_CHECK: "true"
+              TS_LOCAL_ADDR_PORT: 0.0.0.0:9002
+              TS_AUTHKEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: tailscale-auth
+                    key: TS_AUTHKEY
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: &port 9002
+                  periodSeconds: 5
+                  failureThreshold: 60
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: *port
+                  periodSeconds: 30
+                  timeoutSeconds: 3
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: { type: RuntimeDefault }
+    serviceAccount:
+      create: true
+      name: tailscale
+    service:
+      app:
+        controller: tailscale
+        ports:
+          health:
+            port: *port
+    persistence:
+      tmp:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
+      run:
+        type: emptyDir
+        globalMounts:
+          - path: /var/run/tailscale
+      state:
+        type: emptyDir
+        globalMounts:
+          - path: /var/lib/tailscale

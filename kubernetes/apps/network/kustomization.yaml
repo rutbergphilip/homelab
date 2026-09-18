@@ -10,4 +10,5 @@ resources:
   - ./storage.yaml
   - ./external/ks.yaml
   - ./internal/ks.yaml
+  - ./tailscale/ks.yaml
   - ./pihole

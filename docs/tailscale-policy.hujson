@@ -1,0 +1,47 @@
+// Tailnet policy for the homelab remote-access setup (applied 2026-09-18).
+// Mirror of what is live in the Tailscale admin console; apply with
+//   curl -u "$(cat .claude/tailscale-api-token):" -H 'Content-Type: application/hujson' \
+//     --data-binary @docs/tailscale-policy.hujson https://api.tailscale.com/api/v2/tailnet/-/acl
+// Design: docs/superpowers/specs/2026-09-18-remote-access-tailscale-design.md
+{
+	// One tag for both subnet routers (homelab-k8s pod, homelab-nas container).
+	"tagOwners": {
+		"tag:subnet-router": ["autogroup:admin"],
+	},
+
+	// Routers carrying the tag get the LAN route enabled without a manual click
+	// in the admin console, so the in-cluster router survives redeploys.
+	"autoApprovers": {
+		"routes": {
+			"192.168.50.0/24": ["tag:subnet-router"],
+		},
+	},
+
+	"grants": [
+		// Philip's own devices reach everything: other devices, the routers and
+		// the whole home LAN through them. The tagged routers get no source
+		// access of their own (they only forward).
+		{"src": ["autogroup:member"], "dst": ["*"], "ip": ["*"]},
+	],
+
+	"ssh": [
+		// Tailscale SSH into one's own devices, with re-auth (check mode).
+		{
+			"action": "check",
+			"src":    ["autogroup:member"],
+			"dst":    ["autogroup:self"],
+			"users":  ["autogroup:nonroot", "root"],
+		},
+	],
+
+	"tests": [
+		{
+			"src":    "philiprutberg00@gmail.com",
+			"accept": ["192.168.50.20:6443", "192.168.50.254:9443", "192.168.50.254:22", "192.168.50.10:50000"],
+		},
+		{
+			"src":  "tag:subnet-router",
+			"deny": ["192.168.50.254:9443"],
+		},
+	],
+}

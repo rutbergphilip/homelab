@@ -1,4 +1,4 @@
-// Tailnet policy for the homelab remote-access setup (applied 2026-09-18).
+// Tailnet policy for the homelab remote-access setup (applied 2026-09-18, tag:cloud added the same day).
 // Mirror of what is live in the Tailscale admin console; apply with
 //   curl -u "$(cat .claude/tailscale-api-token):" -H 'Content-Type: application/hujson' \
 //     --data-binary @docs/tailscale-policy.hujson https://api.tailscale.com/api/v2/tailnet/-/acl
@@ -7,6 +7,9 @@
 	// One tag for both subnet routers (homelab-k8s pod, homelab-nas container).
 	"tagOwners": {
 		"tag:subnet-router": ["autogroup:admin"],
+		// Cloud VMs (supabase). Tagged nodes are not autogroup:member, so they
+		// get no source access to the LAN through the routers.
+		"tag:cloud": ["autogroup:admin"],
 	},
 
 	// Routers carrying the tag get the LAN route enabled without a manual click
@@ -42,6 +45,10 @@
 		{
 			"src":  "tag:subnet-router",
 			"deny": ["192.168.50.254:9443"],
+		},
+		{
+			"src":  "tag:cloud",
+			"deny": ["192.168.50.254:9443", "192.168.50.20:6443"],
 		},
 	],
 }

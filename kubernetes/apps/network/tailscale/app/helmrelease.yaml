@@ -47,6 +47,10 @@ spec:
               TS_ACCEPT_DNS: "false"
               TS_ENABLE_HEALTH_CHECK: "true"
               TS_LOCAL_ADDR_PORT: 0.0.0.0:9002
+              # Not an auth key but an OAuth client secret (tskey-client-…?ephemeral=false)
+              # with the auth_keys scope for tag:subnet-router: containerboot mints a
+              # fresh tagged auth key on every start, so there is nothing to rotate.
+              # The node identity itself lives in the tailscale-state Secret.
               TS_AUTHKEY:
                 valueFrom:
                   secretKeyRef:

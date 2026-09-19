@@ -1,0 +1,25 @@
+# LoadBalancer on the LAN, not an Ingress. The Minecraft protocol is raw TCP,
+# so it cannot pass through ingress-nginx, and the Cloudflare tunnel only
+# carries HTTP(S) for this cluster — there is deliberately no public path to
+# this port. Reachable from the LAN and, because the tailnet subnet routers
+# advertise 192.168.50.0/24, from Tailscale clients away from home.
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft
+  namespace: default
+  labels:
+    app: minecraft
+  annotations:
+    lbipam.cilium.io/ips: "192.168.50.25"
+spec:
+  type: LoadBalancer
+  # Preserve the real client IP in server logs and ban lists.
+  externalTrafficPolicy: Local
+  selector:
+    app: minecraft
+  ports:
+    - name: minecraft
+      port: 25565
+      protocol: TCP
+      targetPort: 25565

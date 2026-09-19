@@ -167,6 +167,13 @@ spec:
               value: "tailscale-minecraft-state"
             - name: TS_ACCEPT_DNS
               value: "false"
+            # containerboot gives `tailscale up` only 60s by default. For an
+            # interactive (URL) login that is the whole window a person has
+            # to click Connect; after it, containerboot kills tailscaled and
+            # the retry loop starts over with a NEW node key, so the old URL
+            # authorizes an orphan. 30 minutes makes the URL mode usable.
+            - name: TS_BOOT_TIMEOUT
+              value: "30m"
             - name: TS_AUTHKEY
               valueFrom:
                 secretKeyRef:

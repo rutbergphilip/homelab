@@ -26,7 +26,17 @@ spec:
     controller:
       service:
         annotations:
-          lbipam.cilium.io/ips: "192.168.50.22"
+          # Moved off 192.168.50.22 on 2026-09-19: another device on the LAN
+          # holds that address. It answers ARP from c4:38:75:a2:37:d2, which is
+          # none of the three Talos nodes (0:4e:1:be:8:66 / a4:bb:6d:4c:de:e5 /
+          # 8c:4:ba:9b:ba:b7), so Cilium's L2 announcement loses the race and
+          # every connection to the internal ingress was refused. Nothing had
+          # used the internal class until now, so it failed silently.
+          #
+          # The durable fix is on the router: exclude 192.168.50.20-.29 from the
+          # DHCP pool so no client can be handed a service address. Until that
+          # happens, .23/.24/.25 are exposed to the same accident.
+          lbipam.cilium.io/ips: "192.168.50.26"
         externalTrafficPolicy: Cluster
       ingressClassResource:
         name: internal

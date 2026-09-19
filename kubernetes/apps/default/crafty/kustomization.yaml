@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: default
 
 resources:
+  - ./secret.sops.yaml
   - ./deployment.yaml
   - ./service.yaml
   - ./ingress.yaml

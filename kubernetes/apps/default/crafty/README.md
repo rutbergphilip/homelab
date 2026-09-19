@@ -76,14 +76,14 @@ The pod carries a Tailscale sidecar that makes the server its own tailnet node,
 a friend gets that one node on the game port and nothing else — not the LAN, not the
 routers. Tagged nodes cannot be shared, so the node logs in as Philip's user.
 
-**Activate once** (needs Philip — only a person can mint a personal key):
+**Activate once** (needs Philip — only a person can log the node in as a user):
 
-1. Admin console → Settings → Keys → *Generate auth key*. Reusable off, ephemeral
-   off, **no tags**.
-2. `pbpaste | scripts/tailscale-minecraft-secret.sh` — encrypts the key, pushes, waits
-   for the node, disables its key expiry, and publishes `mc.rutberg.dev` as an
-   unproxied public A record to the node's 100.x address.
-3. Apply the `autogroup:shared` grant in `docs/tailscale-policy.hujson` (admin console
+1. `scripts/tailscale-minecraft-secret.sh` — prints the sidecar's login URL. Open it,
+   sign in as yourself (no tags). The script then waits for the node, disables its key
+   expiry, and publishes `mc.rutberg.dev` as an unproxied public A record to the node's
+   100.x address. (Alternative: pipe a personal auth key from the admin console into
+   the same script.)
+2. Apply the `autogroup:shared` grant in `docs/tailscale-policy.hujson` (admin console
    → Access controls). Without it the share is accepted but connections are dropped.
 
 **Per friend:** admin console → Machines → `minecraft` → *Share* → send the link. They

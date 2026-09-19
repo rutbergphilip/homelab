@@ -1,31 +1,53 @@
 #!/usr/bin/env bash
 # One-shot activation of the Minecraft server's Tailscale node, for sharing
-# with friends. Run once with a PERSONAL auth key on the clipboard:
+# with friends. Two ways to run it — pick whichever is less hassle:
 #
-#   Admin console → Settings → Keys → Generate auth key
-#     Reusable: off   Ephemeral: off   Tags: NONE (tagged nodes cannot be shared)
-#   then:
-#   pbpaste | scripts/tailscale-minecraft-secret.sh
+#   EASIEST — no key at all:
+#     scripts/tailscale-minecraft-secret.sh
+#   It prints the sidecar's current login URL; open it, sign in as yourself,
+#   and the script carries on by itself.
+#
+#   OR with a PERSONAL auth key on the clipboard (Admin console → Settings →
+#   Keys → Generate auth key; reusable off, ephemeral off, NO tags — tagged
+#   nodes cannot be shared):
+#     pbpaste | scripts/tailscale-minecraft-secret.sh
 #
 # What it does, in order (each step is idempotent, re-run freely):
-#   1. SOPS-encrypts the key into kubernetes/apps/default/crafty/tailscale-auth.sops.yaml
-#      and adds it to the kustomization; commits and pushes; Flux applies it and
-#      reloader restarts the crafty pod so the sidecar logs in.
+#   1. (key mode only) SOPS-encrypts the key into
+#      kubernetes/apps/default/crafty/tailscale-auth.sops.yaml, adds it to the
+#      kustomization, commits, pushes; reloader restarts the pod so the sidecar
+#      logs in. In URL mode this step is just "open the link".
 #   2. Waits for a device named "minecraft" to appear in the tailnet (API).
 #   3. Disables key expiry on it (devices:core write), so the login never lapses.
 #   4. Writes mc.rutberg.dev as an UNPROXIED public A record to the node's
 #      100.x address (external-dns DNSEndpoint), commits and pushes.
-# The auth key itself is single-use: once the node exists its identity lives in
-# the tailscale-minecraft-state Secret and the key is never needed again.
+# Either way the login is one-time: the node's identity then lives in the
+# tailscale-minecraft-state Secret and survives pod restarts.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/kubernetes/apps/default/crafty"
 export SOPS_AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$ROOT/age.key}"
 
-key="$(tr -d '[:space:]')"
-[[ "$key" == tskey-auth-* ]] || { echo "input does not look like a Tailscale auth key (tskey-auth-…)" >&2; exit 1; }
+key=""
+if [[ ! -t 0 ]]; then key="$(tr -d '[:space:]' || true)"; fi
 
-# ---- 1. secret ------------------------------------------------------------
+if [[ -z "$key" ]]; then
+  # ---- 1 (URL mode) ----------------------------------------------------------
+  url="$(kubectl -n default logs deploy/crafty -c tailscale --tail=200 2>/dev/null \
+         | grep -oE 'https://login\.tailscale\.com/a/[a-z0-9]+' | tail -1 || true)"
+  if [[ -z "$url" ]]; then
+    echo "no login URL in the sidecar log — is it already logged in? check:" >&2
+    echo "  kubectl -n default logs deploy/crafty -c tailscale --tail=20" >&2
+    exit 1
+  fi
+  echo "1/4 open this and sign in as yourself (no tags):"
+  echo
+  echo "    $url"
+  echo
+  echo "    waiting for the node to appear…"
+else
+  [[ "$key" == tskey-auth-* ]] || { echo "input does not look like a Tailscale auth key (tskey-auth-…)" >&2; exit 1; }
+  # ---- 1 (key mode) ----------------------------------------------------------
 printf '%s\n' \
   '# yaml-language-server: $schema=https://kubernetesjsonschema.dev/v1.18.1-standalone-strict/secret-v1.json' \
   'apiVersion: v1' 'kind: Secret' 'metadata:' '  name: tailscale-minecraft-auth' '  namespace: default' 'stringData:' \
@@ -38,6 +60,7 @@ grep -q "tailscale-auth.sops.yaml" "$APP/kustomization.yaml" || \
   && git push -q origin main && flux reconcile source git flux-system --timeout=2m >/dev/null \
   && flux reconcile kustomization cluster-apps --timeout=3m >/dev/null )
 echo "1/4 key applied; waiting for the pod to restart and the node to register"
+fi
 
 # ---- 2. wait for the device -------------------------------------------------
 T="$("$ROOT/scripts/tailscale-api-token.sh")"

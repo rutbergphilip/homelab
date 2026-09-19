@@ -20,7 +20,8 @@ spec:
         fsGroup: 1000
       containers:
         - name: homarr
-          image: ghcr.io/homarr-labs/homarr:latest
+          # renovate: datasource=docker depName=ghcr.io/homarr-labs/homarr
+          image: ghcr.io/homarr-labs/homarr:v1.77.1
 
           ports:
             - name: homarr

@@ -18,8 +18,12 @@ spec:
     spec:
       containers:
         - name: trilium
-          image: zadam/trilium:latest
-          imagePullPolicy: Always
+          # renovate: datasource=docker depName=zadam/trilium
+          # NOTE: upstream is dead — 0.63.7 (2024-05-30) is the final zadam
+          # release. Successor is TriliumNext (triliumnext/notes). Pinning
+          # here only stops silent drift; migration is the real fix.
+          image: zadam/trilium:0.63.7
+          imagePullPolicy: IfNotPresent
 
           resources:
             limits:

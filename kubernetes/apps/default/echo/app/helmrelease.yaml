@@ -78,9 +78,13 @@ spec:
             scrapeTimeout: 10s
     ingress:
       app:
-        className: external
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
+        # LAN/tailnet only (2026-09-18). This app echoes the full request —
+        # headers, cookies, body — back to the caller. It is the cluster
+        # template's smoke test, not something that should answer the open
+        # internet. The `internal` class keeps it off the Cloudflare tunnel,
+        # and external-dns (--ingress-class=external) publishes no public
+        # record for it; k8s-gateway resolves it for split-DNS clients.
+        className: internal
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:

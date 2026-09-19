@@ -1,0 +1,20 @@
+# Separate ClusterIP service for the exporter rather than another port on the
+# pihole LoadBalancer: that Service holds a Cilium LB IP on the LAN
+# (192.168.50.24), and metrics have no business being reachable there.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-metrics
+  namespace: network
+  labels:
+    app: pihole
+    app.kubernetes.io/name: pihole-metrics
+spec:
+  type: ClusterIP
+  selector:
+    app: pihole
+  ports:
+    - name: metrics
+      port: 9617
+      protocol: TCP
+      targetPort: 9617

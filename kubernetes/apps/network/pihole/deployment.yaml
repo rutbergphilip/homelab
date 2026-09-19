@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: pihole
-          image: pihole/pihole:latest
+          # renovate: datasource=docker depName=pihole/pihole
+          image: pihole/pihole:2026.07.2
 
           securityContext:
             privileged: true
@@ -39,8 +40,13 @@ spec:
                   key: FTLCONF_webserver_api_password
             - name: FTLCONF_dns_listeningMode
               value: "all"
+            # Recursive resolution via the unbound sidecar instead of a public
+            # resolver: queries now go straight to the root/TLD/authoritative
+            # servers, so no third party sees the household's browsing. Changed
+            # 2026-09-18. To roll back, set this to "1.1.1.1;1.0.0.1" and drop
+            # the unbound container below.
             - name: FTLCONF_dns_upstreams
-              value: "1.1.1.1;1.0.0.1"
+              value: "127.0.0.1#5335"
             - name: FTLCONF_dns_revServers
               value: "true,192.168.50.0/24,192.168.50.21,rutberg.dev"
             - name: FTLCONF_dns_hosts
@@ -65,7 +71,113 @@ spec:
               mountPath: /etc/pihole
               subPath: pihole/etc/pihole
 
+        # Recursive DNS resolver. Pi-hole forwards to this on 127.0.0.1#5335
+        # rather than to Cloudflare, so upstream lookups are resolved from the
+        # root zone down and DNSSEC-validated locally.
+        - name: unbound
+          # renovate: datasource=docker depName=klutchell/unbound
+          image: klutchell/unbound:v1.26.1
+
+          args: ["-d", "-c", "/etc/unbound/unbound.conf"]
+
+          ports:
+            - name: dns-recurse
+              containerPort: 5335
+              protocol: UDP
+            - name: dns-recurse-t
+              containerPort: 5335
+              protocol: TCP
+
+          # Liveness only, and deliberately a socket check rather than a real
+          # lookup. Every container in a pod must be Ready for the pod to be
+          # Ready, so a readiness probe here that depended on the internet
+          # would pull Pi-hole out of its own Service during a WAN blip and
+          # take LAN DNS down with it. A listening socket proves the process
+          # is alive; resolution failures are a metrics problem, not a
+          # restart-the-pod problem.
+          livenessProbe:
+            tcpSocket:
+              port: 5335
+            initialDelaySeconds: 20
+            periodSeconds: 60
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # SETUID/SETGID are required, not optional: unbound starts as root to
+          # read its config and then drops to the `unbound` user itself
+          # (`username: "unbound"` in the shipped config). With capabilities
+          # fully dropped it dies at startup with
+          #   fatal error: unable to set group id of unbound: Operation not permitted
+          # Verified against klutchell/unbound:v1.26.1 on 2026-09-18: these two
+          # are the minimum; SETPCAP is not needed.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["SETUID", "SETGID"]
+
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 500m
+            requests:
+              memory: 256Mi
+              cpu: 100m
+
+          volumeMounts:
+            - name: unbound-config
+              mountPath: /etc/unbound/custom.conf.d/homelab.conf
+              subPath: homelab.conf
+              readOnly: true
+
+        # Prometheus metrics for the Grafana "Pi-hole" dashboard. Talks to
+        # Pi-hole's own API over pod-local loopback and authenticates with the
+        # same web password (Pi-hole v6 accepts it directly on /api/auth).
+        - name: exporter
+          # renovate: datasource=docker depName=ekofr/pihole-exporter
+          image: ekofr/pihole-exporter:v1.2.0
+
+          ports:
+            - name: metrics
+              containerPort: 9617
+              protocol: TCP
+
+          env:
+            - name: PIHOLE_PROTOCOL
+              value: "http"
+            - name: PIHOLE_HOSTNAME
+              value: "127.0.0.1"
+            - name: PIHOLE_PORT
+              value: "80"
+            - name: PORT
+              value: "9617"
+            - name: PIHOLE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pihole-password
+                  key: FTLCONF_webserver_api_password
+
+          # No readiness probe, for the same reason as unbound above: a
+          # metrics sidecar must never be able to evict Pi-hole from its
+          # Service. Scrape gaps show up in Grafana instead.
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+
+          resources:
+            limits:
+              memory: 64Mi
+              cpu: 100m
+            requests:
+              memory: 32Mi
+              cpu: 10m
+
       volumes:
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc
+        - name: unbound-config
+          configMap:
+            name: unbound-config

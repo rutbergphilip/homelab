@@ -1,0 +1,24 @@
+# Overrides layered on top of klutchell/unbound's shipped /etc/unbound/unbound.conf,
+# which ends with `include-toplevel: /etc/unbound/custom.conf.d/*.conf`. The base
+# config already does the Pi-hole-recommended hardening (DNSSEC validation via
+# root.key, edns-buffer-size 1232, prefetch, serve-expired, rebinding protection
+# for RFC1918 answers) and ships its own root.hints, so only the port moves.
+#
+# Port 5335 is the Pi-hole convention for a co-located recursive resolver. It is
+# reachable only inside the pod's network namespace: the pihole Service publishes
+# 53 and 80 only, never 5335.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unbound-config
+  namespace: network
+data:
+  homelab.conf: |
+    server:
+        port: 5335
+
+        # rutberg.dev answers come from k8s-gateway via Pi-hole's own
+        # conditional forwarding (FTLCONF_dns_revServers), not through unbound.
+        # Listing it as a private-domain keeps unbound from stripping the
+        # RFC1918 answer if a query ever does reach it.
+        private-domain: "rutberg.dev"

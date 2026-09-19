@@ -1,0 +1,24 @@
+# Scraped by kube-prometheus-stack. Metrics arrive under the `pihole_` prefix
+# (pihole_dns_queries_today, pihole_ads_blocked_today, pihole_status, ...) and
+# back the Grafana "Pi-hole" dashboard in the Homelab folder.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pihole
+  namespace: network
+  labels:
+    app.kubernetes.io/name: pihole
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pihole-metrics
+  namespaceSelector:
+    matchNames: ["network"]
+  endpoints:
+    - port: metrics
+      scheme: http
+      path: /metrics
+      # The exporter holds a Pi-hole session that stays valid as long as it is
+      # used at least every 5 minutes, so do not scrape slower than that.
+      interval: 1m
+      scrapeTimeout: 30s

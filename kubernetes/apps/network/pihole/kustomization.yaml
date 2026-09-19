@@ -5,8 +5,11 @@ namespace: network
 
 resources:
   - secret.sops.yaml
+  - unbound-config.yaml
   - deployment.yaml
   - service.yaml
+  - service-metrics.yaml
+  - servicemonitor.yaml
   - ingress.yaml
   - ingress-outpost.yaml
   - service-outpost.yaml

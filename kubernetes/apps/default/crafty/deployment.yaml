@@ -32,7 +32,12 @@ spec:
     metadata:
       labels:
         app: crafty
+      annotations:
+        # Restart the pod when the tailscale login key lands or changes, so the
+        # sidecar picks it up without anyone touching kubectl.
+        secret.reloader.stakater.com/reload: tailscale-minecraft-auth
     spec:
+      serviceAccountName: crafty
       securityContext:
         runAsUser: 1000
         runAsGroup: 0
@@ -126,6 +131,68 @@ spec:
               subPath: minecraft/data
               readOnly: true
 
+        # Tailscale sidecar: makes the game server its own tailnet node
+        # ("minecraft") so it can be SHARED with friends' tailnets — the only
+        # zero-exposure way to let people outside the house join. Tagged nodes
+        # cannot be shared, so this logs in as Philip's user with a personal
+        # auth key (Secret tailscale-minecraft-auth, written by
+        # scripts/tailscale-minecraft-secret.sh); node key expiry is disabled
+        # by that script afterwards, so nothing here expires.
+        #
+        # Userspace mode: no TUN, no NET_ADMIN. Inbound connections to the
+        # node's 100.x address are forwarded by tailscaled to the same port on
+        # 127.0.0.1 — which, in this pod, is the Minecraft server.
+        #
+        # Deliberately NO probes and a restart loop instead of a bare
+        # containerboot: every container in a pod must be Ready for the pod to
+        # be Ready, and this pod backs the game LoadBalancer. A crashing or
+        # logged-out sidecar must never take the server off the LAN.
+        - name: tailscale
+          # renovate: datasource=docker depName=ghcr.io/tailscale/tailscale
+          image: ghcr.io/tailscale/tailscale:v1.102.4
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              while :; do
+                /usr/local/bin/containerboot
+                echo "tailscale sidecar exited (rc=$?); retrying in 60s"
+                sleep 60
+              done
+          env:
+            - name: TS_HOSTNAME
+              value: "minecraft"
+            - name: TS_USERSPACE
+              value: "true"
+            - name: TS_KUBE_SECRET
+              value: "tailscale-minecraft-state"
+            - name: TS_ACCEPT_DNS
+              value: "false"
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: tailscale-minecraft-auth
+                  key: TS_AUTHKEY
+                  # Optional so the pod starts before the key exists; the
+                  # sidecar just idles logged-out until reloader restarts it.
+                  optional: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: ts-tmp
+              mountPath: /tmp
+            - name: ts-run
+              mountPath: /var/run/tailscale
+            - name: ts-state
+              mountPath: /var/lib/tailscale
+
       # Long enough for Crafty to stop the Minecraft server gracefully
       # (it issues `stop`, waits for the world to flush) before SIGKILL.
       terminationGracePeriodSeconds: 180
@@ -134,3 +201,9 @@ spec:
         - name: homelab-storage
           persistentVolumeClaim:
             claimName: homelab-nfs-pvc
+        - name: ts-tmp
+          emptyDir: {}
+        - name: ts-run
+          emptyDir: {}
+        - name: ts-state
+          emptyDir: {}

@@ -9,6 +9,7 @@ resources:
   # the panel password (decrypt with sops). Nothing in the cluster consumes it,
   # so applying it would only make the password readable to anything with
   # Secret access in this namespace.
+  - ./rbac.yaml
   - ./deployment.yaml
   - ./service.yaml
   - ./ingress.yaml

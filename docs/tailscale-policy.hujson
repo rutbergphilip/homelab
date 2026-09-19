@@ -26,6 +26,10 @@
 		// the whole home LAN through them. The tagged routers get no source
 		// access of their own (they only forward).
 		{"src": ["autogroup:member"], "dst": ["*"], "ip": ["*"]},
+		// Friends the "minecraft" node has been SHARED with (2026-09-19). Sharing
+		// already limits them to that one machine; this limits them to the game
+		// port on it. They never see the LAN or the routers.
+		{"src": ["autogroup:shared"], "dst": ["*"], "ip": ["tcp:25565"]},
 	],
 
 	"ssh": [
@@ -50,6 +54,11 @@
 		{
 			"src":  "tag:cloud",
 			"deny": ["192.168.50.254:9443", "192.168.50.20:6443"],
+		},
+		{
+			// A shared-in friend gets the game port and nothing else.
+			"src":  "autogroup:shared",
+			"deny": ["192.168.50.254:9443", "192.168.50.20:6443", "192.168.50.25:22"],
 		},
 	],
 }

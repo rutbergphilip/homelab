@@ -27,8 +27,12 @@ spec:
         fsGroup: 1000
       containers:
         - name: minecraft
+          # The Java line must match VERSION below: Minecraft 26.3 is compiled
+          # for Java 25 (class file version 69) and dies instantly on the
+          # java21 image with UnsupportedClassVersionError. Bump both together,
+          # or neither.
           # renovate: datasource=docker depName=itzg/minecraft-server
-          image: itzg/minecraft-server:2026.9.1-java21
+          image: itzg/minecraft-server:2026.9.1-java25
 
           ports:
             - name: minecraft
@@ -51,6 +55,8 @@ spec:
 
             # Pinned on purpose: clients must run a matching version, so the
             # server version is a decision, not something to drift with LATEST.
+            # Changing this may require a different Java line on the image tag
+            # above — see the note there.
             - name: VERSION
               value: "26.3"
 

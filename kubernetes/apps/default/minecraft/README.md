@@ -10,7 +10,7 @@ second Deployment with its own IP and world directory.
 | **Address** | `192.168.50.25:25565` (LAN, and over Tailscale from anywhere) |
 | **Public access** | None, by design — see *Why no public address* |
 | **World data** | NAS `/volume1/homelab/minecraft/data`, via the `homelab-nfs-pvc` NFS PVC |
-| **Version** | Pinned by `VERSION` in `deployment.yaml` (currently `26.3`) |
+| **Version** | Pinned by `VERSION` in `deployment.yaml` (currently `26.3`, needs the **java25** image) |
 | **Type** | `VANILLA` — supports neither plugins nor mods as-is |
 
 ## Deploying and changing settings
@@ -26,6 +26,19 @@ up to 10 minutes before giving up, so a slow first boot will not restart-loop.
 kubectl -n default logs -f deploy/minecraft          # watch it come up
 kubectl -n default get pod -l app=minecraft          # status
 ```
+
+### Version and Java must move together
+
+The image tag carries the JRE. Minecraft 26.3 is compiled for Java 25, so the
+`java21` image fails immediately with:
+
+```
+UnsupportedClassVersionError: ... class file version 69.0,
+this version of the Java Runtime only recognizes class file versions up to 65.0
+```
+
+Class file 65 is Java 21, 69 is Java 25. When you change `VERSION`, check which JRE
+that Minecraft release needs and move the image tag's `-javaNN` suffix with it.
 
 ## Server console
 

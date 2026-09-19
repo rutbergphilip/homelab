@@ -53,7 +53,8 @@ panel. What stays in git:
 
 Crafty generated a random admin password on first boot (`app/config/default-creds.txt`;
 that file has been deleted). It was then changed by API and the new value stored in
-`secret.sops.yaml` here as a **record only** — Crafty does not read that Secret. To
+`secret.sops.yaml` here as a **git-only record** — it is not in the kustomization and is
+never applied to the cluster, because nothing there consumes it. To
 rotate: change it in the panel (or `PATCH /api/v2/users/1`), then update the Secret.
 
 ## Backups

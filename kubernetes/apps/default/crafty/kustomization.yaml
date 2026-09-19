@@ -5,7 +5,10 @@ kind: Kustomization
 namespace: default
 
 resources:
-  - ./secret.sops.yaml
+  # secret.sops.yaml is deliberately NOT listed: it is a git-only record of
+  # the panel password (decrypt with sops). Nothing in the cluster consumes it,
+  # so applying it would only make the password readable to anything with
+  # Secret access in this namespace.
   - ./deployment.yaml
   - ./service.yaml
   - ./ingress.yaml

@@ -1,0 +1,136 @@
+# Crafty Controller — web panel for the Minecraft server(s).
+#
+# Why this panel and not AMP/Pterodactyl/Pelican: those spawn each game
+# server as a *sibling container*, so their daemon needs the Docker socket.
+# Crafty runs servers as child processes inside its own container, which
+# makes it one ordinary Deployment with no privileged escape hatch. The
+# itzg/minecraft-server Deployment this replaces lives on in git history
+# (kubernetes/apps/default/minecraft, removed 2026-09-19).
+#
+# Runs as uid 1000 / gid 0 on purpose. Crafty's launcher has two paths:
+# root (chgrp/chmod sweeps, then `sudo -u crafty`) and non-root ("likely
+# Kubernetes", plain exec). The NFS export forces every file to 1000:10 mode
+# 0777 whoever writes it, so the root path's permission repair would only
+# spam EPERM; the non-root path is the one designed for this.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crafty
+  namespace: default
+  labels:
+    app: crafty
+spec:
+  replicas: 1
+  # Recreate, never RollingUpdate: two Crafty instances would both try to
+  # run the same server processes against the same world directory.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: crafty
+  template:
+    metadata:
+      labels:
+        app: crafty
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 0
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: crafty
+          # renovate: datasource=docker depName=registry.gitlab.com/crafty-controller/crafty-4
+          # Ships OpenJDK 8/11/17/21/25 — 25 is what Minecraft 26.x needs.
+          image: registry.gitlab.com/crafty-controller/crafty-4:4.11.0
+
+          ports:
+            - name: https-ui
+              containerPort: 8443
+              protocol: TCP
+            # One Minecraft server for now, on the vanilla port. A second
+            # server needs a second port here and on the game Service.
+            - name: minecraft
+              containerPort: 25565
+              protocol: TCP
+
+          env:
+            - name: TZ
+              value: "Europe/Stockholm"
+
+          # The panel serves HTTPS with a self-signed cert; kubelet does not
+          # verify it. /login answers 200 without a session. Startup is slow
+          # the first time (config seeding + DB migrations).
+          startupProbe:
+            httpGet:
+              path: /login
+              port: 8443
+              scheme: HTTPS
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /login
+              port: 8443
+              scheme: HTTPS
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: 8443
+              scheme: HTTPS
+            periodSeconds: 30
+            timeoutSeconds: 10
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+
+          # The Minecraft JVM runs *inside* this container, so the limit has
+          # to cover the panel plus every server's heap plus JVM overhead.
+          # One server at 4G heap fits comfortably; raise this before
+          # raising a server's max memory in the panel.
+          resources:
+            requests:
+              memory: 3Gi
+              cpu: "1"
+            limits:
+              memory: 8Gi
+              cpu: "4"
+
+          volumeMounts:
+            - name: homelab-storage
+              mountPath: /crafty/app/config
+              subPath: crafty/config
+            - name: homelab-storage
+              mountPath: /crafty/servers
+              subPath: crafty/servers
+            - name: homelab-storage
+              mountPath: /crafty/backups
+              subPath: crafty/backups
+            - name: homelab-storage
+              mountPath: /crafty/logs
+              subPath: crafty/logs
+            - name: homelab-storage
+              mountPath: /crafty/import
+              subPath: crafty/import
+            # The world from the previous itzg Deployment, exposed to the
+            # panel's "import existing server" as /crafty/import/vanilla.
+            # Read-only: the import *copies* into /crafty/servers/<id>/, and
+            # this original stays untouched as a fallback. Safe to drop once
+            # the imported server has been confirmed working.
+            - name: homelab-storage
+              mountPath: /crafty/import/vanilla
+              subPath: minecraft/data
+              readOnly: true
+
+      # Long enough for Crafty to stop the Minecraft server gracefully
+      # (it issues `stop`, waits for the world to flush) before SIGKILL.
+      terminationGracePeriodSeconds: 180
+
+      volumes:
+        - name: homelab-storage
+          persistentVolumeClaim:
+            claimName: homelab-nfs-pvc

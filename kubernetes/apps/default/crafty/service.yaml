@@ -1,0 +1,43 @@
+# Game traffic: LoadBalancer on the LAN, unchanged address from the itzg
+# Deployment this replaces. Minecraft is raw TCP so it cannot traverse
+# ingress-nginx, and the Cloudflare tunnel carries only HTTP for this
+# cluster — there is deliberately no public path. Reachable from the LAN
+# and, via the Tailscale subnet routers, from anywhere Philip's devices are.
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft
+  namespace: default
+  labels:
+    app: crafty
+  annotations:
+    lbipam.cilium.io/ips: "192.168.50.25"
+spec:
+  type: LoadBalancer
+  # Preserve the real client IP in server logs and ban lists.
+  externalTrafficPolicy: Local
+  selector:
+    app: crafty
+  ports:
+    - name: minecraft
+      port: 25565
+      protocol: TCP
+      targetPort: 25565
+---
+# Panel UI, cluster-internal only; the Ingress fronts it.
+apiVersion: v1
+kind: Service
+metadata:
+  name: crafty
+  namespace: default
+  labels:
+    app: crafty
+spec:
+  type: ClusterIP
+  selector:
+    app: crafty
+  ports:
+    - name: https-ui
+      port: 8443
+      protocol: TCP
+      targetPort: 8443

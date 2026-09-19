@@ -10,4 +10,4 @@ resources:
   - ./storage.yaml
   - ./echo/ks.yaml
   - ./claude-db
-  - ./minecraft
+  - ./crafty

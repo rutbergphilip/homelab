@@ -1,0 +1,22 @@
+# mc.rutberg.dev on the PUBLIC internet resolves to the Minecraft node's
+# tailnet address. That only routes for people the node has been shared with;
+# for everyone else it is an unroutable CGNAT address. On the LAN and on
+# Philip's own tailnet, split DNS wins and the same name resolves to
+# 192.168.50.25 (k8s-gateway, from the annotation on the game Service).
+# Written by scripts/tailscale-minecraft-secret.sh — regenerate, do not edit.
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: minecraft-tailnet
+  namespace: default
+spec:
+  endpoints:
+    - dnsName: "mc.rutberg.dev"
+      recordType: A
+      recordTTL: 300
+      targets: ["100.120.32.99"]
+      providerSpecific:
+        # Must stay DNS-only: Cloudflare cannot proxy raw TCP, and the
+        # controller runs with --cloudflare-proxied as the default.
+        - name: external-dns.alpha.kubernetes.io/cloudflare-proxied
+          value: "false"

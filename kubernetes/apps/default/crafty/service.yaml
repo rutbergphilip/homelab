@@ -12,6 +12,11 @@ metadata:
     app: crafty
   annotations:
     lbipam.cilium.io/ips: "192.168.50.25"
+    # LAN/tailnet alias only. k8s-gateway serves this name to split-DNS
+    # clients (Pi-hole forwards rutberg.dev to it). external-dns does not
+    # watch Services, so nothing is published to Cloudflare — the internet
+    # still has no route to this port.
+    coredns.io/hostname: "mc.rutberg.dev"
 spec:
   type: LoadBalancer
   # Preserve the real client IP in server logs and ban lists.

@@ -131,13 +131,21 @@ spec:
         periodSeconds: 30
       startupProbe:
         timeoutSeconds: 15
+      # 512Mi was not enough to apply a blueprint. The worker idles around
+      # 325Mi, and applying forward-auth.yaml pushed it over the limit, so the
+      # container was OOMKilled part-way through the transaction: the log shows
+      # "Applying blueprint due to changed file" and the apply_blueprint task
+      # starting, then nothing — no success, no error, and no objects created.
+      # Every blueprint edit was silently a no-op (found 2026-09-19, when a new
+      # provider never reached the embedded outpost and the gated host returned
+      # 500 from nginx because the outpost had no provider for it).
       resources:
         requests:
           cpu: 50m
-          memory: 256Mi
-        limits:
-          cpu: 300m
           memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
 
     # Git-managed Authentik objects (providers/applications/outpost config).
     # Mounts every *.yaml key of the ConfigMap on server + worker under

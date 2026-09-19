@@ -57,6 +57,37 @@ Config: generated template configs on the NAS, see `recyclarr/README.md`. Run by
 Container → recyclarr → Terminal → `recyclarr sync`. The container runs as root because
 UGOS denies uid 1000 on the `nas-apps` share (kernel-level share permissions).
 
+## Incident 2026-09-18: UGOS ACL rewrite locked the arrs out of `/config`
+
+At 13:49:11 on 2026-09-18 a folder was created in UGOS *Files* (`nas-apps/tailscale`,
+for the Tailscale router). UGOS took that as a cue to (re)apply its own ACL layer —
+kernel module `ugacl_vfs`, CLI `ugacltool` — to **every** file in the `nas-apps` share
+(ctime of all 70k entries = 13:49:11). The entries allow only `group:admin` (gid 10) and
+`user:rutbergphilip` (uid 1001); POSIX `777` stops mattering once a file carries a UG ACL.
+
+Effect: containers running as uid 1000 / **gid 1000** (Sonarr, Radarr, Prowlarr, Unpackerr)
+lost access to their own config. Radarr/Sonarr APIs answered `500 unable to open database
+file`, Prowlarr `500 Access to /config/config.xml is denied`, Seerr showed "Unable to
+connect to Radarr, Sonarr" and marked new requests Failed. Root containers (Jellyfin,
+qBittorrent, recyclarr) were unaffected; Seerr runs with gid 10 and mostly worked (its
+Jellyfin sync failed on `anime-list.xml` and no log file was created after midnight).
+The arr processes themselves never died — `docker logs` shows nothing, the evidence is
+in the arr API bodies and `ugacltool get <file>`.
+
+Fix: `scripts/nas-apps-restore-acl.sh` adds `user:poweruser:allow` (uid 1000 = the file
+owner) on the four app trees over SSH; idempotent, no sudo, no restart needed — SQLite
+reopens the DB on the next request. Rule of thumb: create folders under `nas-apps` with
+`mkdir` over SSH, not in UGOS Files, and if Files was used, run the script afterwards.
+
+Restarting these containers without `docker` (poweruser has no socket access): the arr
+processes and Seerr's `node dist/index.js` run as uid 1000 = poweruser, so `kill -TERM
+<pid>` over SSH works — s6 (arrs) or Docker's `restart: always` (Seerr) bring them back
+in seconds. Do **not** use the arrs' `POST /api/v1/system/restart` in these LinuxServer
+images: it re-execs Prowlarr with `/restart` as an orphan that keeps the port while s6
+respawns its own copy every 5 s ("Failed to bind to address … 9696"); the cure was to
+kill the orphan. Also cleaned that day: Prowlarr's `logs.db` had been corrupt since
+2026-09-14 (nightly `TrimLogDatabase` error) — moved aside and recreated on restart.
+
 ## Notifications (2026-09-11)
 
 Sonarr and Radarr post health issues / restored, imports and manual-interaction events

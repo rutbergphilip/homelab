@@ -23,6 +23,11 @@ half is the `homelab-k8s` pod in `kubernetes/apps/network/tailscale/`.
 2. Create the folder `nas-apps/tailscale/state` in Files first — UGOS refuses to
    deploy a project whose bind-mount source does not exist yet
    (`Volumes parameter configuration error: NAS path not found`).
+   **Warning (2026-09-18):** doing this in UGOS Files made UGOS rewrite its ACL layer
+   on *every* file in `nas-apps` (only `group:admin` + `user:rutbergphilip` allowed),
+   which locked Sonarr/Radarr/Prowlarr (uid 1000, gid 1000) out of their own config
+   for 19 h. Prefer `mkdir -p` over SSH as poweruser; if a Files operation was used,
+   run `scripts/nas-apps-restore-acl.sh` afterwards. Details in `nas/arr-stack/README.md`.
 3. UGOS → Docker → Project → Create, name `tailscale`, folder `nas-apps/tailscale`,
    paste `compose.yaml`, replace `REPLACE_ME` with the key in the UGOS editor
    (the repo copy keeps the placeholder — same rule as `torrent-vpn`). Deployed
